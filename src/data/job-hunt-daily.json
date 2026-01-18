@@ -1,0 +1,137 @@
+{
+    "categories": [
+        {
+            "name": "General Job Boards",
+            "sites": [
+                {
+                    "name": "LinkedIn Jobs",
+                    "url": "https://www.linkedin.com/jobs/"
+                },
+                {
+                    "name": "Indeed",
+                    "url": "https://www.indeed.com/"
+                },
+                {
+                    "name": "Glassdoor Jobs",
+                    "url": "https://www.glassdoor.com/Job/jobs.htm"
+                }
+            ]
+        },
+        {
+            "name": "Tech & Startup Boards",
+            "sites": [
+                {
+                    "name": "Wellfound (AngelList Talent)",
+                    "url": "https://wellfound.com/jobs"
+                },
+                {
+                    "name": "Stack Overflow Jobs",
+                    "url": "https://stackoverflow.com/jobs"
+                },
+                {
+                    "name": "Dice",
+                    "url": "https://www.dice.com"
+                },
+                {
+                    "name": "Built In",
+                    "url": "https://builtin.com/jobs"
+                },
+                {
+                    "name": "Hacker News – Who Is Hiring",
+                    "url": "https://news.ycombinator.com/submitted?id=whoishiring"
+                },
+                {
+                    "name": "Levels.fyi Jobs",
+                    "url": "https://www.levels.fyi/jobs"
+                }
+            ]
+        },
+        {
+            "name": "Remote-Focused Boards",
+            "sites": [
+                {
+                    "name": "Remote OK",
+                    "url": "https://remoteok.com"
+                },
+                {
+                    "name": "We Work Remotely",
+                    "url": "https://weworkremotely.com"
+                },
+                {
+                    "name": "FlexJobs",
+                    "url": "https://www.flexjobs.com"
+                }
+            ]
+        },
+        {
+            "name": "Company Career Pages",
+            "sites": [
+                {
+                    "name": "Unum Careers",
+                    "url": "https://unum.wd1.myworkdayjobs.com/en-US/External/userHome"
+                },
+                {
+                    "name": "Blackbaud Careers",
+                    "url": "https://blackbaud.wd1.myworkdayjobs.com/en-US/ExternalCareers/userHome"
+                },
+                {
+                    "name": "Duck Creek Technologies Careers",
+                    "url": "https://duckcreek.wd1.myworkdayjobs.com/en-US/duckcreek-linkedin/userHome"
+                },
+                {
+                    "name": "Travelers Careers",
+                    "url": "https://travelers.wd5.myworkdayjobs.com/en-US/External/userHome"
+                },
+                {
+                    "name": "The Home Depot Careers",
+                    "url": "https://homedepot.wd5.myworkdayjobs.com/en-US/CareerDepot/userHome"
+                },
+                {
+                    "name": "Blue Cross Blue Shield of North Carolina Careers",
+                    "url": "https://bcbsnc.wd5.myworkdayjobs.com/en-US/BCBSNC/userHome"
+                },
+                {
+                    "name": "Blue Cross Blue Shield of South Carolina Careers",
+                    "url": "https://ourhrconnect.wd501.myworkdayjobs.com/SCBlues"
+                },
+                {
+                    "name": "Centene Careers",
+                    "url": "https://centene.wd5.myworkdayjobs.com/en-US/Centene_External/userHome"
+                },
+                {
+                    "name": "Cast & Crew Careers",
+                    "url": "https://castandcrew.wd5.myworkdayjobs.com/en-US/CastandCrew/userHome"
+                },
+                {
+                    "name": "S&P Global Careers",
+                    "url": "https://spgi.wd5.myworkdayjobs.com/en-US/SPGI_Careers/userHome"
+                },
+                {
+                    "name": "Cengage Group Careers",
+                    "url": "https://cengage.wd5.myworkdayjobs.com/en-US/CengageNorthAmericaCareers/userHome"
+                },
+                {
+                    "name": "Greenhouse Job Boards",
+                    "url": "https://my.greenhouse.io"
+                }
+            ]
+        },
+        {
+            "name": "Staffing & Recruiting Firms",
+            "sites": [
+                {
+                    "name": "Systemtec",
+                    "url": "https://systemtec.net/find-a-job/"
+                },
+                {
+                    "name": "Excelraise",
+                    "url": "https://excelraise.com/"
+                },
+                {
+                    "name": "Dataman",
+                    "url": "https://www.datamanusa.com/jobs.aspx"
+                }
+            ]
+        }
+    ]
+}
