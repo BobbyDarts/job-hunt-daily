@@ -4,7 +4,7 @@
             "name": "General Job Boards",
             "sites": [
                 {
-                    "name": "LinkedIn Jobs",
+                    "name": "LinkedIn",
                     "url": "https://www.linkedin.com/jobs/"
                 },
                 {
@@ -12,7 +12,7 @@
                     "url": "https://www.indeed.com/"
                 },
                 {
-                    "name": "Glassdoor Jobs",
+                    "name": "Glassdoor",
                     "url": "https://www.glassdoor.com/Job/jobs.htm"
                 }
             ]
@@ -67,52 +67,64 @@
             "name": "Company Career Pages",
             "sites": [
                 {
-                    "name": "Unum Careers",
-                    "url": "https://unum.wd1.myworkdayjobs.com/en-US/External/userHome"
+                    "name": "Unum",
+                    "url": "https://unum.wd1.myworkdayjobs.com/en-US/External/userHome",
+                    "atsType": "workday"
                 },
                 {
-                    "name": "Blackbaud Careers",
-                    "url": "https://blackbaud.wd1.myworkdayjobs.com/en-US/ExternalCareers/userHome"
+                    "name": "Blackbaud",
+                    "url": "https://blackbaud.wd1.myworkdayjobs.com/en-US/ExternalCareers/userHome",
+                    "atsType": "workday"
                 },
                 {
-                    "name": "Duck Creek Technologies Careers",
-                    "url": "https://duckcreek.wd1.myworkdayjobs.com/en-US/duckcreek-linkedin/userHome"
+                    "name": "Duck Creek Technologies",
+                    "url": "https://duckcreek.wd1.myworkdayjobs.com/en-US/duckcreek-linkedin/userHome",
+                    "atsType": "workday"
                 },
                 {
-                    "name": "Travelers Careers",
-                    "url": "https://travelers.wd5.myworkdayjobs.com/en-US/External/userHome"
+                    "name": "Travelers",
+                    "url": "https://travelers.wd5.myworkdayjobs.com/en-US/External/userHome",
+                    "atsType": "workday"
                 },
                 {
-                    "name": "The Home Depot Careers",
-                    "url": "https://homedepot.wd5.myworkdayjobs.com/en-US/CareerDepot/userHome"
+                    "name": "The Home Depot",
+                    "url": "https://homedepot.wd5.myworkdayjobs.com/en-US/CareerDepot/userHome",
+                    "atsType": "workday"
                 },
                 {
-                    "name": "Blue Cross Blue Shield of North Carolina Careers",
-                    "url": "https://bcbsnc.wd5.myworkdayjobs.com/en-US/BCBSNC/userHome"
+                    "name": "BCBSNC",
+                    "url": "https://bcbsnc.wd5.myworkdayjobs.com/en-US/BCBSNC/userHome",
+                    "atsType": "workday"
                 },
                 {
-                    "name": "Blue Cross Blue Shield of South Carolina Careers",
-                    "url": "https://ourhrconnect.wd501.myworkdayjobs.com/SCBlues"
+                    "name": "BCBSSC",
+                    "url": "https://ourhrconnect.wd501.myworkdayjobs.com/SCBlues",
+                    "atsType": "workday"
                 },
                 {
-                    "name": "Centene Careers",
-                    "url": "https://centene.wd5.myworkdayjobs.com/en-US/Centene_External/userHome"
+                    "name": "Centene",
+                    "url": "https://centene.wd5.myworkdayjobs.com/en-US/Centene_External/userHome",
+                    "atsType": "workday"
                 },
                 {
-                    "name": "Cast & Crew Careers",
-                    "url": "https://castandcrew.wd5.myworkdayjobs.com/en-US/CastandCrew/userHome"
+                    "name": "Cast & Crew",
+                    "url": "https://castandcrew.wd5.myworkdayjobs.com/en-US/CastandCrew/userHome",
+                    "atsType": "workday"
                 },
                 {
-                    "name": "S&P Global Careers",
-                    "url": "https://spgi.wd5.myworkdayjobs.com/en-US/SPGI_Careers/userHome"
+                    "name": "S&P Global",
+                    "url": "https://spgi.wd5.myworkdayjobs.com/en-US/SPGI_Careers/userHome",
+                    "atsType": "workday"
                 },
                 {
-                    "name": "Cengage Group Careers",
-                    "url": "https://cengage.wd5.myworkdayjobs.com/en-US/CengageNorthAmericaCareers/userHome"
+                    "name": "Cengage Group",
+                    "url": "https://cengage.wd5.myworkdayjobs.com/en-US/CengageNorthAmericaCareers/userHome",
+                    "atsType": "workday"
                 },
                 {
                     "name": "Greenhouse Job Boards",
-                    "url": "https://my.greenhouse.io"
+                    "url": "https://my.greenhouse.io",
+                    "atsType": "greenhouse"
                 }
             ]
         },

@@ -3,5 +3,7 @@
     "editor.formatOnSave": true,
     "files.associations": {
         "*.css": "tailwindcss"
-    }
+    },
+    "javascript.format.semicolons": "insert",
+    "typescript.format.semicolons": "insert"
 }
