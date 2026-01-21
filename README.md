@@ -9,6 +9,38 @@ A simple daily job hunting tracker to help you stay consistent with checking job
 - 🔄 Automatically resets daily
 - 🎯 Organized by categories
 - 💾 Persists progress in localStorage
+- 🏢 **ATS Detection** - Automatically identifies Applicant Tracking Systems (Workday, Greenhouse, Lever, BambooHR)
+
+## ATS Detection
+
+Job Hunt Daily automatically detects which Applicant Tracking System (ATS) each job site uses and displays a color-coded badge:
+
+- 🔵 **Workday (WD)** - Blue badge
+- 🟢 **Greenhouse (GH)** - Green badge  
+- 🟣 **Lever (LV)** - Purple badge
+- 🟠 **BambooHR (BH)** - Orange badge
+
+### Supported ATS Platforms
+
+The app automatically detects ATS from URL patterns:
+- **Workday**: `myworkdayjobs.com`, `wd1.`, `wd5.`, `wd501.`
+- **Greenhouse**: `greenhouse.io`
+- **Lever**: `lever.co`
+- **BambooHR**: `bamboohr.com`
+
+### Manual Override
+
+If auto-detection doesn't work or you want to explicitly tag a site, add the `atsType` field to your job site in `job-hunt-daily.json`:
+
+```json
+{
+  "name": "Company Name",
+  "url": "https://company.com/careers",
+  "atsType": "workday"
+}
+```
+
+Hover over any ATS badge to see the full ATS name in a tooltip.
 
 ## Setup
 
