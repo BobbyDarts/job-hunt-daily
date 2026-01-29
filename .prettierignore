@@ -1,0 +1,8 @@
+coverage
+dist
+node_modules
+notes
+src/components/ui
+*.md
+*.min.js
+package-lock.json

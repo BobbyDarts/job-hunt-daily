@@ -1,9 +1,56 @@
 {
-    "files.eol": "\n",
-    "editor.formatOnSave": true,
-    "files.associations": {
-        "*.css": "tailwindcss"
-    },
-    "javascript.format.semicolons": "insert",
-    "typescript.format.semicolons": "insert"
+  "files.eol": "\n",
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": ["javascript", "typescript", "vue"],
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ],
+  "cSpell.useGitignore": true,
+  "cSpell.ignorePaths": [
+    ".gitignore",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    ".vscode/**",
+    "src/components/ui/**",
+    "src/style.css"
+  ],
+  "cSpell.words": [
+    "bamboohr",
+    "BCBSNC",
+    "BCBSSC",
+    "Blackbaud",
+    "Cengage",
+    "checkmark",
+    "Computeds",
+    "Dataman",
+    "Excelraise",
+    "Glassdoor",
+    "myworkdayjobs",
+    "noopener",
+    "noreferrer",
+    "nums",
+    "reka",
+    "Systemtec",
+    "vaul",
+    "vueuse",
+    "Wellfound"
+  ]
 }

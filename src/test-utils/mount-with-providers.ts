@@ -1,32 +1,34 @@
-// src/test-utils/mount-with-providers.ts
-import { h, defineComponent, Component } from 'vue';
-import { mount, MountingOptions } from '@vue/test-utils';
+import type { MountingOptions } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
+import type { Component } from "vue";
+import { defineComponent, h } from "vue";
 
 interface MountWithProvidersOptions {
-    props?: Record<string, any>;
-    slots?: Record<string, any>;
-    providers?: Component[]; // optional array of providers
-    mountOptions?: MountingOptions<any>; // any extra options to pass to mount
+  props?: Record<string, unknown>;
+  slots?: Record<string, unknown>;
+  providers?: Component[]; // optional array of providers
+  mountOptions?: MountingOptions<unknown>; // any extra options to pass to mount
 }
 
 export function mountWithProviders<T extends Component>(
-    component: T,
-    options: MountWithProvidersOptions = {}
+  component: T,
+  options: MountWithProvidersOptions = {},
 ) {
-    const { props, slots, providers = [], mountOptions } = options;
+  const { props, slots, providers = [], mountOptions } = options;
 
-    return mount(
-        defineComponent({
-            render() {
-                // recursively wrap component with providers
-                const content = providers.reduceRight(
-                    (child, provider) => h(provider, {}, { default: () => child }),
-                    h(component, props || {}, slots || {})
-                );
+  return mount(
+    defineComponent({
+      render() {
+        // recursively wrap component with providers
+        const content = providers.reduceRight(
+          (child, provider) => h(provider, {}, { default: () => child }),
+          h(component, props || {}, slots || {}),
+        );
 
-                return content;
-            },
-        }),
-        mountOptions as any
-    );
+        return content;
+      },
+    }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mountOptions as any,
+  );
 }

@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "strict": true,
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.js",
+    "src/**/*.cjs",
+    "src/**/*.mjs",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.js",
+    "src/**/*.spec.js",
+    "src/composables/**/*.ts",
+    "src/composables/**/*.js"
+  ]
+}

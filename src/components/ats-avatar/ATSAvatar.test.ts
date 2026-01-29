@@ -1,62 +1,64 @@
-import { describe, it, expect } from 'vitest';
-import { ATSAvatar } from '.';
-import type { ATSInfo } from '@/lib/ats-detection';
-import type { JobSite } from '@/types';
-import { mountWithProviders } from '@/test-utils/mount-with-providers';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { describe, expect, it } from "vitest";
+
+import { TooltipProvider } from "@/components/ui/tooltip";
+import type { ATSInfo } from "@/lib/ats-detection";
+import { mountWithProviders } from "@/test-utils/mount-with-providers";
+import type { JobSite } from "@/types";
+
+import { ATSAvatar } from ".";
 
 const mockSite: JobSite = {
-    name: 'Example Site',
-    url: 'https://example.com',
+  name: "Example Site",
+  url: "https://example.com",
 };
 
 const mockATSInfo: ATSInfo = {
-    type: 'greenhouse',
-    initials: 'GH',
-    classes: 'bg-green-500 text-white',
-    patterns: ['greenhouse.io'],
+  type: "greenhouse",
+  initials: "GH",
+  classes: "bg-green-500 text-white",
+  patterns: ["greenhouse.io"],
 };
 
 // default mounting options
 const defaultProps = {
-    providers: [TooltipProvider],
+  providers: [TooltipProvider],
 };
 
-describe('ATSAvatar', () => {
-    it('does not render when atsInfo is not provided', () => {
-        const wrapper = mountWithProviders(ATSAvatar, {
-            ...defaultProps,
-            props: { site: mockSite },
-        });
-
-        expect(wrapper.find('[data-testid="ats-badge"]').exists()).toBe(false);
+describe("ATSAvatar", () => {
+  it("does not render when atsInfo is not provided", () => {
+    const wrapper = mountWithProviders(ATSAvatar, {
+      ...defaultProps,
+      props: { site: mockSite },
     });
 
-    it('renders ATS badge when atsInfo is provided', () => {
-        const wrapper = mountWithProviders(ATSAvatar, {
-            ...defaultProps,
-            props: { site: mockSite, atsInfo: mockATSInfo },
-        });
+    expect(wrapper.find('[data-testid="ats-badge"]').exists()).toBe(false);
+  });
 
-        expect(wrapper.find('[data-testid="ats-badge"]').exists()).toBe(true);
+  it("renders ATS badge when atsInfo is provided", () => {
+    const wrapper = mountWithProviders(ATSAvatar, {
+      ...defaultProps,
+      props: { site: mockSite, atsInfo: mockATSInfo },
     });
 
-    it('displays the correct ATS initials', () => {
-        const wrapper = mountWithProviders(ATSAvatar, {
-            ...defaultProps,
-            props: { site: mockSite, atsInfo: mockATSInfo },
-        });
+    expect(wrapper.find('[data-testid="ats-badge"]').exists()).toBe(true);
+  });
 
-        expect(wrapper.text()).toContain('GH');
+  it("displays the correct ATS initials", () => {
+    const wrapper = mountWithProviders(ATSAvatar, {
+      ...defaultProps,
+      props: { site: mockSite, atsInfo: mockATSInfo },
     });
 
-    it('applies visited variant styling', () => {
-        const wrapper = mountWithProviders(ATSAvatar, {
-            ...defaultProps,
-            props: { site: mockSite, atsInfo: mockATSInfo, variant: 'visited' },
-        });
+    expect(wrapper.text()).toContain("GH");
+  });
 
-        const avatar = wrapper.find('[data-testid="ats-badge"]');
-        expect(avatar.classes()).toContain('opacity-70');
+  it("applies visited variant styling", () => {
+    const wrapper = mountWithProviders(ATSAvatar, {
+      ...defaultProps,
+      props: { site: mockSite, atsInfo: mockATSInfo, variant: "visited" },
     });
+
+    const avatar = wrapper.find('[data-testid="ats-badge"]');
+    expect(avatar.classes()).toContain("opacity-70");
+  });
 });
