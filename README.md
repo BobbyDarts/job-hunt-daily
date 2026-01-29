@@ -95,7 +95,47 @@ Edit `src/data/job-hunt-daily.json` to customize your job sites:
 - Vite
 - Tailwind CSS
 - shadcn-vue
-- Vitest
+
+## Development
+
+### Code Quality Tools
+
+The project uses ESLint and Prettier to maintain code quality and consistency:
+
+- **ESLint**: Configured with Vue, TypeScript, and import sorting rules
+- **Prettier**: Handles code formatting with consistent style
+- **Auto-format on save**: Enabled by default in VSCode
+
+### Recommended VSCode Extensions
+
+The project includes workspace recommendations for VSCode extensions:
+
+- **ESLint** - Real-time linting
+- **Prettier** - Code formatting
+- **Vue - Official (Volar)** - Vue language support
+- **Tailwind CSS IntelliSense** - Tailwind class autocomplete
+- **Error Lens** - Inline error display
+- **Code Spell Checker** - Catch typos
+
+When you open the project in VSCode, you'll be prompted to install these extensions.
+
+### Linting & Formatting
+
+```bash
+# Lint code
+npm run lint
+
+# Lint and auto-fix issues
+npm run lint:fix
+
+# Format code with Prettier
+npm run format
+
+# Check formatting without changing files
+npm run format:check
+```
+
+The project is configured to automatically format and fix linting issues on save when using VSCode.
 
 ## How It Works
 

@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { JobSite } from '@/types';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
-} from '@/components/ui/tooltip';
-import { ATSInfo } from '@/lib/ats-detection';
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { ATSInfo } from "@/lib/ats-detection";
+import type { JobSite } from "@/types";
+import { computed } from "vue";
 
-type Variant = 'default' | 'visited';
+type Variant = "default" | "visited";
 
 interface Props {
   site: JobSite;
@@ -18,12 +18,13 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  variant: 'default'
+  variant: "default",
+  atsInfo: undefined,
 });
 
 const avatarClasses = computed(() => {
-  const base = 'size-6 cursor-help';
-  return props.variant === 'visited' ? `${base} opacity-70` : base;
+  const base = "size-6 cursor-help";
+  return props.variant === "visited" ? `${base} opacity-70` : base;
 });
 </script>
 
@@ -39,7 +40,8 @@ const avatarClasses = computed(() => {
 
     <TooltipContent side="top">
       <span class="text-sm">
-        Applicant Tracking System: <strong class="capitalize">{{ atsInfo.type }}</strong>
+        Applicant Tracking System:
+        <strong class="capitalize">{{ atsInfo.type }}</strong>
       </span>
     </TooltipContent>
   </Tooltip>
