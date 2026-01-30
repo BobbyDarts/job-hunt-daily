@@ -197,9 +197,6 @@ export default tseslint.config(
   // -------------------------
   {
     files: ["**/*.{test,spec}.{ts,js}"],
-    plugins: {
-      vitest: vitestPlugin,
-    },
     ...vitestPlugin.configs.recommended,
     languageOptions: {
       globals: {
@@ -239,7 +236,7 @@ export default tseslint.config(
       },
     },
     plugins: {
-      import: importPlugin, // <-- Add this
+      import: importPlugin,
     },
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",
