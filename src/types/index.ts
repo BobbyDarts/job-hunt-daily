@@ -3,6 +3,7 @@ export type ATSType =
   | "greenhouse"
   | "lever"
   | "bamboohr"
+  | "polymer"
   | "custom";
 
 export interface JobSite {

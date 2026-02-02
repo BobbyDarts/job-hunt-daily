@@ -1,5 +1,3 @@
-import { reactive } from "vue";
-
 import type { ATSInfo } from "@/lib/ats-detection";
 import { getATSInfo, getATSType } from "@/lib/ats-detection";
 import type { JobHuntData, JobSite } from "@/types";
@@ -11,7 +9,7 @@ import type { JobHuntData, JobSite } from "@/types";
  */
 export function useATSDetection(data: JobHuntData) {
   // Precompute map URL -> ATSInfo | undefined
-  const atsMap = reactive(new Map<string, ATSInfo | undefined>());
+  const atsMap = new Map<string, ATSInfo | undefined>();
 
   data.categories.forEach(category => {
     category.sites.forEach(site => {
@@ -27,7 +25,7 @@ export function useATSDetection(data: JobHuntData) {
 
   /** Boolean helper: is this site backed by an ATS? */
   const isATS = (site: JobSite): boolean => {
-    return atsMap.has(site.url) && !!atsMap.get(site.url);
+    return !!atsMap.get(site.url);
   };
 
   return { getATS, isATS, atsMap };
