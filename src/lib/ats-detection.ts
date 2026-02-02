@@ -37,6 +37,13 @@ export const ATS_TABLE: ATSInfo[] = [
       "border-orange-500 text-orange-700 bg-orange-50 dark:bg-orange-950/30 dark:text-orange-300",
   },
   {
+    type: "polymer",
+    patterns: ["jobs.polymer.co"],
+    initials: "PL",
+    classes:
+      "border-cyan-500 text-cyan-700 bg-cyan-50 dark:bg-cyan-950/30 dark:text-cyan-300",
+  },
+  {
     type: "custom",
     patterns: [],
     initials: "CT",

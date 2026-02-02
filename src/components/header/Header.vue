@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Progress } from "@/components/ui/progress";
+import { useTitle, useTransition } from "@vueuse/core";
+import { watchEffect } from "vue";
 
 interface Props {
   title: string;
@@ -10,6 +12,21 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// Update browser tab title with progress
+const pageTitle = useTitle();
+
+watchEffect(() => {
+  if (props.isComplete) {
+    pageTitle.value = `✅ ${props.title}`;
+  } else {
+    pageTitle.value = `(${props.progress}%) ${props.title}`;
+  }
+});
+
+const animatedProgress = useTransition(() => props.progress, {
+  duration: 400,
+});
 </script>
 
 <template>
@@ -46,7 +63,7 @@ const props = defineProps<Props>();
           v-if="props.progress < 100"
           class="text-sm font-semibold min-w-12 text-right"
         >
-          {{ props.progress }}%
+          {{ Math.round(animatedProgress) }}%
         </span>
       </div>
     </div>

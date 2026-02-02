@@ -2,69 +2,98 @@
   "categories": [
     {
       "name": "General Job Boards",
+      "description": "High-volume, broad-market job aggregators. Good for market scanning and keyword alerts.",
       "sites": [
         {
           "name": "LinkedIn",
-          "url": "https://www.linkedin.com/jobs/"
+          "url": "https://www.linkedin.com/jobs/",
+          "notes": "Strong networking signal; recruiter visibility matters as much as applications."
         },
         {
           "name": "Indeed",
-          "url": "https://www.indeed.com/"
+          "url": "https://www.indeed.com/",
+          "notes": "Largest aggregator; many reposts from ATS systems."
         },
         {
           "name": "Glassdoor",
-          "url": "https://www.glassdoor.com/Job/jobs.htm"
+          "url": "https://www.glassdoor.com/Job/jobs.htm",
+          "notes": "Useful when combined with company reviews and salary data."
+        },
+        {
+          "name": "ZipRecruiter",
+          "url": "https://www.ziprecruiter.com/",
+          "notes": "Good alerting, recruiter-driven outreach."
         }
       ]
     },
+
     {
       "name": "Tech & Startup Boards",
+      "description": "Product, engineering, and startup-focused roles.",
       "sites": [
         {
           "name": "Wellfound (AngelList Talent)",
-          "url": "https://wellfound.com/jobs"
+          "url": "https://wellfound.com/jobs",
+          "notes": "Startups, equity-heavy comp, early to mid-stage companies."
         },
         {
           "name": "Stack Overflow Jobs",
-          "url": "https://stackoverflow.com/jobs"
+          "url": "https://stackoverflow.com/jobs",
+          "notes": "Developer-centric roles; fewer but higher-signal listings."
         },
         {
           "name": "Dice",
-          "url": "https://www.dice.com"
+          "url": "https://www.dice.com",
+          "notes": "Strong for contract, enterprise tech, and legacy stacks."
         },
         {
           "name": "Built In",
-          "url": "https://builtin.com/jobs"
+          "url": "https://builtin.com/jobs",
+          "notes": "Tech companies by metro and remote."
         },
         {
           "name": "Hacker News – Who Is Hiring",
-          "url": "https://news.ycombinator.com/submitted?id=whoishiring"
+          "url": "https://news.ycombinator.com/submitted?id=whoishiring",
+          "notes": "Monthly thread; informal but very high quality."
         },
         {
           "name": "Levels.fyi Jobs",
-          "url": "https://www.levels.fyi/jobs"
+          "url": "https://www.levels.fyi/jobs",
+          "notes": "Comp-transparent listings; mostly mid-to-senior roles."
         }
       ]
     },
+
     {
       "name": "Remote-Focused Boards",
+      "description": "Remote-first and location-flexible roles.",
       "sites": [
         {
           "name": "Remote OK",
-          "url": "https://remoteok.com"
+          "url": "https://remoteok.com",
+          "notes": "Startup-heavy, global listings."
         },
         {
           "name": "We Work Remotely",
-          "url": "https://weworkremotely.com"
+          "url": "https://weworkremotely.com",
+          "notes": "High-quality remote-only postings."
         },
         {
           "name": "FlexJobs",
-          "url": "https://www.flexjobs.com"
+          "url": "https://www.flexjobs.com",
+          "notes": "Curated and vetted; paid access."
+        },
+        {
+          "name": "Remote.co",
+          "url": "https://remote.co/remote-jobs/",
+          "notes": "Smaller but cleaner listings."
         }
       ]
     },
+
     {
       "name": "Company Career Pages",
+      "description": "Direct employer applications; lowest duplication and highest ATS fidelity.",
       "sites": [
         {
           "name": "Unum",
@@ -124,12 +153,33 @@
         {
           "name": "Greenhouse Job Boards",
           "url": "https://my.greenhouse.io",
-          "atsType": "greenhouse"
+          "atsType": "greenhouse",
+          "notes": "Common ATS for tech and growth-stage companies."
+        },
+        {
+          "name": "Classroom Mosaic Jobs",
+          "url": "https://jobs.classroommosaic.com/",
+          "atsType": "polymer",
+          "notes": "Direct career listings for roles at Classroom Mosaic (e.g., engineering, client success) powered by Polymer ATS."
+        },
+        {
+          "name": "Southeastern Freight Lines",
+          "url": "https://www.seflcareers.com/#/",
+          "atsType": "custom",
+          "notes": "Official job portal for Southeastern Freight Lines, listing roles from driver to operations and administrative positions."
+        },
+        {
+          "name": "Softdocs",
+          "url": "https://softdocs.com/careers",
+          "atsType": "custom",
+          "notes": "Official Softdocs job board listing open positions at the company."
         }
       ]
     },
+
     {
       "name": "Staffing & Recruiting Firms",
+      "description": "Contract, contract-to-hire, and recruiter-led placements.",
       "sites": [
         {
           "name": "Systemtec",
@@ -142,6 +192,74 @@
         {
           "name": "Dataman",
           "url": "https://www.datamanusa.com/jobs.aspx"
+        },
+        {
+          "name": "Robert Half",
+          "url": "https://www.roberthalf.com/jobs"
+        },
+        {
+          "name": "TEKsystems",
+          "url": "https://www.teksystems.com/en/careers"
+        },
+        {
+          "name": "Find Great People (FGP)",
+          "url": "https://www.fgp.com/careers/",
+          "atsType": "custom",
+          "notes": "Recruiting firm job search portal with listings across contract, direct hire, and staffing roles."
+        }
+      ]
+    },
+
+    {
+      "name": "Government & Public Sector",
+      "description": "Federal, state, and local government roles.",
+      "sites": [
+        {
+          "name": "USAJobs",
+          "url": "https://www.usajobs.gov/"
+        },
+        {
+          "name": "GovernmentJobs",
+          "url": "https://www.governmentjobs.com/"
+        },
+        {
+          "name": "South Carolina State Careers",
+          "url": "https://careers.sc.gov/",
+          "notes": "Official statewide job portal for South Carolina government employment."
+        }
+      ]
+    },
+
+    {
+      "name": "Nonprofit & Mission-Driven",
+      "description": "Education, nonprofit, and social impact organizations.",
+      "sites": [
+        {
+          "name": "Idealist",
+          "url": "https://www.idealist.org/en/jobs"
+        },
+        {
+          "name": "TechJobs for Good",
+          "url": "https://techjobsforgood.com/"
+        }
+      ]
+    },
+
+    {
+      "name": "Freelance & Contract Marketplaces",
+      "description": "Independent, short-term, or project-based work.",
+      "sites": [
+        {
+          "name": "Upwork",
+          "url": "https://www.upwork.com/"
+        },
+        {
+          "name": "Toptal",
+          "url": "https://www.toptal.com/talent/apply"
+        },
+        {
+          "name": "Gun.io",
+          "url": "https://www.gun.io/"
         }
       ]
     }

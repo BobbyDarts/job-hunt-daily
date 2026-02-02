@@ -1,48 +1,87 @@
+import { useLocalStorage, watchDebounced, useWindowFocus } from "@vueuse/core";
 import type { Ref } from "vue";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
 import type { VisitedSites } from "@/types";
 
 export function useVisitedSites(storageKey: string, totalSites: Ref<number>) {
-  const visitedSites = ref<Set<string>>(new Set());
-  const lastVisitDate = ref("");
+  const getTodayDate = () => new Date().toISOString().split("T")[0];
+
+  const storedData = useLocalStorage<VisitedSites>(storageKey, {
+    date: getTodayDate(),
+    visited: [],
+  });
+
+  const focused = useWindowFocus();
+
+  const visitedSites = computed({
+    get: () => new Set(storedData.value.visited),
+    set: (newSet: Set<string>) => {
+      storedData.value = {
+        date: getTodayDate(),
+        visited: Array.from(newSet),
+      };
+    },
+  });
 
   const visitedCount = computed(() => visitedSites.value.size);
   const isComplete = computed(() => visitedCount.value === totalSites.value);
 
-  const getTodayDate = () => new Date().toISOString().split("T")[0];
+  const needsReset = computed(() => {
+    const today = getTodayDate();
+    return storedData.value.date !== today;
+  });
 
-  const loadVisitedSites = () => {
-    const stored = localStorage.getItem(storageKey);
-    if (stored) {
-      const parsed: VisitedSites = JSON.parse(stored);
-      const today = getTodayDate();
-      if (parsed.date === today) visitedSites.value = new Set(parsed.visited);
-      else visitedSites.value.clear();
-      lastVisitDate.value = today;
-    }
-  };
-
-  const saveVisitedSites = () => {
-    const toSave: VisitedSites = {
+  const resetData = () => {
+    storedData.value = {
       date: getTodayDate(),
-      visited: Array.from(visitedSites.value),
+      visited: [],
     };
-    localStorage.setItem(storageKey, JSON.stringify(toSave));
   };
+
+  // Check immediately on initialization
+  if (needsReset.value) {
+    resetData();
+  }
+
+  // Auto-reset when day changes
+  watchDebounced(
+    needsReset,
+    shouldReset => {
+      if (shouldReset) {
+        resetData();
+      }
+    },
+    { debounce: 500 },
+  );
+
+  // Also check when window regains focus (catches overnight tabs)
+  watchDebounced(
+    focused,
+    isFocused => {
+      if (isFocused && needsReset.value) {
+        resetData();
+      }
+    },
+    { debounce: 300 },
+  );
 
   const markVisited = (url: string) => {
-    visitedSites.value.add(url);
-    saveVisitedSites();
+    const newSet = new Set(storedData.value.visited);
+    newSet.add(url);
+    storedData.value = {
+      date: getTodayDate(),
+      visited: Array.from(newSet),
+    };
   };
 
-  loadVisitedSites();
+  const isSiteVisited = (url: string) => visitedSites.value.has(url);
 
   return {
     visitedSites,
     visitedCount,
     isComplete,
     markVisited,
-    isSiteVisited: (url: string) => visitedSites.value.has(url),
+    isSiteVisited,
   };
 }
