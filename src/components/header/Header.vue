@@ -66,6 +66,10 @@ const animatedProgress = useTransition(() => props.progress, {
           {{ Math.round(animatedProgress) }}%
         </span>
       </div>
+
+      <div class="flex justify-start">
+        <slot name="alert" />
+      </div>
     </div>
   </header>
 </template>

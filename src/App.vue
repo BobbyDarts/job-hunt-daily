@@ -13,6 +13,7 @@ import type { JobHuntData } from "./types";
 import { useColorMode, useOnline } from "@vueuse/core";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun, WifiOff } from "lucide-vue-next";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const STORAGE_KEY = "job-hunt-visited";
 const data = jobData as JobHuntData;
@@ -96,17 +97,17 @@ defineExpose({
             <Moon v-else class="size-5" />
           </Button>
         </template>
-      </Header>
 
-      <!-- Offline warning -->
-      <Alert v-if="!isOnline" variant="destructive" class="mx-4 mt-4">
-        <div class="flex items-center justify-center gap-2">
-          <WifiOff class="size-4" />
-          <AlertDescription class="mb-0">
-            You're offline. Job sites may not load properly.
-          </AlertDescription>
-        </div>
-      </Alert>
+        <!-- Offline warning -->
+        <template #alert>
+          <Alert v-if="isOnline" variant="destructive">
+            <WifiOff class="size-4" />
+            <AlertDescription class="mb-0 whitespace-nowrap">
+              You're offline. Job sites may not load properly.
+            </AlertDescription>
+          </Alert>
+        </template>
+      </Header>
 
       <!-- Scrollable Content with ScrollArea -->
       <ScrollArea class="flex-1 h-full">
