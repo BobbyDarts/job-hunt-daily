@@ -100,7 +100,7 @@ defineExpose({
 
         <!-- Offline warning -->
         <template #alert>
-          <Alert v-if="isOnline" variant="destructive">
+          <Alert v-if="!isOnline" variant="destructive">
             <WifiOff class="size-4" />
             <AlertDescription class="mb-0 whitespace-nowrap">
               You're offline. Job sites may not load properly.
