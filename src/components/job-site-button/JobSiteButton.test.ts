@@ -1,81 +1,71 @@
+// /src/components/job-site-button/JobSiteButton.test.ts
+
+import { screen } from "@testing-library/vue";
 import { describe, expect, it, vi } from "vitest";
 
-import { ATSAvatar } from "@/components/ats-avatar";
+import { JobSiteButton } from "@/components/job-site-button";
+import type { Props as JobSiteButtonProps } from "@/components/job-site-button";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import type { ATSInfo } from "@/lib/ats-detection";
-import { mountWithProviders } from "@/test-utils/mount-with-providers";
+import { mockATSInfo, mockSite } from "@/test-utils/mocks";
+import { getButtonByName } from "@/test-utils/queries";
+import { renderBaseWithProviders } from "@/test-utils/render-base";
 
-import { JobSiteButton } from ".";
-
-const mockSite = { name: "Test Site", url: "https://test.com" };
-const mockATSInfo: ATSInfo = {
-  type: "greenhouse", // must match ATSType
-  initials: "GH",
-  classes: "bg-green-500 text-white",
-  patterns: ["greenhouse.com"],
+const DEFAULT_PROPS: JobSiteButtonProps = {
+  site: mockSite,
+  variant: "default",
+  layout: "standalone",
+  atsInfo: undefined,
+  onClick: vi.fn(),
 };
 
-// Default props to keep tests DRY
-const defaultProps = {
-  props: {
-    site: mockSite,
-    onClick: () => {},
-  },
-  providers: [TooltipProvider],
-};
+function renderJobSiteButton(
+  overrides: Partial<JobSiteButtonProps> = {},
+  options: { slots?: Record<string, unknown> } = {},
+) {
+  return renderBaseWithProviders(JobSiteButton, DEFAULT_PROPS, overrides, {
+    providers: [TooltipProvider],
+    ...options,
+  });
+}
 
 describe("JobSiteButton", () => {
   it("renders site name", () => {
-    const wrapper = mountWithProviders(JobSiteButton, defaultProps);
-    expect(wrapper.text()).toContain("Test Site");
+    renderJobSiteButton();
+    expect(screen.getByText("Greenhouse Company")).toBeInTheDocument();
   });
 
   it("calls onClick when clicked", async () => {
-    const clickSpy = vi.fn();
-    const wrapper = mountWithProviders(JobSiteButton, {
-      ...defaultProps,
-      props: { ...defaultProps.props, onClick: clickSpy },
-    });
+    const onClick = vi.fn();
 
-    await wrapper.find("button").trigger("click");
-    expect(clickSpy).toHaveBeenCalledWith(mockSite.url);
+    renderJobSiteButton({ onClick });
+
+    const button = getButtonByName("Greenhouse Company");
+
+    (await button).click(); // fire the click
+
+    expect(onClick).toHaveBeenCalledWith(mockSite.url);
   });
 
   it("renders ATSAvatar when atsInfo is provided", () => {
-    const wrapper = mountWithProviders(JobSiteButton, {
-      ...defaultProps,
-      props: { ...defaultProps.props, atsInfo: mockATSInfo },
-    });
-
-    const avatar = wrapper.findComponent(ATSAvatar);
-    expect(avatar.exists()).toBe(true);
-    expect(avatar.props("atsInfo")).toEqual(mockATSInfo);
+    renderJobSiteButton({ atsInfo: mockATSInfo });
+    expect(screen.getByTestId("ats-badge")).toBeInTheDocument();
   });
 
   it("does not render ATSAvatar when atsInfo is not provided", () => {
-    const wrapper = mountWithProviders(JobSiteButton, defaultProps);
+    renderJobSiteButton();
 
-    const avatar = wrapper.findComponent(ATSAvatar);
-    expect(avatar.exists()).toBe(false);
+    expect(screen.queryByTestId("ats-badge")).toBeNull();
   });
 
   it('applies visited variant styles when variant="visited"', () => {
-    const wrapper = mountWithProviders(JobSiteButton, {
-      ...defaultProps,
-      props: { ...defaultProps.props, variant: "visited" },
-    });
+    renderJobSiteButton({ variant: "visited" });
 
-    const button = wrapper.find("button");
-    expect(button.classes()).toContain("opacity-75");
+    expect(screen.getByRole("button")).toHaveClass("opacity-75");
   });
 
   it('shows checkmark when variant="visited"', () => {
-    const wrapper = mountWithProviders(JobSiteButton, {
-      ...defaultProps,
-      props: { ...defaultProps.props, variant: "visited" },
-    });
+    renderJobSiteButton({ variant: "visited" });
 
-    const button = wrapper.find("button");
-    expect(button.text()).toContain("✓");
+    expect(screen.getByRole("button")).toHaveTextContent("✓");
   });
 });

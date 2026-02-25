@@ -1,4 +1,8 @@
+// /src/components/ats-avatar/ATSAvatar.vue
+
 <script setup lang="ts">
+import { computed } from "vue";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tooltip,
@@ -7,19 +11,18 @@ import {
 } from "@/components/ui/tooltip";
 import type { ATSInfo } from "@/lib/ats-detection";
 import type { JobSite } from "@/types";
-import { computed } from "vue";
 
 type Variant = "default" | "visited";
 
-interface Props {
+export interface Props {
   site: JobSite;
   atsInfo?: ATSInfo;
   variant?: Variant;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  variant: "default",
   atsInfo: undefined,
+  variant: "default",
 });
 
 const avatarClasses = computed(() => {

@@ -1,27 +1,29 @@
-export type ATSType =
-  | "workday"
-  | "greenhouse"
-  | "lever"
-  | "bamboohr"
-  | "polymer"
-  | "custom";
+// /src/types/index.ts
 
-export interface JobSite {
-  name: string;
-  url: string;
-  atsType?: ATSType;
-}
+// ATS types
+export type { ATSType } from "./ats";
 
-export interface JobCategory {
-  name: string;
-  sites: JobSite[];
-}
+// Job site types
+export type { JobSite, JobCategory, JobHuntData } from "./job-sites";
 
-export interface JobHuntData {
-  categories: JobCategory[];
-}
+// Application types
+export type {
+  ApplicationStatus,
+  ApplicationStatusInfo,
+  ApplicationTag,
+  ApplicationTagCategory,
+  ApplicationTagInfo,
+  Application,
+  ApplicationHistory,
+} from "./applications";
 
-export interface VisitedSites {
-  date: string;
-  visited: string[]; // array of site URLs
-}
+export {
+  getStatusInfo,
+  getStatuses,
+  getTagInfo,
+  getTags,
+  getTagsGroupedByCategory,
+} from "./applications";
+
+// Storage types
+export type { VisitedSites } from "./storage";

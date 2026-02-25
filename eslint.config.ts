@@ -21,6 +21,7 @@ export default tseslint.config(
     files: ["**/*.vue"],
     plugins: {
       vue: pluginVue,
+      import: importPlugin,
     },
     languageOptions: {
       parser: vueParser, // ⚠ Must be vue-eslint-parser
@@ -31,6 +32,13 @@ export default tseslint.config(
       },
       globals: {
         ...globals.browser,
+      },
+    },
+    settings: {
+      "import/resolver": {
+        typescript: {
+          project: "./tsconfig.eslint.json",
+        },
       },
     },
     rules: {
@@ -78,6 +86,30 @@ export default tseslint.config(
       // Requires macro variables to follow conventional naming.
       // e.g., props = defineProps(), emit = defineEmits()
       "vue/require-macro-variable-name": "error",
+
+      // Import plugin rules
+      "import/order": [
+        "warn",
+        {
+          groups: [
+            ["builtin", "external"],
+            "internal",
+            ["parent", "sibling", "index"],
+          ],
+          pathGroups: [
+            {
+              pattern: "@/**",
+              group: "internal",
+            },
+          ],
+          pathGroupsExcludedImportTypes: ["builtin"],
+          "newlines-between": "always",
+          alphabetize: { order: "asc", caseInsensitive: true },
+        },
+      ],
+      "import/no-unresolved": "error",
+      "import/no-duplicates": "error",
+      "import/no-extraneous-dependencies": ["error", { devDependencies: true }],
     },
   },
 
@@ -169,6 +201,16 @@ export default tseslint.config(
       "import/no-unresolved": "error",
       "import/no-duplicates": "error",
       "import/no-extraneous-dependencies": ["error", { devDependencies: true }],
+
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          vars: "all",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
     },
   },
 
@@ -223,6 +265,12 @@ export default tseslint.config(
           varsIgnorePattern: "^_",
         },
       ],
+      "import/no-extraneous-dependencies": [
+        "error",
+        {
+          devDependencies: true, // Allow devDependencies in test files
+        },
+      ],
     },
   },
 
@@ -261,6 +309,13 @@ export default tseslint.config(
           alphabetize: { order: "asc", caseInsensitive: true },
         },
       ],
+    },
+  },
+
+  {
+    files: ["src/router/**/*.ts", "src/main.ts"],
+    rules: {
+      "import/no-extraneous-dependencies": "off",
     },
   },
 
