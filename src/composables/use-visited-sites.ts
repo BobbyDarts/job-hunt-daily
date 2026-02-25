@@ -1,16 +1,35 @@
+// /src/composables/use-visited-sites.ts
+
 import { useLocalStorage, watchDebounced, useWindowFocus } from "@vueuse/core";
 import type { Ref } from "vue";
 import { computed } from "vue";
 
+import { isSameDayIso, todayIso } from "@/lib/time";
 import type { VisitedSites } from "@/types";
 
-export function useVisitedSites(storageKey: string, totalSites: Ref<number>) {
-  const getTodayDate = () => new Date().toISOString().split("T")[0];
+import { VISITED_SITES_STORAGE_KEY } from "./keys";
 
-  const storedData = useLocalStorage<VisitedSites>(storageKey, {
-    date: getTodayDate(),
-    visited: [],
-  });
+type UseVisitedSitesParams = {
+  storageKey?: string;
+  totalSites: Ref<number>;
+  skipInitReset?: boolean;
+};
+
+export function useVisitedSites(params: UseVisitedSitesParams) {
+  const {
+    storageKey = VISITED_SITES_STORAGE_KEY,
+    totalSites,
+    skipInitReset = false,
+  } = params;
+
+  const storedData = useLocalStorage<VisitedSites>(
+    storageKey,
+    {
+      date: todayIso(),
+      visited: [],
+    },
+    { flush: "sync" },
+  );
 
   const focused = useWindowFocus();
 
@@ -18,64 +37,84 @@ export function useVisitedSites(storageKey: string, totalSites: Ref<number>) {
     get: () => new Set(storedData.value.visited),
     set: (newSet: Set<string>) => {
       storedData.value = {
-        date: getTodayDate(),
+        ...storedData.value,
         visited: Array.from(newSet),
       };
     },
   });
 
   const visitedCount = computed(() => visitedSites.value.size);
-  const isComplete = computed(() => visitedCount.value === totalSites.value);
+  const isComplete = computed(
+    () => totalSites.value > 0 && visitedCount.value === totalSites.value,
+  );
 
-  const needsReset = computed(() => {
-    const today = getTodayDate();
-    return storedData.value.date !== today;
-  });
+  const needsReset = computed(() => !isSameDayIso(storedData.value.date));
 
   const resetData = () => {
     storedData.value = {
-      date: getTodayDate(),
+      date: todayIso(),
       visited: [],
     };
   };
 
-  // Check immediately on initialization
-  if (needsReset.value) {
+  // **Optional immediate reset on init**
+  if (!skipInitReset && needsReset.value) {
     resetData();
   }
 
   // Auto-reset when day changes
-  watchDebounced(
+  const unwatchReset = watchDebounced(
     needsReset,
     shouldReset => {
-      if (shouldReset) {
-        resetData();
-      }
+      if (shouldReset) resetData();
     },
-    { debounce: 500 },
+    { debounce: 100 },
   );
 
   // Also check when window regains focus (catches overnight tabs)
-  watchDebounced(
+  const unwatchFocus = watchDebounced(
     focused,
     isFocused => {
-      if (isFocused && needsReset.value) {
-        resetData();
-      }
+      if (isFocused && needsReset.value) resetData();
     },
-    { debounce: 300 },
+    { debounce: 100 },
   );
 
   const markVisited = (url: string) => {
     const newSet = new Set(storedData.value.visited);
     newSet.add(url);
+
     storedData.value = {
-      date: getTodayDate(),
+      date: todayIso(),
       visited: Array.from(newSet),
     };
   };
 
   const isSiteVisited = (url: string) => visitedSites.value.has(url);
+
+  const serialize = (): VisitedSites => ({
+    date: storedData.value.date,
+    visited: [...storedData.value.visited],
+  });
+
+  const hydrate = (data: VisitedSites) => {
+    if (!data.date || !Array.isArray(data.visited)) {
+      throw new Error("Invalid VisitedSites format");
+    }
+
+    // Temporarily stop watchers during hydration
+    unwatchReset();
+    unwatchFocus();
+
+    storedData.value = {
+      date: data.date,
+      visited: [...data.visited],
+    };
+
+    // restart original watchers
+    unwatchReset();
+    unwatchFocus();
+  };
 
   return {
     visitedSites,
@@ -83,5 +122,7 @@ export function useVisitedSites(storageKey: string, totalSites: Ref<number>) {
     isComplete,
     markVisited,
     isSiteVisited,
+    serialize,
+    hydrate,
   };
 }

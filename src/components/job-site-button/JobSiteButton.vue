@@ -1,21 +1,27 @@
+// /src/components/job-site-button/JobSiteButton.vue
+
 <script setup lang="ts">
+import { computed } from "vue";
+
 import { ATSAvatar } from "@/components/ats-avatar";
 import type { ATSInfo } from "@/lib/ats-detection";
 import { cn } from "@/lib/utils";
 import type { JobSite } from "@/types";
-import { computed } from "vue";
 
 type Variant = "default" | "visited";
+type Layout = "standalone" | "card";
 
-interface Props {
+export interface Props {
   site: JobSite;
   variant?: Variant;
+  layout?: Layout;
   atsInfo?: ATSInfo;
   onClick: (url: string) => void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   variant: "default",
+  layout: "standalone",
   atsInfo: undefined,
 });
 
@@ -23,17 +29,18 @@ const handleClick = () => props.onClick(props.site.url);
 
 const buttonClasses = computed(() =>
   cn(
-    "w-full inline-flex items-center justify-between gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 p-3 sm:p-4 text-left backdrop-blur-sm",
-    props.variant === "default"
-      ? "border border-border/40 hover:border-primary/30 hover:bg-accent/50 hover:shadow-md bg-background/80"
-      : "border border-border/20 hover:border-primary/20 hover:bg-accent/30 bg-muted/40 opacity-75",
+    "w-full inline-flex items-center justify-between gap-2 whitespace-nowrap text-sm font-medium transition-all focus-visible:outline-none",
+    props.layout === "card"
+      ? "pl-0 pr-3 py-3 rounded-none bg-transparent hover:bg-accent/40"
+      : "p-3 sm:p-4 rounded-lg border backdrop-blur-sm",
+    props.variant === "visited" && "opacity-75",
   ),
 );
 </script>
 
 <template>
   <button data-testid="job-site" :class="buttonClasses" @click="handleClick">
-    <div class="flex items-center gap-2 min-w-0">
+    <div class="flex items-baseline gap-1 min-w-0 h-6">
       <ATSAvatar
         v-if="atsInfo"
         :site="site"

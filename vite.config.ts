@@ -1,3 +1,5 @@
+// /vite.config.ts
+
 import tailwindcss from "@tailwindcss/vite";
 import vue from "@vitejs/plugin-vue";
 import path from "node:path";
@@ -13,6 +15,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "happy-dom",
+    setupFiles: ["./src/test/setup.ts"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],

@@ -1,21 +1,31 @@
-<script setup lang="ts">
-import { computed } from "vue";
+// /src/App.vue
 
-import { CategoryCard } from "@/components/category-card";
+<script setup lang="ts">
+import { useColorMode, useOnline } from "@vueuse/core";
+import { Sun, Moon, Upload, Download, FolderOpen } from "lucide-vue-next";
+import { computed, watch } from "vue";
+import { RouterLink } from "vue-router";
+import { Toaster, toast } from "vue-sonner";
+import "vue-sonner/style.css";
+
 import { Header } from "@/components/header";
+import { MenuToggle } from "@/components/menu-toggle";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useATSDetection } from "@/composables/use-ats-detection";
-import { useCategoryProgress } from "@/composables/use-category-progress";
+import { useDataManagement } from "@/composables/use-data-management";
 import { useVisitedSites } from "@/composables/use-visited-sites";
-import jobData from "./data/job-hunt-daily.json";
-import type { JobHuntData } from "./types";
-import { useColorMode, useOnline } from "@vueuse/core";
-import { Button } from "@/components/ui/button";
-import { Moon, Sun, WifiOff } from "lucide-vue-next";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import jobData from "@/data/job-hunt-daily.json";
+import type { JobHuntData } from "@/types";
 
-const STORAGE_KEY = "job-hunt-visited";
 const data = jobData as JobHuntData;
 
 // Total sites count
@@ -24,23 +34,8 @@ const totalSites = computed(() => {
 });
 
 // Composables
-const visitedComposable = useVisitedSites(STORAGE_KEY, totalSites);
-const categoryComposable = useCategoryProgress(
-  data,
-  visitedComposable.isSiteVisited,
-);
-const atsComposable = useATSDetection(data);
-
-// Convenience for template
-const { visitedCount, isComplete, markVisited, isSiteVisited } =
-  visitedComposable;
-const {
-  sortedCategories,
-  splitCategorySites,
-  getCategoryProgress,
-  maxCategoryHeight,
-} = categoryComposable;
-const { getATS } = atsComposable;
+const visitedComposable = useVisitedSites({ totalSites });
+const { visitedCount, isComplete } = visitedComposable;
 
 // Progress computed from visitedCount
 const progress = computed(() => {
@@ -48,33 +43,32 @@ const progress = computed(() => {
   return Math.round((visitedCount.value / totalSites.value) * 100);
 });
 
-// Handle site click
-const handleSiteClick = (url: string) => {
-  markVisited(url);
-  window.open(url, "_blank", "noopener,noreferrer");
-};
-
 const colorMode = useColorMode();
 
 const toggleTheme = () => {
   colorMode.value = colorMode.value === "dark" ? "light" : "dark";
 };
 
-const isOnline = useOnline();
+const { exportAllData, triggerImport } = useDataManagement({ totalSites });
 
-// Expose for testing
-defineExpose({
-  totalSites,
-  visitedCount: visitedComposable.visitedCount,
-  progress,
-  isComplete: visitedComposable.isComplete,
-  sortedCategories: categoryComposable.sortedCategories,
-  markVisited: visitedComposable.markVisited,
-  isSiteVisited: visitedComposable.isSiteVisited,
+const isOnline = useOnline();
+watch(isOnline, online => {
+  if (online) {
+    toast.success("You're back online!");
+  } else {
+    toast.error("You're offline. Some features may not work.");
+  }
 });
 </script>
 
 <template>
+  <Toaster
+    :duration="5000"
+    :close-button="true"
+    close-button-position="top-right"
+    position="bottom-right"
+    :theme="colorMode === 'auto' ? 'dark' : colorMode"
+  />
   <TooltipProvider>
     <div class="h-screen bg-background flex flex-col overflow-hidden">
       <!-- Fixed Header -->
@@ -84,49 +78,69 @@ defineExpose({
         :total-sites="totalSites"
         :progress="progress"
         :is-complete="isComplete"
+        :is-online="isOnline"
       >
         <!-- Add theme toggle to header actions slot -->
         <template #actions>
-          <Button
-            variant="ghost"
-            size="icon"
-            @click="toggleTheme"
-            aria-label="Toggle theme"
-          >
-            <Sun v-if="colorMode === 'dark'" class="size-5" />
-            <Moon v-else class="size-5" />
-          </Button>
-        </template>
+          <DropdownMenu v-slot="{ open }">
+            <DropdownMenuTrigger as-child>
+              <MenuToggle :open="open" />
+            </DropdownMenuTrigger>
 
-        <!-- Offline warning -->
-        <template #alert>
-          <Alert v-if="!isOnline" variant="destructive">
-            <WifiOff class="size-4" />
-            <AlertDescription class="mb-0 whitespace-nowrap">
-              You're offline. Job sites may not load properly.
-            </AlertDescription>
-          </Alert>
+            <DropdownMenuContent align="end" class="w-48">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel class="text-xs text-muted-foreground"
+                  >Account</DropdownMenuLabel
+                >
+                <DropdownMenuItem as-child>
+                  <RouterLink to="/applications" class="flex items-center">
+                    <FolderOpen class="mr-2 size-4" />
+                    My Applications
+                  </RouterLink>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuGroup>
+                <DropdownMenuLabel class="text-xs text-muted-foreground"
+                  >Data</DropdownMenuLabel
+                >
+                <DropdownMenuItem @click="triggerImport">
+                  <Upload class="mr-2 size-4" />
+                  Import…
+                </DropdownMenuItem>
+
+                <DropdownMenuItem @click="exportAllData">
+                  <Download class="mr-2 size-4" />
+                  Export…
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuGroup>
+                <DropdownMenuLabel class="text-xs text-muted-foreground"
+                  >Appearance</DropdownMenuLabel
+                >
+                <DropdownMenuItem @select.prevent @click="toggleTheme">
+                  <Sun v-if="colorMode === 'dark'" class="mr-2 size-4" />
+                  <Moon v-else class="mr-2 size-4" />
+                  Theme
+                  <span class="ml-auto text-xs text-muted-foreground">
+                    {{ colorMode === "dark" ? "Dark" : "Light" }}
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </template>
       </Header>
 
       <!-- Scrollable Content with ScrollArea -->
-      <ScrollArea class="flex-1 h-full">
-        <div class="px-4 py-4 sm:px-6 sm:py-6">
-          <div
-            class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
-          >
-            <CategoryCard
-              v-for="category in sortedCategories"
-              :key="category.name"
-              :category="category"
-              :max-height-rem="maxCategoryHeight"
-              :is-site-visited="isSiteVisited"
-              :on-site-click="handleSiteClick"
-              :get-category-progress="getCategoryProgress"
-              :split-category-sites="splitCategorySites"
-              :get-a-t-s="getATS"
-            />
-          </div>
+      <ScrollArea class="flex-1 overflow-y-auto h-full">
+        <div class="pb-24">
+          <router-view />
         </div>
       </ScrollArea>
     </div>

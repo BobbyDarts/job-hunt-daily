@@ -1,0 +1,1098 @@
+// /src/composables/use-applications.test.ts
+
+import { Temporal } from "@js-temporal/polyfill";
+import { describe, it, expect, beforeEach } from "vitest";
+
+import { toInstant, toPlainDate } from "@/lib/time";
+import { withFrozenTime } from "@/test-utils/with-frozen-time";
+import type { Application, ApplicationHistory } from "@/types";
+
+import {
+  TEST_APPLICATIONS_HISTORY_STORAGE_KEY,
+  TEST_APPLICATIONS_STORAGE_KEY,
+} from "./keys";
+import { useApplications } from "./use-applications";
+
+describe("useApplications", () => {
+  const useApplicationsParams = {
+    storageKey: TEST_APPLICATIONS_STORAGE_KEY,
+    historyStorageKey: TEST_APPLICATIONS_HISTORY_STORAGE_KEY,
+  };
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  describe("initialization", () => {
+    it("starts with empty applications array", () => {
+      const { applications, totalCount } = useApplications(
+        useApplicationsParams,
+      );
+
+      expect(applications.value).toEqual([]);
+      expect(totalCount.value).toBe(0);
+    });
+
+    it("loads existing applications from localStorage", () => {
+      const existingApps: Application[] = [
+        {
+          id: "app_1",
+          company: "Acme Corp",
+          position: "Developer",
+          jobSiteId: "acme",
+          jobSiteUrl: "https://acme.com",
+          status: "applied",
+          appliedDate: toPlainDate("2026-02-03").toString(),
+          createdAt: toInstant("2026-02-03T10:00:00Z").toString(),
+          updatedAt: toInstant("2026-02-03T10:00:00Z").toString(),
+        },
+      ];
+
+      localStorage.setItem(
+        TEST_APPLICATIONS_STORAGE_KEY,
+        JSON.stringify(existingApps),
+      );
+
+      const { applications, totalCount } = useApplications(
+        useApplicationsParams,
+      );
+
+      expect(applications.value).toEqual(existingApps);
+      expect(totalCount.value).toBe(1);
+    });
+  });
+
+  describe("addApplication", () => {
+    it("adds a new application with generated id and timestamps", () => {
+      withFrozenTime({
+        now: "2026-02-03T10:00:00Z",
+        fn: () => {
+          const { addApplication, applications } = useApplications(
+            useApplicationsParams,
+          );
+
+          const newApp = addApplication({
+            company: "Tech Co",
+            position: "Senior Dev",
+            jobSiteId: "techco",
+            jobSiteUrl: "https://techco.com",
+            status: "applied",
+            appliedDate: toPlainDate("2026-02-03").toString(),
+          });
+
+          expect(newApp.id).toBeDefined();
+          expect(newApp.id).toMatch(/^app_/);
+          expect(newApp.createdAt).toBeDefined();
+          expect(newApp.updatedAt).toBeDefined();
+          expect(newApp.company).toBe("Tech Co");
+          expect(applications.value).toHaveLength(1);
+          expect(applications.value[0]).toEqual(newApp);
+        },
+      });
+    });
+
+    it("adds application with optional fields", () => {
+      withFrozenTime({
+        now: "2026-02-03T10:00:00Z",
+        fn: () => {
+          const { addApplication, applications } = useApplications(
+            useApplicationsParams,
+          );
+
+          const newApp = addApplication({
+            company: "Tech Co",
+            position: "Senior Dev",
+            jobSiteId: "greenhouse-techco",
+            jobSiteUrl: "https://techco.com",
+            status: "interviewing",
+            appliedDate: toPlainDate("2026-02-03").toString(),
+            atsType: "greenhouse",
+            tags: ["phone_screen", "referral"],
+            notes: "Referred by John",
+            followUpDate: "2026-02-10",
+          });
+
+          expect(newApp.atsType).toBe("greenhouse");
+          expect(newApp.tags).toEqual(["phone_screen", "referral"]);
+          expect(newApp.notes).toBe("Referred by John");
+          expect(newApp.followUpDate).toBe("2026-02-10");
+          expect(applications.value[0]).toEqual(newApp);
+        },
+      });
+    });
+
+    it("persists to localStorage", () => {
+      withFrozenTime({
+        now: "2026-02-03T10:00:00Z",
+        fn: () => {
+          const { addApplication } = useApplications(useApplicationsParams);
+
+          addApplication({
+            company: "Tech Co",
+            position: "Senior Dev",
+            jobSiteId: "techco",
+            jobSiteUrl: "https://techco.com",
+            status: "applied",
+            appliedDate: toPlainDate("2026-02-03").toString(),
+          });
+
+          const stored = localStorage.getItem(TEST_APPLICATIONS_STORAGE_KEY);
+          expect(stored).toBeDefined();
+          const parsed = JSON.parse(stored!);
+          expect(parsed).toHaveLength(1);
+          expect(parsed[0].company).toBe("Tech Co");
+        },
+      });
+    });
+
+    it("generates unique IDs for multiple applications", () => {
+      withFrozenTime({
+        now: "2026-02-03T10:00:00Z",
+        fn: () => {
+          const { addApplication } = useApplications(useApplicationsParams);
+
+          const app1 = addApplication({
+            company: "Company A",
+            position: "Dev",
+            jobSiteId: "a",
+            jobSiteUrl: "https://a.com",
+            status: "applied",
+            appliedDate: toPlainDate("2026-02-03").toString(),
+          });
+
+          const app2 = addApplication({
+            company: "Company B",
+            position: "Dev",
+            jobSiteId: "b",
+            jobSiteUrl: "https://b.com",
+            status: "applied",
+            appliedDate: toPlainDate("2026-02-03").toString(),
+          });
+
+          expect(app1.id).not.toBe(app2.id);
+        },
+      });
+    });
+  });
+
+  describe("updateApplication", () => {
+    it("updates an existing application", () => {
+      withFrozenTime({
+        now: "2026-02-03T10:00:00Z",
+        fn: () => {
+          const { addApplication, updateApplication, applications } =
+            useApplications(useApplicationsParams);
+
+          const app = addApplication({
+            company: "Tech Co",
+            position: "Developer",
+            jobSiteId: "techco",
+            jobSiteUrl: "https://techco.com",
+            status: "applied",
+            appliedDate: toPlainDate("2026-02-03").toString(),
+          });
+
+          withFrozenTime({
+            now: "2026-02-03T10:00:01Z",
+            fn: () => {
+              const updated = updateApplication(app.id, {
+                status: "interviewing",
+                tags: ["phone_screen"],
+              });
+
+              expect(updated).toBeDefined();
+              expect(updated?.status).toBe("interviewing");
+              expect(updated?.tags).toEqual(["phone_screen"]);
+              expect(updated?.company).toBe("Tech Co"); // Unchanged
+              expect(updated?.updatedAt).not.toBe(app.updatedAt);
+              expect(applications.value[0]).toEqual(updated);
+            },
+          });
+        },
+      });
+    });
+
+    it("returns undefined for non-existent application", () => {
+      const { updateApplication } = useApplications(useApplicationsParams);
+
+      const result = updateApplication("non-existent-id", {
+        status: "interviewing",
+      });
+
+      expect(result).toBeUndefined();
+    });
+
+    it("updates updatedAt timestamp", () => {
+      withFrozenTime({
+        now: "2026-02-03T10:00:00Z",
+        fn: () => {
+          const { addApplication, updateApplication } = useApplications(
+            useApplicationsParams,
+          );
+
+          const app = addApplication({
+            company: "Tech Co",
+            position: "Developer",
+            jobSiteId: "techco",
+            jobSiteUrl: "https://techco.com",
+            status: "applied",
+            appliedDate: toPlainDate("2026-02-03").toString(),
+          });
+
+          const originalUpdatedAt = app.updatedAt;
+
+          withFrozenTime({
+            now: "2026-02-03T10:00:01Z",
+            fn: () => {
+              const updated = updateApplication(app.id, {
+                notes: "Added notes",
+              });
+
+              expect(updated?.updatedAt).not.toBe(originalUpdatedAt);
+            },
+          });
+        },
+      });
+    });
+
+    it("does not change createdAt timestamp", () => {
+      withFrozenTime({
+        now: "2026-02-03T10:00:00Z",
+        fn: () => {
+          const { addApplication, updateApplication } = useApplications(
+            useApplicationsParams,
+          );
+
+          const app = addApplication({
+            company: "Tech Co",
+            position: "Developer",
+            jobSiteId: "techco",
+            jobSiteUrl: "https://techco.com",
+            status: "applied",
+            appliedDate: toPlainDate("2026-02-03").toString(),
+          });
+
+          const originalCreatedAt = app.createdAt;
+
+          const updated = updateApplication(app.id, { status: "interviewing" });
+
+          expect(updated?.createdAt).toBe(originalCreatedAt);
+        },
+      });
+    });
+  });
+
+  describe("deleteApplication", () => {
+    it("deletes an application by id", () => {
+      const { addApplication, deleteApplication, applications } =
+        useApplications(useApplicationsParams);
+
+      const app = addApplication({
+        company: "Tech Co",
+        position: "Developer",
+        jobSiteId: "techco",
+        jobSiteUrl: "https://techco.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      const deleted = deleteApplication(app.id);
+
+      expect(deleted).toBe(true);
+      expect(applications.value).toHaveLength(0);
+    });
+
+    it("returns false for non-existent application", () => {
+      const { deleteApplication } = useApplications(useApplicationsParams);
+
+      const deleted = deleteApplication("non-existent-id");
+
+      expect(deleted).toBe(false);
+    });
+
+    it("only deletes the specified application", () => {
+      const { addApplication, deleteApplication, applications } =
+        useApplications(useApplicationsParams);
+
+      const app1 = addApplication({
+        company: "Company A",
+        position: "Dev",
+        jobSiteId: "a",
+        jobSiteUrl: "https://a.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      const app2 = addApplication({
+        company: "Company B",
+        position: "Dev",
+        jobSiteId: "b",
+        jobSiteUrl: "https://b.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      deleteApplication(app1.id);
+
+      expect(applications.value).toHaveLength(1);
+      expect(applications.value[0].id).toBe(app2.id);
+    });
+  });
+
+  describe("getApplication", () => {
+    it("retrieves an application by id", () => {
+      const { addApplication, getApplication } = useApplications(
+        useApplicationsParams,
+      );
+
+      const app = addApplication({
+        company: "Tech Co",
+        position: "Developer",
+        jobSiteId: "techco",
+        jobSiteUrl: "https://techco.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      const retrieved = getApplication(app.id);
+
+      expect(retrieved).toEqual(app);
+    });
+
+    it("returns undefined for non-existent id", () => {
+      const { getApplication } = useApplications(useApplicationsParams);
+
+      const result = getApplication("non-existent-id");
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe("countByStatus", () => {
+    it("counts applications by status", () => {
+      const { addApplication, countByStatus } = useApplications(
+        useApplicationsParams,
+      );
+
+      addApplication({
+        company: "Company A",
+        position: "Dev",
+        jobSiteId: "a",
+        jobSiteUrl: "https://a.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      addApplication({
+        company: "Company B",
+        position: "Dev",
+        jobSiteId: "b",
+        jobSiteUrl: "https://b.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      addApplication({
+        company: "Company C",
+        position: "Dev",
+        jobSiteId: "c",
+        jobSiteUrl: "https://c.com",
+        status: "interviewing",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      expect(countByStatus.value.applied).toBe(2);
+      expect(countByStatus.value.interviewing).toBe(1);
+      expect(countByStatus.value.offer).toBeUndefined();
+    });
+
+    it("returns empty object when no applications", () => {
+      const { countByStatus } = useApplications(useApplicationsParams);
+
+      expect(countByStatus.value).toEqual({});
+    });
+  });
+
+  describe("filterByStatus", () => {
+    it("filters applications by status", () => {
+      const { addApplication, filterByStatus } = useApplications(
+        useApplicationsParams,
+      );
+
+      addApplication({
+        company: "Company A",
+        position: "Dev",
+        jobSiteId: "a",
+        jobSiteUrl: "https://a.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      addApplication({
+        company: "Company B",
+        position: "Dev",
+        jobSiteId: "b",
+        jobSiteUrl: "https://b.com",
+        status: "interviewing",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      const applied = filterByStatus("applied");
+      const interviewing = filterByStatus("interviewing");
+      const offers = filterByStatus("offer");
+
+      expect(applied).toHaveLength(1);
+      expect(applied[0].company).toBe("Company A");
+      expect(interviewing).toHaveLength(1);
+      expect(interviewing[0].company).toBe("Company B");
+      expect(offers).toHaveLength(0);
+    });
+  });
+
+  describe("filterByTag", () => {
+    it("filters applications by tag", () => {
+      const { addApplication, filterByTag } = useApplications(
+        useApplicationsParams,
+      );
+
+      addApplication({
+        company: "Company A",
+        position: "Dev",
+        jobSiteId: "a",
+        jobSiteUrl: "https://a.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+        tags: ["referral", "phone_screen"],
+      });
+
+      addApplication({
+        company: "Company B",
+        position: "Dev",
+        jobSiteId: "b",
+        jobSiteUrl: "https://b.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+        tags: ["cold_apply"],
+      });
+
+      const referrals = filterByTag("referral");
+      const coldApply = filterByTag("cold_apply");
+      const technical = filterByTag("technical");
+
+      expect(referrals).toHaveLength(1);
+      expect(referrals[0].company).toBe("Company A");
+      expect(coldApply).toHaveLength(1);
+      expect(coldApply[0].company).toBe("Company B");
+      expect(technical).toHaveLength(0);
+    });
+
+    it("returns empty array for applications without tags", () => {
+      const { addApplication, filterByTag } = useApplications(
+        useApplicationsParams,
+      );
+
+      addApplication({
+        company: "Company A",
+        position: "Dev",
+        jobSiteId: "a",
+        jobSiteUrl: "https://a.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      const results = filterByTag("referral");
+
+      expect(results).toHaveLength(0);
+    });
+  });
+
+  describe("search", () => {
+    it("searches by company name", () => {
+      const { addApplication, search } = useApplications(useApplicationsParams);
+
+      addApplication({
+        company: "Google",
+        position: "Developer",
+        jobSiteId: "google",
+        jobSiteUrl: "https://google.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      addApplication({
+        company: "Amazon",
+        position: "Developer",
+        jobSiteId: "amazon",
+        jobSiteUrl: "https://amazon.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      const results = search("goo");
+
+      expect(results).toHaveLength(1);
+      expect(results[0].company).toBe("Google");
+    });
+
+    it("searches by position", () => {
+      const { addApplication, search } = useApplications(useApplicationsParams);
+
+      addApplication({
+        company: "Company A",
+        position: "Senior Developer",
+        jobSiteId: "a",
+        jobSiteUrl: "https://a.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      addApplication({
+        company: "Company B",
+        position: "Junior Designer",
+        jobSiteId: "b",
+        jobSiteUrl: "https://b.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      const results = search("developer");
+
+      expect(results).toHaveLength(1);
+      expect(results[0].position).toBe("Senior Developer");
+    });
+
+    it("is case-insensitive", () => {
+      const { addApplication, search } = useApplications(useApplicationsParams);
+
+      addApplication({
+        company: "Google",
+        position: "Developer",
+        jobSiteId: "google",
+        jobSiteUrl: "https://google.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      const results = search("GOOGLE");
+
+      expect(results).toHaveLength(1);
+    });
+
+    it("returns empty array when no matches", () => {
+      const { addApplication, search } = useApplications(useApplicationsParams);
+
+      addApplication({
+        company: "Google",
+        position: "Developer",
+        jobSiteId: "google",
+        jobSiteUrl: "https://google.com",
+        status: "applied",
+        appliedDate: toPlainDate("2026-02-03").toString(),
+      });
+
+      const results = search("nonexistent");
+
+      expect(results).toHaveLength(0);
+    });
+  });
+
+  describe("history tracking", () => {
+    describe("getApplicationTimeline", () => {
+      it("returns empty array for non-existent application", () => {
+        const { getApplicationTimeline } = useApplications(
+          useApplicationsParams,
+        );
+
+        const timeline = getApplicationTimeline("non-existent-id");
+
+        expect(timeline).toEqual([]);
+      });
+
+      it("returns only current application when no history exists", () => {
+        withFrozenTime({
+          now: "2024-01-15T10:00:00Z",
+          fn: () => {
+            const { addApplication, getApplicationTimeline } = useApplications(
+              useApplicationsParams,
+            );
+
+            const app = addApplication({
+              company: "Test Co",
+              position: "Developer",
+              jobSiteId: "test-site",
+              jobSiteUrl: "https://test.com",
+              appliedDate: toPlainDate("2024-01-15").toString(),
+              status: "applied",
+            });
+
+            const timeline = getApplicationTimeline(app.id);
+
+            expect(timeline).toHaveLength(1);
+            expect(timeline[0]).toEqual(app);
+          },
+        });
+      });
+
+      it("returns chronological timeline with history and current state", () => {
+        withFrozenTime({
+          now: "2024-01-15T10:00:00Z",
+          fn: () => {
+            const {
+              addApplication,
+              updateApplication,
+              getApplicationTimeline,
+            } = useApplications(useApplicationsParams);
+
+            const app = addApplication({
+              company: "Test Co",
+              position: "Developer",
+              jobSiteId: "test-site",
+              jobSiteUrl: "https://test.com",
+              appliedDate: toPlainDate("2024-01-15").toString(),
+              status: "applied",
+            });
+
+            // Advance time manually by setting frozen time for each update
+            withFrozenTime({
+              now: "2024-01-15T10:00:01Z",
+              fn: () => updateApplication(app.id, { status: "interviewing" }),
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:02Z",
+              fn: () => updateApplication(app.id, { status: "offer" }),
+            });
+
+            const timeline = getApplicationTimeline(app.id);
+
+            expect(timeline).toHaveLength(3);
+            expect(timeline[0].status).toBe("applied");
+            expect(timeline[1].status).toBe("interviewing");
+            expect(timeline[2].status).toBe("offer");
+          },
+        });
+      });
+
+      it("sorts history entries by timestamp", () => {
+        function getTimelineInstant(item: Application | ApplicationHistory) {
+          return toInstant(
+            "historyTimestamp" in item ? item.historyTimestamp : item.updatedAt,
+          );
+        }
+
+        withFrozenTime({
+          now: "2024-01-15T10:00:00Z",
+          fn: () => {
+            const {
+              addApplication,
+              updateApplication,
+              getApplicationTimeline,
+            } = useApplications(useApplicationsParams);
+
+            const app = addApplication({
+              company: "Test Co",
+              position: "Developer",
+              jobSiteId: "test-site",
+              jobSiteUrl: "https://test.com",
+              appliedDate: toPlainDate("2024-01-15").toString(),
+              status: "applied",
+            });
+
+            withFrozenTime({
+              now: "2024-01-16T10:00:01Z",
+              fn: () => updateApplication(app.id, { status: "interviewing" }),
+            });
+
+            withFrozenTime({
+              now: "2024-01-17T10:00:02Z",
+              fn: () => updateApplication(app.id, { notes: "Updated notes" }),
+            });
+
+            withFrozenTime({
+              now: "2024-01-18T10:00:03Z",
+              fn: () => updateApplication(app.id, { status: "offer" }),
+            });
+
+            const timeline = getApplicationTimeline(app.id);
+            expect(timeline).toHaveLength(4);
+
+            const sorted = [...timeline].sort((a, b) =>
+              Temporal.Instant.compare(
+                getTimelineInstant(a),
+                getTimelineInstant(b),
+              ),
+            );
+
+            expect(timeline).toEqual(sorted);
+          },
+        });
+      });
+
+      it("includes all application fields in history snapshots", () => {
+        withFrozenTime({
+          now: "2024-01-15T10:00:00Z",
+          fn: () => {
+            const {
+              addApplication,
+              updateApplication,
+              getApplicationTimeline,
+            } = useApplications(useApplicationsParams);
+
+            const app = addApplication({
+              company: "Test Co",
+              position: "Developer",
+              jobSiteId: "test-site",
+              jobSiteUrl: "https://test.com",
+              appliedDate: toPlainDate("2024-01-15").toString(),
+              status: "applied",
+              tags: ["referral"],
+              notes: "Initial notes",
+            });
+
+            withFrozenTime({
+              now: "2024-01-16T10:00:00Z",
+              fn: () => {
+                updateApplication(app.id, {
+                  status: "interviewing",
+                });
+              },
+            });
+
+            const timeline = getApplicationTimeline(app.id);
+            const historySnapshot = timeline[0];
+
+            expect(historySnapshot.company).toBe("Test Co");
+            expect(historySnapshot.position).toBe("Developer");
+            expect(historySnapshot.tags).toEqual(["referral"]);
+            expect(historySnapshot.notes).toBe("Initial notes");
+          },
+        });
+      });
+    });
+
+    describe("getStatusChanges", () => {
+      it("returns empty array when application has no status changes", () => {
+        withFrozenTime({
+          now: "2024-01-15T10:00:00Z",
+          fn: () => {
+            const { addApplication, getStatusChanges } = useApplications(
+              useApplicationsParams,
+            );
+
+            const app = addApplication({
+              company: "Test Co",
+              position: "Developer",
+              jobSiteId: "test-site",
+              jobSiteUrl: "https://test.com",
+              appliedDate: toPlainDate("2024-01-15").toString(),
+              status: "applied",
+            });
+
+            const changes = getStatusChanges(app.id);
+            expect(changes).toEqual([]);
+          },
+        });
+      });
+
+      it("tracks single status change", () => {
+        withFrozenTime({
+          now: "2024-01-15T10:00:00Z",
+          fn: () => {
+            const { addApplication, updateApplication, getStatusChanges } =
+              useApplications(useApplicationsParams);
+
+            const app = addApplication({
+              company: "Test Co",
+              position: "Developer",
+              jobSiteId: "test-site",
+              jobSiteUrl: "https://test.com",
+              appliedDate: toPlainDate("2024-01-15").toString(),
+              status: "applied",
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:01Z",
+              fn: () => {
+                updateApplication(app.id, { status: "interviewing" });
+              },
+            });
+            const changes = getStatusChanges(app.id);
+
+            expect(changes).toHaveLength(1);
+            expect(changes[0]).toMatchObject({
+              from: "applied",
+              to: "interviewing",
+            });
+            expect(changes[0].timestamp).toBeDefined();
+          },
+        });
+      });
+
+      it("tracks multiple status changes in order", () => {
+        withFrozenTime({
+          now: "2024-01-15T10:00:00Z",
+          fn: () => {
+            const { addApplication, updateApplication, getStatusChanges } =
+              useApplications(useApplicationsParams);
+
+            const app = addApplication({
+              company: "Test Co",
+              position: "Developer",
+              jobSiteId: "test-site",
+              jobSiteUrl: "https://test.com",
+              appliedDate: toPlainDate("2024-01-15").toString(),
+              status: "applied",
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:01Z",
+              fn: () => {
+                updateApplication(app.id, { status: "interviewing" });
+              },
+            });
+            withFrozenTime({
+              now: "2024-01-15T10:00:02Z",
+              fn: () => {
+                updateApplication(app.id, { status: "offer" });
+              },
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:03Z",
+              fn: () => {
+                updateApplication(app.id, { status: "accepted" });
+              },
+            });
+
+            const changes = getStatusChanges(app.id);
+            expect(changes).toHaveLength(3);
+            expect(changes[0]).toMatchObject({
+              from: "applied",
+              to: "interviewing",
+            });
+            expect(changes[1]).toMatchObject({
+              from: "interviewing",
+              to: "offer",
+            });
+            expect(changes[2]).toMatchObject({ from: "offer", to: "accepted" });
+          },
+        });
+      });
+
+      it("ignores updates that don't change status", () => {
+        withFrozenTime({
+          now: "2024-01-15T10:00:00Z",
+          fn: () => {
+            const { addApplication, updateApplication, getStatusChanges } =
+              useApplications(useApplicationsParams);
+
+            const app = addApplication({
+              company: "Test Co",
+              position: "Developer",
+              jobSiteId: "test-site",
+              jobSiteUrl: "https://test.com",
+              appliedDate: toPlainDate("2024-01-15").toString(),
+              status: "applied",
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:01Z",
+              fn: () => {
+                updateApplication(app.id, { notes: "Added notes" });
+              },
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:02Z",
+              fn: () => {
+                updateApplication(app.id, { tags: ["referral"] });
+              },
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:03Z",
+              fn: () => {
+                updateApplication(app.id, { status: "interviewing" });
+              },
+            });
+
+            const changes = getStatusChanges(app.id);
+            expect(changes).toHaveLength(1);
+            expect(changes[0]).toMatchObject({
+              from: "applied",
+              to: "interviewing",
+            });
+          },
+        });
+      });
+
+      it("handles rapid status changes", () => {
+        withFrozenTime({
+          now: "2024-01-15T10:00:00Z",
+          fn: () => {
+            const { addApplication, updateApplication, getStatusChanges } =
+              useApplications(useApplicationsParams);
+
+            const app = addApplication({
+              company: "Test Co",
+              position: "Developer",
+              jobSiteId: "test-site",
+              jobSiteUrl: "https://test.com",
+              appliedDate: toPlainDate("2024-01-15").toString(),
+              status: "applied",
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:01Z",
+              fn: () => {
+                updateApplication(app.id, { status: "interviewing" });
+              },
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:02Z",
+              fn: () => {
+                updateApplication(app.id, { status: "offer" });
+              },
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:03Z",
+              fn: () => {
+                updateApplication(app.id, { status: "rejected" });
+              },
+            });
+
+            const changes = getStatusChanges(app.id);
+            expect(changes).toHaveLength(3);
+            expect(changes[0].from).toBe("applied");
+            expect(changes[1].from).toBe("interviewing");
+            expect(changes[2].from).toBe("offer");
+            expect(changes[2].to).toBe("rejected");
+          },
+        });
+      });
+
+      it("handles status reverting to previous value", () => {
+        withFrozenTime({
+          now: "2024-01-15T10:00:00Z",
+          fn: () => {
+            const { addApplication, updateApplication, getStatusChanges } =
+              useApplications(useApplicationsParams);
+
+            const app = addApplication({
+              company: "Test Co",
+              position: "Developer",
+              jobSiteId: "test-site",
+              jobSiteUrl: "https://test.com",
+              appliedDate: toPlainDate("2024-01-15").toString(),
+              status: "applied",
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:01Z",
+              fn: () => {
+                updateApplication(app.id, { status: "interviewing" });
+              },
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:02Z",
+              fn: () => {
+                updateApplication(app.id, { status: "applied" }); // Revert
+              },
+            });
+
+            const changes = getStatusChanges(app.id);
+            expect(changes).toHaveLength(2);
+            expect(changes[0]).toMatchObject({
+              from: "applied",
+              to: "interviewing",
+            });
+            expect(changes[1]).toMatchObject({
+              from: "interviewing",
+              to: "applied",
+            });
+          },
+        });
+      });
+    });
+
+    describe("history persistence", () => {
+      it("persists history across composable instances", () => {
+        withFrozenTime({
+          now: "2024-01-15T10:00:00Z",
+          fn: () => {
+            const { addApplication, updateApplication } = useApplications(
+              useApplicationsParams,
+            );
+
+            const app = addApplication({
+              company: "Test Co",
+              position: "Developer",
+              jobSiteId: "test-site",
+              jobSiteUrl: "https://test.com",
+              appliedDate: toPlainDate("2024-01-15").toString(),
+              status: "applied",
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:01Z",
+              fn: () => {
+                updateApplication(app.id, { status: "interviewing" });
+              },
+            });
+
+            const { getApplicationTimeline: getTimeline2 } = useApplications(
+              useApplicationsParams,
+            );
+            const timeline = getTimeline2(app.id);
+            expect(timeline).toHaveLength(2);
+          },
+        });
+      });
+
+      it("maintains history after deleting application", () => {
+        withFrozenTime({
+          now: "2024-01-15T10:00:00Z",
+          fn: () => {
+            const {
+              addApplication,
+              updateApplication,
+              deleteApplication,
+              applicationHistory,
+            } = useApplications(useApplicationsParams);
+
+            const app = addApplication({
+              company: "Test Co",
+              position: "Developer",
+              jobSiteId: "test-site",
+              jobSiteUrl: "https://test.com",
+              appliedDate: toPlainDate("2024-01-15").toString(),
+              status: "applied",
+            });
+
+            withFrozenTime({
+              now: "2024-01-15T10:00:01Z",
+              fn: () => {
+                updateApplication(app.id, { status: "interviewing" });
+              },
+            });
+
+            const historyCountBefore = applicationHistory.value.filter(
+              h => h.applicationId === app.id,
+            ).length;
+
+            deleteApplication(app.id);
+
+            const historyCountAfter = applicationHistory.value.filter(
+              h => h.applicationId === app.id,
+            ).length;
+
+            expect(historyCountAfter).toBe(historyCountBefore);
+          },
+        });
+      });
+    });
+  });
+});

@@ -1,60 +1,74 @@
+// /src/composables/use-category-progress.test.ts
+
 import { describe, expect, it } from "vitest";
 
+import { mockJobHuntData } from "@/test-utils/mocks";
 import type { JobHuntData } from "@/types";
 
 import { useCategoryProgress } from "./use-category-progress";
-
-const mockData: JobHuntData = {
-  categories: [
-    {
-      name: "Big Category",
-      sites: [
-        { name: "Zebra", url: "z.com" },
-        { name: "Alpha", url: "a.com" },
-        { name: "Beta", url: "b.com" },
-      ],
-    },
-    {
-      name: "Small Category",
-      sites: [{ name: "Delta", url: "d.com" }],
-    },
-  ],
-};
 
 describe("useCategoryProgress", () => {
   it("sorts categories by site count and sites alphabetically", () => {
     const isVisited = () => false;
 
-    const { sortedCategories } = useCategoryProgress(mockData, isVisited);
+    const { sortedCategories } = useCategoryProgress(
+      mockJobHuntData,
+      isVisited,
+    );
 
-    expect(sortedCategories.value[0].name).toBe("Big Category");
-    expect(sortedCategories.value[1].name).toBe("Small Category");
+    // Tech Companies has 5 sites, Startups has 2, Small Category has 1
+    expect(sortedCategories.value[0].name).toBe("Tech Companies");
+    expect(sortedCategories.value[1].name).toBe("Startups");
+    expect(sortedCategories.value[2].name).toBe("Small Category");
 
+    // Sites within Tech Companies should be alphabetically sorted
     const siteNames = sortedCategories.value[0].sites.map(s => s.name);
-    expect(siteNames).toEqual(["Alpha", "Beta", "Zebra"]);
+    expect(siteNames).toEqual([
+      "Alpha Inc",
+      "Greenhouse Company",
+      "Regular Site",
+      "Workday Company",
+      "Zebra Corp",
+    ]);
   });
 
   it("splits category sites into visited and unvisited", () => {
-    const isVisited = (url: string) => url === "b.com";
+    const isVisited = (url: string) =>
+      url === "https://my.greenhouse.io" || url === "https://alpha.com/jobs";
 
-    const { splitCategorySites } = useCategoryProgress(mockData, isVisited);
+    const { splitCategorySites } = useCategoryProgress(
+      mockJobHuntData,
+      isVisited,
+    );
 
-    const category = mockData.categories[0];
+    const category = mockJobHuntData.categories[0]; // Tech Companies
     const result = splitCategorySites(category);
 
-    expect(result.visited.map(s => s.name)).toEqual(["Beta"]);
-    expect(result.unvisited.map(s => s.name)).toEqual(["Alpha", "Zebra"]);
+    expect(result.visited.map(s => s.name)).toEqual([
+      "Alpha Inc",
+      "Greenhouse Company",
+    ]);
+    expect(result.unvisited.map(s => s.name)).toEqual([
+      "Regular Site",
+      "Workday Company",
+      "Zebra Corp",
+    ]);
   });
 
   it("calculates category progress correctly", () => {
-    const isVisited = (url: string) => url === "a.com" || url === "b.com";
+    const isVisited = (url: string) =>
+      url === "https://company.wd1.myworkdayjobs.com/jobs" ||
+      url === "https://my.greenhouse.io";
 
-    const { getCategoryProgress } = useCategoryProgress(mockData, isVisited);
+    const { getCategoryProgress } = useCategoryProgress(
+      mockJobHuntData,
+      isVisited,
+    );
 
-    const category = mockData.categories[0];
+    const category = mockJobHuntData.categories[0]; // Tech Companies
 
-    // 2 of 3 visited → 67%
-    expect(getCategoryProgress(category)).toBe(67);
+    // 2 of 5 visited → 40%
+    expect(getCategoryProgress(category)).toBe(40);
   });
 
   it("returns 0 progress for empty categories", () => {
@@ -70,14 +84,15 @@ describe("useCategoryProgress", () => {
   });
 
   it("returns the correct visited site count for a category", () => {
-    const isVisited = (url: string) => url === "a.com";
+    const isVisited = (url: string) =>
+      url === "https://company.wd1.myworkdayjobs.com/jobs";
 
     const { getCategoryVisitedCount } = useCategoryProgress(
-      mockData,
+      mockJobHuntData,
       isVisited,
     );
 
-    const category = mockData.categories[0];
+    const category = mockJobHuntData.categories[0]; // Tech Companies
 
     expect(getCategoryVisitedCount(category)).toBe(1);
   });
@@ -90,13 +105,14 @@ describe("useCategoryProgress", () => {
         {
           name: "Huge",
           sites: Array.from({ length: 10 }, (_, i) => ({
+            id: `huge-${i}`,
             name: `Site ${i}`,
             url: `${i}.com`,
           })),
         },
         {
           name: "Small",
-          sites: [{ name: "One", url: "1.com" }],
+          sites: [{ id: `small-1`, name: "One", url: "1.com" }],
         },
       ],
     };
@@ -107,54 +123,68 @@ describe("useCategoryProgress", () => {
   });
 
   it("categoryStats contains all computed stats per category", () => {
-    const isVisited = (url: string) => url === "a.com" || url === "b.com";
+    const isVisited = (url: string) =>
+      url === "https://company.wd1.myworkdayjobs.com/jobs" ||
+      url === "https://my.greenhouse.io";
 
-    const { categoryStats } = useCategoryProgress(mockData, isVisited);
+    const { categoryStats } = useCategoryProgress(mockJobHuntData, isVisited);
 
-    const bigCategoryStats = categoryStats.value.find(
-      s => s.category.name === "Big Category",
+    const techCategoryStats = categoryStats.value.find(
+      s => s.category.name === "Tech Companies",
     );
 
-    expect(bigCategoryStats).toBeDefined();
-    expect(bigCategoryStats?.visitedCount).toBe(2);
-    expect(bigCategoryStats?.progress).toBe(67);
-    expect(bigCategoryStats?.visited).toHaveLength(2);
-    expect(bigCategoryStats?.unvisited).toHaveLength(1);
+    expect(techCategoryStats).toBeDefined();
+    expect(techCategoryStats?.visitedCount).toBe(2);
+    expect(techCategoryStats?.progress).toBe(40);
+    expect(techCategoryStats?.visited).toHaveLength(2);
+    expect(techCategoryStats?.unvisited).toHaveLength(3);
   });
 
   it("categoryStats sorts visited and unvisited sites alphabetically", () => {
-    const isVisited = (url: string) => url === "z.com" || url === "a.com";
+    const isVisited = (url: string) =>
+      url === "https://zebra.com/careers" || url === "https://alpha.com/jobs";
 
-    const { categoryStats } = useCategoryProgress(mockData, isVisited);
+    const { categoryStats } = useCategoryProgress(mockJobHuntData, isVisited);
 
-    const bigCategoryStats = categoryStats.value.find(
-      s => s.category.name === "Big Category",
+    const techCategoryStats = categoryStats.value.find(
+      s => s.category.name === "Tech Companies",
     );
 
-    expect(bigCategoryStats?.visited.map(s => s.name)).toEqual([
-      "Alpha",
-      "Zebra",
+    expect(techCategoryStats?.visited.map(s => s.name)).toEqual([
+      "Alpha Inc",
+      "Zebra Corp",
     ]);
-    expect(bigCategoryStats?.unvisited.map(s => s.name)).toEqual(["Beta"]);
+    expect(techCategoryStats?.unvisited.map(s => s.name)).toEqual([
+      "Greenhouse Company",
+      "Regular Site",
+      "Workday Company",
+    ]);
   });
 
   it("getCategoryStats returns stats for existing category", () => {
-    const isVisited = (url: string) => url === "a.com";
+    const isVisited = (url: string) =>
+      url === "https://company.wd1.myworkdayjobs.com/jobs";
 
-    const { getCategoryStats } = useCategoryProgress(mockData, isVisited);
+    const { getCategoryStats } = useCategoryProgress(
+      mockJobHuntData,
+      isVisited,
+    );
 
-    const category = mockData.categories[0];
+    const category = mockJobHuntData.categories[0]; // Tech Companies
     const stats = getCategoryStats(category);
 
     expect(stats).toBeDefined();
-    expect(stats?.category.name).toBe("Big Category");
+    expect(stats?.category.name).toBe("Tech Companies");
     expect(stats?.visitedCount).toBe(1);
   });
 
   it("getCategoryStats returns undefined for non-existent category", () => {
     const isVisited = () => false;
 
-    const { getCategoryStats } = useCategoryProgress(mockData, isVisited);
+    const { getCategoryStats } = useCategoryProgress(
+      mockJobHuntData,
+      isVisited,
+    );
 
     const fakeCategory = { name: "Non-existent", sites: [] };
     const stats = getCategoryStats(fakeCategory);
@@ -165,7 +195,10 @@ describe("useCategoryProgress", () => {
   it("splitCategorySites returns empty arrays for non-existent category", () => {
     const isVisited = () => false;
 
-    const { splitCategorySites } = useCategoryProgress(mockData, isVisited);
+    const { splitCategorySites } = useCategoryProgress(
+      mockJobHuntData,
+      isVisited,
+    );
 
     const fakeCategory = { name: "Non-existent", sites: [] };
     const result = splitCategorySites(fakeCategory);
@@ -177,7 +210,10 @@ describe("useCategoryProgress", () => {
   it("getCategoryProgress returns 0 for non-existent category", () => {
     const isVisited = () => false;
 
-    const { getCategoryProgress } = useCategoryProgress(mockData, isVisited);
+    const { getCategoryProgress } = useCategoryProgress(
+      mockJobHuntData,
+      isVisited,
+    );
 
     const fakeCategory = { name: "Non-existent", sites: [] };
 
@@ -188,7 +224,7 @@ describe("useCategoryProgress", () => {
     const isVisited = () => false;
 
     const { getCategoryVisitedCount } = useCategoryProgress(
-      mockData,
+      mockJobHuntData,
       isVisited,
     );
 

@@ -1,9 +1,13 @@
+// /src/composables/use-visited-sites.test.ts
+
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ref, nextTick } from "vue";
 
-import { useVisitedSites } from "./use-visited-sites";
+import { getToday, todayIso } from "@/lib/time";
+import { withFrozenTime } from "@/test-utils/with-frozen-time";
 
-const STORAGE_KEY = "test-visited-sites";
+import { TEST_VISITED_SITES_STORAGE_KEY } from "./keys";
+import { useVisitedSites } from "./use-visited-sites";
 
 describe("useVisitedSites", () => {
   beforeEach(() => {
@@ -11,142 +15,171 @@ describe("useVisitedSites", () => {
     vi.clearAllTimers();
   });
 
-  const getTodayDate = () => new Date().toISOString().split("T")[0];
-
   it("starts with no visited sites", () => {
-    const totalSites = ref(5);
-    const { visitedCount, isComplete } = useVisitedSites(
-      STORAGE_KEY,
-      totalSites,
-    );
+    withFrozenTime({
+      now: "2026-02-19T15:00:00Z",
+      fn: () => {
+        const totalSites = ref(5);
+        const { visitedCount, isComplete } = useVisitedSites({
+          storageKey: TEST_VISITED_SITES_STORAGE_KEY,
+          totalSites,
+        });
 
-    expect(visitedCount.value).toBe(0);
-    expect(isComplete.value).toBe(false);
+        expect(visitedCount.value).toBe(0);
+        expect(isComplete.value).toBe(false);
+      },
+    });
   });
 
   it("marks a site as visited and persists it", async () => {
-    const totalSites = ref(5);
-    const { markVisited, isSiteVisited, visitedCount } = useVisitedSites(
-      STORAGE_KEY,
-      totalSites,
-    );
+    await withFrozenTime({
+      now: "2026-02-19T15:00:00Z",
+      fn: async () => {
+        const today = todayIso();
 
-    markVisited("https://example.com");
+        const totalSites = ref(5);
+        const { markVisited, isSiteVisited, visitedCount } = useVisitedSites({
+          storageKey: TEST_VISITED_SITES_STORAGE_KEY,
+          totalSites,
+        });
 
-    // Wait for reactivity to settle
-    await nextTick();
+        markVisited("https://example.com");
+        await nextTick();
 
-    expect(isSiteVisited("https://example.com")).toBe(true);
-    expect(visitedCount.value).toBe(1);
+        expect(isSiteVisited("https://example.com")).toBe(true);
+        expect(visitedCount.value).toBe(1);
 
-    // Check localStorage - VueUse stores the exact structure we defined
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
-    expect(stored.visited).toContain("https://example.com");
-    expect(stored.date).toBe(getTodayDate());
+        const stored = JSON.parse(
+          localStorage.getItem(TEST_VISITED_SITES_STORAGE_KEY)!,
+        );
+        expect(stored.visited).toContain("https://example.com");
+        expect(stored.date).toBe(today);
+      },
+    });
   });
 
   it("does not duplicate visited sites", async () => {
-    const totalSites = ref(5);
-    const { markVisited, visitedCount } = useVisitedSites(
-      STORAGE_KEY,
-      totalSites,
-    );
+    await withFrozenTime({
+      now: "2026-02-19T15:00:00Z",
+      fn: async () => {
+        const totalSites = ref(5);
+        const { markVisited, visitedCount } = useVisitedSites({
+          storageKey: TEST_VISITED_SITES_STORAGE_KEY,
+          totalSites,
+        });
 
-    markVisited("https://example.com");
-    markVisited("https://example.com");
+        markVisited("https://example.com");
+        markVisited("https://example.com");
 
-    await nextTick();
-
-    expect(visitedCount.value).toBe(1);
+        await nextTick();
+        expect(visitedCount.value).toBe(1);
+      },
+    });
   });
 
   it("calculates completion correctly", async () => {
-    const totalSites = ref(2);
-    const { markVisited, isComplete } = useVisitedSites(
-      STORAGE_KEY,
-      totalSites,
-    );
+    await withFrozenTime({
+      now: "2026-02-19T15:00:00Z",
+      fn: async () => {
+        const totalSites = ref(2);
+        const { markVisited, isComplete } = useVisitedSites({
+          storageKey: TEST_VISITED_SITES_STORAGE_KEY,
+          totalSites,
+        });
 
-    expect(isComplete.value).toBe(false);
+        expect(isComplete.value).toBe(false);
 
-    markVisited("https://example1.com");
-    await nextTick();
-    expect(isComplete.value).toBe(false);
+        markVisited("https://example1.com");
+        await nextTick();
+        expect(isComplete.value).toBe(false);
 
-    markVisited("https://example2.com");
-    await nextTick();
-    expect(isComplete.value).toBe(true);
+        markVisited("https://example2.com");
+        await nextTick();
+        expect(isComplete.value).toBe(true);
+      },
+    });
   });
 
   it("loads visited sites from localStorage on mount (same day)", () => {
-    const today = getTodayDate();
+    withFrozenTime({
+      now: "2026-02-19T15:00:00Z",
+      fn: () => {
+        const today = todayIso();
 
-    // Pre-populate localStorage
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        date: today,
-        visited: ["https://example1.com", "https://example2.com"],
-      }),
-    );
+        localStorage.setItem(
+          TEST_VISITED_SITES_STORAGE_KEY,
+          JSON.stringify({
+            date: today,
+            visited: ["https://example1.com", "https://example2.com"],
+          }),
+        );
 
-    const totalSites = ref(5);
-    const { visitedCount, isSiteVisited } = useVisitedSites(
-      STORAGE_KEY,
-      totalSites,
-    );
+        const totalSites = ref(5);
+        const { visitedCount, isSiteVisited } = useVisitedSites({
+          storageKey: TEST_VISITED_SITES_STORAGE_KEY,
+          totalSites,
+        });
 
-    expect(visitedCount.value).toBe(2);
-    expect(isSiteVisited("https://example1.com")).toBe(true);
-    expect(isSiteVisited("https://example2.com")).toBe(true);
+        expect(visitedCount.value).toBe(2);
+        expect(isSiteVisited("https://example1.com")).toBe(true);
+        expect(isSiteVisited("https://example2.com")).toBe(true);
+      },
+    });
   });
 
   it("resets visited sites if stored date is from a previous day", async () => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayDate = yesterday.toISOString().split("T")[0];
+    await withFrozenTime({
+      now: "2026-02-19T15:00:00Z",
+      fn: async () => {
+        const today = todayIso();
+        const yesterday = getToday().subtract({ days: 1 }).toString();
 
-    // Pre-populate with yesterday's data
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        date: yesterdayDate,
-        visited: ["https://example1.com", "https://example2.com"],
-      }),
-    );
+        localStorage.setItem(
+          TEST_VISITED_SITES_STORAGE_KEY,
+          JSON.stringify({
+            date: yesterday,
+            visited: ["https://example1.com", "https://example2.com"],
+          }),
+        );
 
-    const totalSites = ref(5);
-    const { visitedCount } = useVisitedSites(STORAGE_KEY, totalSites);
+        const totalSites = ref(5);
+        const { visitedCount } = useVisitedSites({
+          storageKey: TEST_VISITED_SITES_STORAGE_KEY,
+          totalSites,
+        });
 
-    // Wait for reactivity to settle after the reset
-    await nextTick();
+        await nextTick();
 
-    // Should reset immediately on initialization
-    expect(visitedCount.value).toBe(0);
+        expect(visitedCount.value).toBe(0);
 
-    // Verify localStorage was updated
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
-    expect(stored.visited).toEqual([]);
-    expect(stored.date).toBe(getTodayDate());
+        const stored = JSON.parse(
+          localStorage.getItem(TEST_VISITED_SITES_STORAGE_KEY)!,
+        );
+        expect(stored.visited).toEqual([]);
+        expect(stored.date).toBe(today);
+      },
+    });
   });
 
   it("updates isComplete reactively when totalSites changes", async () => {
-    const totalSites = ref(2);
-    const { markVisited, isComplete } = useVisitedSites(
-      STORAGE_KEY,
-      totalSites,
-    );
+    await withFrozenTime({
+      now: "2026-02-19T15:00:00Z",
+      fn: async () => {
+        const totalSites = ref(2);
+        const { markVisited, isComplete } = useVisitedSites({
+          storageKey: TEST_VISITED_SITES_STORAGE_KEY,
+          totalSites,
+        });
 
-    markVisited("https://example1.com");
-    markVisited("https://example2.com");
-    await nextTick();
+        markVisited("https://example1.com");
+        markVisited("https://example2.com");
+        await nextTick();
+        expect(isComplete.value).toBe(true);
 
-    expect(isComplete.value).toBe(true);
-
-    // Increase total sites
-    totalSites.value = 3;
-    await nextTick();
-
-    expect(isComplete.value).toBe(false);
+        totalSites.value = 3;
+        await nextTick();
+        expect(isComplete.value).toBe(false);
+      },
+    });
   });
 });

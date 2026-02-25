@@ -76,6 +76,7 @@ describe("detectATS", () => {
 describe("getATSType", () => {
   it("uses manual atsType when provided", () => {
     const site: JobSite = {
+      id: "test-company",
       name: "Test Company",
       url: "https://example.com/careers",
       atsType: "greenhouse",
@@ -85,6 +86,7 @@ describe("getATSType", () => {
 
   it("falls back to auto-detection when atsType is not provided", () => {
     const site: JobSite = {
+      id: "workday-company",
       name: "Workday Company",
       url: "https://company.wd1.myworkdayjobs.com/jobs",
     };
@@ -93,6 +95,7 @@ describe("getATSType", () => {
 
   it("returns undefined when no atsType and detection fails", () => {
     const site: JobSite = {
+      id: "unknown-company",
       name: "Unknown Company",
       url: "https://example.com/careers",
     };
@@ -101,6 +104,7 @@ describe("getATSType", () => {
 
   it("prioritizes manual atsType over auto-detection", () => {
     const site: JobSite = {
+      id: "override-test",
       name: "Override Test",
       url: "https://company.wd1.myworkdayjobs.com/jobs",
       atsType: "custom",

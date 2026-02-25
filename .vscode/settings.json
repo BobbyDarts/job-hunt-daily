@@ -18,6 +18,7 @@
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "tailwindCSS.files.exclude": ["**/components/ui/**"],
   "tailwindCSS.experimental.classRegex": [
     ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
     ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
@@ -33,31 +34,68 @@
     "src/style.css"
   ],
   "cSpell.words": [
+    "angellist",
     "bamboohr",
     "BCBSNC",
     "BCBSSC",
     "Blackbaud",
+    "castandcrew",
     "Cengage",
     "checkmark",
     "classroommosaic",
     "Computeds",
+    "customsite",
     "Dataman",
+    "duckcreek",
     "Excelraise",
+    "flexjobs",
     "Glassdoor",
+    "Globex",
+    "governmentjobs",
+    "gunio",
+    "hackernews",
+    "homedepot",
+    "Hooli",
+    "Initech",
+    "jobboards",
     "Ksystems",
+    "levelsfyi",
     "lucide",
     "myworkdayjobs",
     "noopener",
     "noreferrer",
     "nums",
+    "oldco",
     "reka",
+    "remoteco",
+    "remoteok",
     "reposts",
+    "roberthalf",
+    "sefl",
+    "sitea",
+    "siteb",
     "Softdocs",
+    "sonner",
+    "spglobal",
+    "stackoverflow",
     "Systemtec",
+    "techco",
+    "techjobsforgood",
+    "teksystems",
     "Toptal",
     "Upwork",
+    "usajobs",
     "vaul",
     "vueuse",
-    "Wellfound"
-  ]
+    "Wellfound",
+    "weworkremotely",
+    "whoishiring",
+    "ziprecruiter"
+  ],
+  "terminal.integrated.scrollback": 25000,
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.vue": "${capture}.test.ts, index.ts"
+  }
 }

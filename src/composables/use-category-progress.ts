@@ -1,3 +1,5 @@
+// /src/composables/user-category-progress.ts
+
 import { computed } from "vue";
 
 import type { JobCategory, JobHuntData } from "@/types";
