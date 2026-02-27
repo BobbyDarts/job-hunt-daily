@@ -16,7 +16,7 @@ export function generateSiteId(
   atsType?: string,
 ): string {
   // Extract domain for uniqueness if needed
-  let domain = "";
+  let domain: string;
   try {
     const urlObj = new URL(url);
     domain = urlObj.hostname.split(".")[0];

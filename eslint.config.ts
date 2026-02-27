@@ -1,7 +1,7 @@
 import js from "@eslint/js";
-import importPlugin from "eslint-plugin-import";
+import vitestPlugin from "@vitest/eslint-plugin";
+import importPlugin from "eslint-plugin-import-x";
 import prettier from "eslint-plugin-prettier/recommended";
-import vitestPlugin from "eslint-plugin-vitest";
 import pluginVue from "eslint-plugin-vue";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -21,7 +21,7 @@ export default tseslint.config(
     files: ["**/*.vue"],
     plugins: {
       vue: pluginVue,
-      import: importPlugin,
+      "import-x": importPlugin,
     },
     languageOptions: {
       parser: vueParser, // ⚠ Must be vue-eslint-parser
@@ -35,7 +35,7 @@ export default tseslint.config(
       },
     },
     settings: {
-      "import/resolver": {
+      "import-x/resolver": {
         typescript: {
           project: "./tsconfig.eslint.json",
         },
@@ -88,7 +88,7 @@ export default tseslint.config(
       "vue/require-macro-variable-name": "error",
 
       // Import plugin rules
-      "import/order": [
+      "import-x/order": [
         "warn",
         {
           groups: [
@@ -107,9 +107,12 @@ export default tseslint.config(
           alphabetize: { order: "asc", caseInsensitive: true },
         },
       ],
-      "import/no-unresolved": "error",
-      "import/no-duplicates": "error",
-      "import/no-extraneous-dependencies": ["error", { devDependencies: true }],
+      "import-x/no-unresolved": "error",
+      "import-x/no-duplicates": "error",
+      "import-x/no-extraneous-dependencies": [
+        "error",
+        { devDependencies: true },
+      ],
     },
   },
 
@@ -129,10 +132,10 @@ export default tseslint.config(
       },
     },
     plugins: {
-      import: importPlugin,
+      "import-x": importPlugin,
     },
     settings: {
-      "import/resolver": {
+      "import-x/resolver": {
         typescript: {
           project: "./tsconfig.eslint.json",
         },
@@ -179,7 +182,7 @@ export default tseslint.config(
       "no-unused-expressions": "error",
 
       // Import plugin rules
-      "import/order": [
+      "import-x/order": [
         "warn",
         {
           groups: [
@@ -198,9 +201,12 @@ export default tseslint.config(
           alphabetize: { order: "asc", caseInsensitive: true },
         },
       ],
-      "import/no-unresolved": "error",
-      "import/no-duplicates": "error",
-      "import/no-extraneous-dependencies": ["error", { devDependencies: true }],
+      "import-x/no-unresolved": "error",
+      "import-x/no-duplicates": "error",
+      "import-x/no-extraneous-dependencies": [
+        "error",
+        { devDependencies: true },
+      ],
 
       "@typescript-eslint/no-unused-vars": [
         "error",
@@ -265,7 +271,7 @@ export default tseslint.config(
           varsIgnorePattern: "^_",
         },
       ],
-      "import/no-extraneous-dependencies": [
+      "import-x/no-extraneous-dependencies": [
         "error",
         {
           devDependencies: true, // Allow devDependencies in test files
@@ -284,13 +290,13 @@ export default tseslint.config(
       },
     },
     plugins: {
-      import: importPlugin,
+      "import-x": importPlugin,
     },
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",
       "prefer-const": "error",
       // Add import rules here
-      "import/order": [
+      "import-x/order": [
         "warn",
         {
           groups: [
@@ -315,7 +321,7 @@ export default tseslint.config(
   {
     files: ["src/router/**/*.ts", "src/main.ts"],
     rules: {
-      "import/no-extraneous-dependencies": "off",
+      "import-x/no-extraneous-dependencies": "off",
     },
   },
 
