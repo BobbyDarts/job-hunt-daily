@@ -1,4 +1,4 @@
-// /src/views/Applications.vue
+<!-- // /src/views/Applications.vue -->
 
 <script setup lang="ts">
 import {
@@ -17,15 +17,9 @@ import { AddApplicationDialog } from "@/components/add-application-dialog";
 import { ApplicationCard } from "@/components/application-card";
 import { EditApplicationDialog } from "@/components/edit-application-dialog";
 import { SiteSelect } from "@/components/site-select";
+import { StatusSelect } from "@/components/status-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Tooltip,
   TooltipTrigger,
@@ -40,7 +34,7 @@ import type {
   JobHuntData,
   JobSite,
 } from "@/types";
-import { getStatuses, getStatusInfo } from "@/types";
+import { getStatusInfo } from "@/types";
 
 const data = jobData as JobHuntData;
 const router = useRouter();
@@ -241,7 +235,7 @@ const hasActiveFilters = computed(() => {
       <!-- Filters + Stats (Merged Row) -->
       <div class="flex flex-wrap items-center gap-2">
         <!-- Search -->
-        <div class="relative flex-1 min-w-45">
+        <div class="relative w-64 shrink-0">
           <Search
             class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
           />
@@ -253,44 +247,37 @@ const hasActiveFilters = computed(() => {
         </div>
 
         <!-- Status Filter -->
-        <Select v-model="statusFilter">
-          <SelectTrigger class="h-9 w-35">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem
-              v-for="item in getStatuses()"
-              :key="item.status"
-              :value="item.status"
-            >
-              {{ item.label }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-
-        <!-- Site Filter using SiteSelect -->
-        <div class="w-37.5">
-          <SiteSelect
-            v-model="siteFilter"
-            :sites="sitesWithApplications"
-            placeholder="All Sites"
-            :group-by-category="false"
+        <div class="w-36 shrink-0">
+          <StatusSelect
+            v-model="statusFilter"
+            placeholder="All Statuses"
             show-all-option
           />
         </div>
 
-        <!-- Clear Filters -->
-        <Button
-          variant="outline"
-          size="icon"
-          class="h-9 w-9 transition-opacity"
-          :class="{ 'opacity-0 pointer-events-none': !hasActiveFilters }"
-          @click="clearFilters"
-          aria-label="Clear filters"
-        >
-          <X class="size-4" />
-        </Button>
+        <!-- Site Filter + Clear -->
+        <div class="flex items-center gap-1">
+          <div class="w-40">
+            <SiteSelect
+              v-model="siteFilter"
+              :sites="sitesWithApplications"
+              placeholder="All Sites"
+              :group-by-category="false"
+              show-all-option
+            />
+          </div>
+
+          <Button
+            v-if="hasActiveFilters"
+            variant="outline"
+            size="icon"
+            class="size-9 shrink-0"
+            @click="clearFilters"
+            aria-label="Clear filters"
+          >
+            <X class="size-4" />
+          </Button>
+        </div>
 
         <!-- Spacer -->
         <div class="flex-1 hidden md:block" />

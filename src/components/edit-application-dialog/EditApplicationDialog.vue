@@ -1,8 +1,9 @@
-// /src/components/edit-application-dialog/EditApplicationDialog.vue
+<!-- // /src/components/edit-application-dialog/EditApplicationDialog.vue -->
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
 
+import { StatusSelect } from "@/components/status-select";
 import { TagsMultiSelect } from "@/components/tags-multi-select";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,16 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { Application, ApplicationStatus, ApplicationTag } from "@/types";
-import { getStatuses } from "@/types";
 
 const props = defineProps<Props>();
 
@@ -164,20 +157,11 @@ const handleSubmit = () => {
 
             <div class="space-y-2">
               <Label for="edit-status">Status *</Label>
-              <Select v-model="formData.status">
-                <SelectTrigger id="edit-status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="item in getStatuses()"
-                    :key="item.status"
-                    :value="item.status"
-                  >
-                    {{ item.label }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <StatusSelect
+                v-model="formData.status"
+                placeholder="All Statuses"
+                class="w-full"
+              />
             </div>
 
             <div class="space-y-2">

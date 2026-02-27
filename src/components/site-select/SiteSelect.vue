@@ -1,4 +1,4 @@
-// /src/components/site-select/SiteSelect.vue
+<!-- // /src/components/site-select/SiteSelect.vue -->
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
@@ -83,7 +83,7 @@ const handleValueChange = (value: unknown) => {
 
 <template>
   <Select :model-value="modelValue" @update:model-value="handleValueChange">
-    <SelectTrigger>
+    <SelectTrigger class="w-full h-9">
       <SelectValue :placeholder="placeholder">
         {{ selectedLabel }}
       </SelectValue>
