@@ -1,4 +1,4 @@
-// /src/composables/user-category-progress.ts
+// /src/composables/use-category-progress.ts
 
 import { computed } from "vue";
 
@@ -20,16 +20,15 @@ export function useCategoryProgress(
   // Cache category stats to avoid recalculating
   const categoryStats = computed(() => {
     return sortedCategories.value.map(category => {
-      const visited = category.sites.filter(site => isSiteVisited(site.url));
-      const unvisited = category.sites.filter(site => !isSiteVisited(site.url));
+      const visitedCount = category.sites.filter(site =>
+        isSiteVisited(site.url),
+      ).length;
 
       return {
         category,
-        visited: visited.sort((a, b) => a.name.localeCompare(b.name)),
-        unvisited: unvisited.sort((a, b) => a.name.localeCompare(b.name)),
-        visitedCount: visited.length,
+        visitedCount,
         progress: category.sites.length
-          ? Math.round((visited.length / category.sites.length) * 100)
+          ? Math.round((visitedCount / category.sites.length) * 100)
           : 0,
       };
     });
@@ -38,13 +37,6 @@ export function useCategoryProgress(
   // Now these become lookups instead of recalculations
   const getCategoryStats = (category: JobCategory) => {
     return categoryStats.value.find(s => s.category.name === category.name);
-  };
-
-  const splitCategorySites = (category: JobCategory) => {
-    const stats = getCategoryStats(category);
-    return stats
-      ? { unvisited: stats.unvisited, visited: stats.visited }
-      : { unvisited: [], visited: [] };
   };
 
   const getCategoryProgress = (category: JobCategory) => {
@@ -70,7 +62,6 @@ export function useCategoryProgress(
   return {
     sortedCategories,
     categoryStats,
-    splitCategorySites,
     getCategoryProgress,
     getCategoryStats,
     getCategoryVisitedCount,

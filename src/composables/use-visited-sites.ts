@@ -1,26 +1,21 @@
 // /src/composables/use-visited-sites.ts
 
 import { useLocalStorage, watchDebounced, useWindowFocus } from "@vueuse/core";
-import type { Ref } from "vue";
 import { computed } from "vue";
 
+import { VISITED_SITES_STORAGE_KEY } from "@/composables/keys";
+import { useJobData } from "@/composables/use-job-data";
 import { isSameDayIso, todayIso } from "@/lib/time";
 import type { VisitedSites } from "@/types";
 
-import { VISITED_SITES_STORAGE_KEY } from "./keys";
-
 type UseVisitedSitesParams = {
   storageKey?: string;
-  totalSites: Ref<number>;
   skipInitReset?: boolean;
 };
 
-export function useVisitedSites(params: UseVisitedSitesParams) {
-  const {
-    storageKey = VISITED_SITES_STORAGE_KEY,
-    totalSites,
-    skipInitReset = false,
-  } = params;
+export function useVisitedSites(params: UseVisitedSitesParams = {}) {
+  const { storageKey = VISITED_SITES_STORAGE_KEY, skipInitReset = false } =
+    params;
 
   const storedData = useLocalStorage<VisitedSites>(
     storageKey,
@@ -43,6 +38,7 @@ export function useVisitedSites(params: UseVisitedSitesParams) {
     },
   });
 
+  const { totalSites } = useJobData();
   const visitedCount = computed(() => visitedSites.value.size);
   const isComplete = computed(
     () => totalSites.value > 0 && visitedCount.value === totalSites.value,

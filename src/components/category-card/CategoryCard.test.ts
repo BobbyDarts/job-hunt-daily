@@ -6,26 +6,18 @@ import { describe, expect, it, vi } from "vitest";
 import { CategoryCard } from "@/components/category-card";
 import type { Props as CategoryCardProps } from "@/components/category-card";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useCategoryProgress } from "@/composables/use-category-progress";
 import { mockCategory } from "@/test-utils/mocks";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
 
 const isSiteVisited = (_url: string) => false;
 
-// Real composable to provide splitCategorySites and getCategoryProgress
-const { splitCategorySites, getCategoryProgress } = useCategoryProgress(
-  { categories: [mockCategory] },
-  isSiteVisited,
-);
-
 const DEFAULT_PROPS: CategoryCardProps = {
   category: mockCategory,
-  splitSites: splitCategorySites(mockCategory),
+  visitedCount: 0,
   progress: 0,
   maxHeight: 6,
   isSiteVisited,
   onVisit: vi.fn(),
-  getCategoryProgress,
 };
 
 function renderCategoryCard(

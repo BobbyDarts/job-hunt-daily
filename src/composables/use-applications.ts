@@ -80,7 +80,7 @@ export function useApplications(params: UseApplicationsParams = {}) {
 
     const currentApp = applications.value[index];
 
-    // NEW: Save current state to history BEFORE updating (Approach A)
+    // Save current state to history BEFORE updating
     const snapshot: ApplicationHistory = {
       ...currentApp,
       id: generateId(), // Unique ID for this history record
@@ -116,7 +116,6 @@ export function useApplications(params: UseApplicationsParams = {}) {
     return applications.value.find(app => app.id === id);
   };
 
-  // NEW: Get timeline for an application
   const getApplicationTimeline = (
     appId: string,
   ): (Application | ApplicationHistory)[] => {
@@ -133,7 +132,6 @@ export function useApplications(params: UseApplicationsParams = {}) {
     return current ? [...history, current] : history;
   };
 
-  // NEW: Get status changes for an application
   const getStatusChanges = (appId: string) => {
     const timeline = getApplicationTimeline(appId);
     const changes: {
@@ -194,7 +192,7 @@ export function useApplications(params: UseApplicationsParams = {}) {
   return {
     // State
     applications,
-    applicationHistory, // NEW
+    applicationHistory,
 
     // CRUD
     addApplication,
@@ -202,7 +200,7 @@ export function useApplications(params: UseApplicationsParams = {}) {
     deleteApplication,
     getApplication,
 
-    // NEW: History
+    // History
     getApplicationTimeline,
     getStatusChanges,
 

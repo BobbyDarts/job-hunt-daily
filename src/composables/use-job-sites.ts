@@ -50,7 +50,6 @@ export function useJobSites(data: JobHuntData) {
     return data.categories.flatMap(category => category.sites);
   });
 
-  // NEW: Get all sites with category information
   const allSitesWithCategory = computed((): JobSiteWithCategory[] => {
     return data.categories.flatMap(category =>
       category.sites.map(site => ({
@@ -60,6 +59,10 @@ export function useJobSites(data: JobHuntData) {
     );
   });
 
+  const totalSites = computed(() =>
+    data.categories.reduce((sum, cat) => sum + cat.sites.length, 0),
+  );
+
   return {
     siteById,
     siteByUrl,
@@ -67,5 +70,6 @@ export function useJobSites(data: JobHuntData) {
     getSiteByUrl,
     allSites,
     allSitesWithCategory,
+    totalSites,
   };
 }
