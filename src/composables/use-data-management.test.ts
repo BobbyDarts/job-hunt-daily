@@ -2,19 +2,17 @@
 
 import { Temporal } from "@js-temporal/polyfill";
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { ref } from "vue";
-
-import { getNow, toInstant, toPlainDate } from "@/lib/time";
-import { withFrozenTime } from "@/test-utils/with-frozen-time";
-import type { Application, VisitedSites } from "@/types";
 
 import {
   TEST_APPLICATIONS_HISTORY_STORAGE_KEY,
   TEST_APPLICATIONS_STORAGE_KEY,
   TEST_VISITED_SITES_STORAGE_KEY,
-} from "./keys";
-import { useDataManagement } from "./use-data-management";
-import type { UseDataManagementParams } from "./use-data-management";
+} from "@/composables/keys";
+import { useDataManagement } from "@/composables/use-data-management";
+import type { UseDataManagementParams } from "@/composables/use-data-management";
+import { getNow, toInstant, toPlainDate } from "@/lib/time";
+import { withFrozenTime } from "@/test-utils/with-frozen-time";
+import type { Application, VisitedSites } from "@/types";
 
 describe("useDataManagement", () => {
   const useDataManagementParams: Partial<UseDataManagementParams> = {
@@ -63,7 +61,6 @@ describe("useDataManagement", () => {
 
           const { exportAllData } = useDataManagement({
             ...useDataManagementParams,
-            totalSites: ref(2),
           });
 
           const mockClick = vi.fn();
@@ -110,7 +107,7 @@ describe("useDataManagement", () => {
               appliedDate: toPlainDate("2026-02-03").toString(),
               createdAt: toInstant("2026-02-03T10:00:00Z").toString(),
               updatedAt: toInstant("2026-02-03T10:00:00Z").toString(),
-              tags: ["phone_screen"],
+              tags: ["virtual"],
               notes: "Test notes",
             },
           ];
@@ -126,7 +123,6 @@ describe("useDataManagement", () => {
 
           const { exportAllData } = useDataManagement({
             ...useDataManagementParams,
-            totalSites: ref(1),
           });
 
           let capturedBlob: Blob | null = null;
@@ -161,7 +157,6 @@ describe("useDataManagement", () => {
         fn: async () => {
           const { exportAllData } = useDataManagement({
             ...useDataManagementParams,
-            totalSites: ref(1),
           });
 
           let capturedBlob: Blob | null = null;
@@ -194,7 +189,6 @@ describe("useDataManagement", () => {
         fn: async () => {
           const { exportAllData } = useDataManagement({
             ...useDataManagementParams,
-            totalSites: ref(1),
           });
 
           let capturedBlob: Blob | null = null;
@@ -236,7 +230,6 @@ describe("useDataManagement", () => {
         fn: async () => {
           const { importAllData } = useDataManagement({
             ...useDataManagementParams,
-            totalSites: ref(1),
           });
 
           const mockData = {
@@ -312,7 +305,6 @@ describe("useDataManagement", () => {
 
           const { importAllData } = useDataManagement({
             ...useDataManagementParams,
-            totalSites: ref(1),
           });
 
           const newData = {
@@ -363,7 +355,6 @@ describe("useDataManagement", () => {
         fn: async () => {
           const { importAllData } = useDataManagement({
             ...useDataManagementParams,
-            totalSites: ref(0),
           });
 
           const file = new File(["invalid json {{{"], "backup.json", {
@@ -381,7 +372,6 @@ describe("useDataManagement", () => {
         fn: async () => {
           const { importAllData } = useDataManagement({
             ...useDataManagementParams,
-            totalSites: ref(0),
           });
 
           const invalidData = {
@@ -405,7 +395,6 @@ describe("useDataManagement", () => {
         fn: async () => {
           const { importAllData } = useDataManagement({
             ...useDataManagementParams,
-            totalSites: ref(0),
           });
 
           const invalidData = {
@@ -429,7 +418,6 @@ describe("useDataManagement", () => {
         fn: async () => {
           const { importAllData } = useDataManagement({
             ...useDataManagementParams,
-            totalSites: ref(1),
           });
 
           const mockData = {
@@ -508,7 +496,7 @@ describe("useDataManagement", () => {
               appliedDate: toPlainDate("2026-02-02").toString(),
               createdAt: toInstant("2026-02-02T10:00:00Z").toString(),
               updatedAt: toInstant("2026-02-02T10:00:00Z").toString(),
-              tags: ["referral"],
+              tags: ["technical"],
             },
           ];
 
@@ -523,7 +511,6 @@ describe("useDataManagement", () => {
 
           const { exportAllData, importAllData } = useDataManagement({
             ...useDataManagementParams,
-            totalSites: ref(2),
           });
 
           // Export

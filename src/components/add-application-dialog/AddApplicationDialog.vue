@@ -1,7 +1,7 @@
 // /src/components/add-application-dialog/AddApplicationDialog.vue
 
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, nextTick } from "vue";
 
 import { SiteSelect } from "@/components/site-select";
 import { TagsMultiSelect } from "@/components/tags-multi-select";
@@ -18,16 +18,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { useJobSites } from "@/composables/use-job-sites";
-import jobData from "@/data/job-hunt-daily.json";
+import { useJobData } from "@/composables/use-job-data";
 import { buildApplicationPayload } from "@/lib/application-utils";
 import { todayIso } from "@/lib/time";
-import type {
-  JobSite,
-  Application,
-  ApplicationTag,
-  JobHuntData,
-} from "@/types";
+import type { JobSite, Application, ApplicationTag } from "@/types";
 
 const props = defineProps<Props>();
 
@@ -36,9 +30,7 @@ const emit = defineEmits<{
   submit: [data: Omit<Application, "id" | "createdAt" | "updatedAt">];
 }>();
 
-const data = jobData as JobHuntData;
-
-const { allSitesWithCategory, getSiteById } = useJobSites(data);
+const { allSitesWithCategory, getSiteById } = useJobData();
 
 export interface Props {
   open: boolean;
@@ -117,6 +109,21 @@ const handleCancel = () => {
   emit("update:open", false);
   resetForm();
 };
+
+const companyInputRef = ref<InstanceType<typeof Input> | null>(null);
+
+watch(
+  () => props.open,
+  async isOpen => {
+    if (isOpen) {
+      resetForm();
+      await nextTick();
+      setTimeout(() => {
+        companyInputRef.value?.$el?.focus();
+      }, 50);
+    }
+  },
+);
 </script>
 
 <template>
@@ -145,6 +152,7 @@ const handleCancel = () => {
             <Label for="company">Company *</Label>
             <Input
               id="company"
+              ref="companyInputRef"
               v-model="formData.company"
               placeholder="e.g., Acme Corp"
               @keyup.enter="handleSubmit"

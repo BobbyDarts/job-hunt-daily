@@ -1,18 +1,16 @@
 // /src/composables/use-data-management.ts
 
-import type { Ref } from "vue";
 import { toast } from "vue-sonner";
-
-import { useApplications } from "@/composables/use-applications";
-import { getNow } from "@/lib/time";
-import type { Application, ApplicationHistory, VisitedSites } from "@/types";
 
 import {
   APPLICATIONS_STORAGE_KEY,
   APPLICATIONS_HISTORY_STORAGE_KEY,
   VISITED_SITES_STORAGE_KEY,
-} from "./keys";
-import { useVisitedSites } from "./use-visited-sites";
+} from "@/composables/keys";
+import { useApplications } from "@/composables/use-applications";
+import { useVisitedSites } from "@/composables/use-visited-sites";
+import { getNow } from "@/lib/time";
+import type { Application, ApplicationHistory, VisitedSites } from "@/types";
 
 export interface ExportData {
   version: string;
@@ -26,15 +24,13 @@ export type UseDataManagementParams = {
   applicationStorageKey?: string;
   applicationHistoryStorageKey?: string;
   visitedSitesStorageKey?: string;
-  totalSites: Ref<number>;
 };
 
-export function useDataManagement(params: UseDataManagementParams) {
+export function useDataManagement(params: UseDataManagementParams = {}) {
   const {
     applicationStorageKey = APPLICATIONS_STORAGE_KEY,
     applicationHistoryStorageKey = APPLICATIONS_HISTORY_STORAGE_KEY,
     visitedSitesStorageKey = VISITED_SITES_STORAGE_KEY,
-    totalSites,
   } = params;
 
   const { applications, applicationHistory } = useApplications({
@@ -44,7 +40,6 @@ export function useDataManagement(params: UseDataManagementParams) {
 
   const { serialize, hydrate } = useVisitedSites({
     storageKey: visitedSitesStorageKey,
-    totalSites,
     skipInitReset: true,
   });
 

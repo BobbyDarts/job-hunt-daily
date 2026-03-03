@@ -96,6 +96,7 @@
   "typescript.preferences.preferTypeOnlyAutoImports": true,
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
-    "*.vue": "${capture}.test.ts, index.ts"
+    "*.vue": "${capture}.test.ts, index.ts",
+    "*.ts": "${capture}.test.ts"
   }
 }

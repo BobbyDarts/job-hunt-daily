@@ -39,6 +39,7 @@ vi.mock("@/composables/use-category-progress", () => ({
       visited: [],
     })),
     getCategoryProgress: vi.fn(() => 0),
+    getCategoryVisitedCount: vi.fn(() => 0),
     maxCategoryHeight: computed(() => 6),
   }),
 }));

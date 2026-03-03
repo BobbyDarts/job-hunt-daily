@@ -1,7 +1,7 @@
 // /src/composables/use-visited-sites.test.ts
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { ref, nextTick } from "vue";
+import { nextTick } from "vue";
 
 import { getToday, todayIso } from "@/lib/time";
 import { withFrozenTime } from "@/test-utils/with-frozen-time";
@@ -19,10 +19,8 @@ describe("useVisitedSites", () => {
     withFrozenTime({
       now: "2026-02-19T15:00:00Z",
       fn: () => {
-        const totalSites = ref(5);
         const { visitedCount, isComplete } = useVisitedSites({
           storageKey: TEST_VISITED_SITES_STORAGE_KEY,
-          totalSites,
         });
 
         expect(visitedCount.value).toBe(0);
@@ -37,10 +35,8 @@ describe("useVisitedSites", () => {
       fn: async () => {
         const today = todayIso();
 
-        const totalSites = ref(5);
         const { markVisited, isSiteVisited, visitedCount } = useVisitedSites({
           storageKey: TEST_VISITED_SITES_STORAGE_KEY,
-          totalSites,
         });
 
         markVisited("https://example.com");
@@ -62,10 +58,8 @@ describe("useVisitedSites", () => {
     await withFrozenTime({
       now: "2026-02-19T15:00:00Z",
       fn: async () => {
-        const totalSites = ref(5);
         const { markVisited, visitedCount } = useVisitedSites({
           storageKey: TEST_VISITED_SITES_STORAGE_KEY,
-          totalSites,
         });
 
         markVisited("https://example.com");
@@ -73,29 +67,6 @@ describe("useVisitedSites", () => {
 
         await nextTick();
         expect(visitedCount.value).toBe(1);
-      },
-    });
-  });
-
-  it("calculates completion correctly", async () => {
-    await withFrozenTime({
-      now: "2026-02-19T15:00:00Z",
-      fn: async () => {
-        const totalSites = ref(2);
-        const { markVisited, isComplete } = useVisitedSites({
-          storageKey: TEST_VISITED_SITES_STORAGE_KEY,
-          totalSites,
-        });
-
-        expect(isComplete.value).toBe(false);
-
-        markVisited("https://example1.com");
-        await nextTick();
-        expect(isComplete.value).toBe(false);
-
-        markVisited("https://example2.com");
-        await nextTick();
-        expect(isComplete.value).toBe(true);
       },
     });
   });
@@ -114,10 +85,8 @@ describe("useVisitedSites", () => {
           }),
         );
 
-        const totalSites = ref(5);
         const { visitedCount, isSiteVisited } = useVisitedSites({
           storageKey: TEST_VISITED_SITES_STORAGE_KEY,
-          totalSites,
         });
 
         expect(visitedCount.value).toBe(2);
@@ -142,10 +111,8 @@ describe("useVisitedSites", () => {
           }),
         );
 
-        const totalSites = ref(5);
         const { visitedCount } = useVisitedSites({
           storageKey: TEST_VISITED_SITES_STORAGE_KEY,
-          totalSites,
         });
 
         await nextTick();
@@ -157,28 +124,6 @@ describe("useVisitedSites", () => {
         );
         expect(stored.visited).toEqual([]);
         expect(stored.date).toBe(today);
-      },
-    });
-  });
-
-  it("updates isComplete reactively when totalSites changes", async () => {
-    await withFrozenTime({
-      now: "2026-02-19T15:00:00Z",
-      fn: async () => {
-        const totalSites = ref(2);
-        const { markVisited, isComplete } = useVisitedSites({
-          storageKey: TEST_VISITED_SITES_STORAGE_KEY,
-          totalSites,
-        });
-
-        markVisited("https://example1.com");
-        markVisited("https://example2.com");
-        await nextTick();
-        expect(isComplete.value).toBe(true);
-
-        totalSites.value = 3;
-        await nextTick();
-        expect(isComplete.value).toBe(false);
       },
     });
   });

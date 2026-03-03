@@ -25,21 +25,16 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { useAddApplicationDialog } from "@/composables/use-add-application-dialog";
 import { useApplications } from "@/composables/use-applications";
-import jobData from "@/data/job-hunt-daily.json";
+import { useJobData } from "@/composables/use-job-data";
 import { comparePlainDate } from "@/lib/time";
-import type {
-  Application,
-  ApplicationStatus,
-  JobHuntData,
-  JobSite,
-} from "@/types";
+import type { Application, ApplicationStatus, JobSite } from "@/types";
 import { getStatusInfo } from "@/types";
 
-const data = jobData as JobHuntData;
 const router = useRouter();
 const route = useRoute();
-
+const { data } = useJobData();
 const {
   applications,
   addApplication,
@@ -86,7 +81,7 @@ watch([searchQuery, statusFilter, siteFilter], ([search, status, site]) => {
 });
 
 // Dialog states
-const isAddDialogOpen = ref(false);
+const { open: isAddDialogOpen } = useAddApplicationDialog();
 const isEditDialogOpen = ref(false);
 const selectedApplication = ref<Application | null>(null);
 

@@ -1,51 +1,36 @@
 // /src/views/Home.vue
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 
 import { AddApplicationDialog } from "@/components/add-application-dialog";
 import { CategoryCard } from "@/components/category-card";
+import { useAddApplicationDialog } from "@/composables/use-add-application-dialog";
 import { useApplications } from "@/composables/use-applications";
 import { useATSDetection } from "@/composables/use-ats-detection";
 import { useCategoryProgress } from "@/composables/use-category-progress";
+import { useJobData } from "@/composables/use-job-data";
 import { useVisitedSites } from "@/composables/use-visited-sites";
-import jobData from "@/data/job-hunt-daily.json";
-import type { JobSite, Application, JobHuntData } from "@/types";
-
-const data = jobData as JobHuntData;
-const router = useRouter();
-
-// Total sites count
-const totalSites = computed(() => {
-  return data.categories.reduce((sum, cat) => sum + cat.sites.length, 0);
-});
+import type { JobSite, Application } from "@/types";
 
 // Composables
-const visitedComposable = useVisitedSites({ totalSites });
-const categoryComposable = useCategoryProgress(
-  data,
-  visitedComposable.isSiteVisited,
-);
-const atsComposable = useATSDetection();
-
-// Convenience for template
-const { markVisited, isSiteVisited } = visitedComposable;
+const router = useRouter();
+const { data } = useJobData();
+const { markVisited, isSiteVisited } = useVisitedSites();
 const {
   sortedCategories,
-  splitCategorySites,
   getCategoryProgress,
+  getCategoryVisitedCount,
   maxCategoryHeight,
-} = categoryComposable;
-const { getATS } = atsComposable;
-
-// Add applications composable
+} = useCategoryProgress(data, isSiteVisited);
+const { getATS } = useATSDetection();
 const { addApplication, applications } = useApplications();
-
-// Modal state
-const isAddApplicationDialogOpen = ref(false);
-const selectedSite = ref<JobSite | null>(null);
+const {
+  open: isAddApplicationDialogOpen,
+  site: selectedSite,
+  openDialog,
+} = useAddApplicationDialog();
 
 // Handle site click
 const handleSiteClick = (url: string) => {
@@ -55,8 +40,7 @@ const handleSiteClick = (url: string) => {
 
 // Handler for "Add Application" button
 const handleAddApplication = (site: JobSite) => {
-  selectedSite.value = site;
-  isAddApplicationDialogOpen.value = true;
+  openDialog(site);
 };
 
 // Handler for "Manage Applications" button
@@ -94,7 +78,7 @@ const handleApplicationSubmit = (
         v-for="category in sortedCategories"
         :key="category.name"
         :category="category"
-        :split-sites="splitCategorySites(category)"
+        :visited-count="getCategoryVisitedCount(category)"
         :progress="getCategoryProgress(category)"
         :max-height="maxCategoryHeight"
         :get-a-t-s="getATS"
@@ -103,7 +87,6 @@ const handleApplicationSubmit = (
         :on-add-application="handleAddApplication"
         :on-manage-applications="handleManageApplications"
         :get-applications-for-site="getApplicationsForSite"
-        :get-category-progress="getCategoryProgress"
       />
     </div>
   </div>

@@ -106,6 +106,19 @@ describe("useJobSites", () => {
     });
   });
 
+  describe("totalSites", () => {
+    it("returns the total number of sites across all categories", () => {
+      const { totalSites } = useJobSites(mockJobHuntData);
+      // mockJobHuntData has 5 + 2 + 1 = 8 sites
+      expect(totalSites.value).toBe(8);
+    });
+
+    it("returns 0 for empty data", () => {
+      const { totalSites } = useJobSites({ categories: [] });
+      expect(totalSites.value).toBe(0);
+    });
+  });
+
   describe("edge cases", () => {
     it("handles empty categories array", () => {
       const emptyData = { categories: [] };

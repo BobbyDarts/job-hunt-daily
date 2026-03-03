@@ -2,14 +2,25 @@
 
 <script setup lang="ts">
 import { useColorMode, useOnline } from "@vueuse/core";
-import { Sun, Moon, Upload, Download, FolderOpen } from "lucide-vue-next";
+import {
+  Sun,
+  Moon,
+  Upload,
+  Download,
+  FolderOpen,
+  Search,
+  CircleHelp,
+} from "lucide-vue-next";
 import { computed, watch } from "vue";
 import { RouterLink } from "vue-router";
 import { Toaster, toast } from "vue-sonner";
 import "vue-sonner/style.css";
 
+import { CommandPalette } from "@/components/command-palette";
 import { Header } from "@/components/header";
 import { MenuToggle } from "@/components/menu-toggle";
+import { ShortcutReferenceDialog } from "@/components/shortcut-reference-dialog";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -20,38 +31,48 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
+import { useCommandPalette } from "@/composables/use-command-palette";
 import { useDataManagement } from "@/composables/use-data-management";
+import { useJobData } from "@/composables/use-job-data";
+import { useKeyboardShortcuts } from "@/composables/use-keyboard-shortcuts";
+import { useShortcutReference } from "@/composables/use-shortcut-reference";
 import { useVisitedSites } from "@/composables/use-visited-sites";
-import jobData from "@/data/job-hunt-daily.json";
-import type { JobHuntData } from "@/types";
-
-const data = jobData as JobHuntData;
-
-// Total sites count
-const totalSites = computed(() => {
-  return data.categories.reduce((sum, cat) => sum + cat.sites.length, 0);
-});
 
 // Composables
-const visitedComposable = useVisitedSites({ totalSites });
-const { visitedCount, isComplete } = visitedComposable;
+const colorMode = useColorMode();
+const isOnline = useOnline();
 
-// Progress computed from visitedCount
+const { totalSites } = useJobData();
+const { visitedCount, isComplete } = useVisitedSites();
+const { openCommandPalette } = useCommandPalette();
+const { openDialog: openShortcutReference } = useShortcutReference();
+const { exportAllData, triggerImport } = useDataManagement();
+useKeyboardShortcuts();
+
+// Computed
 const progress = computed(() => {
   if (totalSites.value === 0) return 0;
   return Math.round((visitedCount.value / totalSites.value) * 100);
 });
 
-const colorMode = useColorMode();
+const isMac = computed(
+  () =>
+    navigator.platform.toUpperCase().includes("MAC") ||
+    navigator.userAgent.toUpperCase().includes("MAC"),
+);
 
+// Actions
 const toggleTheme = () => {
   colorMode.value = colorMode.value === "dark" ? "light" : "dark";
 };
 
-const { exportAllData, triggerImport } = useDataManagement({ totalSites });
-
-const isOnline = useOnline();
+// Watchers
 watch(isOnline, online => {
   if (online) {
     toast.success("You're back online!");
@@ -69,6 +90,8 @@ watch(isOnline, online => {
     position="bottom-right"
     :theme="colorMode === 'auto' ? 'dark' : colorMode"
   />
+  <CommandPalette />
+  <ShortcutReferenceDialog />
   <TooltipProvider>
     <div class="h-screen bg-background flex flex-col overflow-hidden">
       <!-- Fixed Header -->
@@ -82,6 +105,35 @@ watch(isOnline, online => {
       >
         <!-- Add theme toggle to header actions slot -->
         <template #actions>
+          <!-- Fake search bar -->
+          <Button
+            variant="outline"
+            class="hidden sm:flex items-center gap-2 px-3 h-8 text-sm text-muted-foreground w-48"
+            @click="openCommandPalette"
+          >
+            <Search class="size-3.5 shrink-0" />
+            <span class="flex-1 text-left">Search...</span>
+            <kbd
+              class="text-xs font-mono bg-background border border-border/50 rounded px-1"
+            >
+              {{ isMac ? "⌘" : "Ctrl " }}K
+            </kbd>
+          </Button>
+
+          <!-- Shortcut reference button -->
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="size-8"
+                @click="openShortcutReference"
+              >
+                <CircleHelp class="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Keyboard shortcuts (?)</TooltipContent>
+          </Tooltip>
           <DropdownMenu v-slot="{ open }">
             <DropdownMenuTrigger as-child>
               <MenuToggle :open="open" />
@@ -108,12 +160,12 @@ watch(isOnline, online => {
                 >
                 <DropdownMenuItem @click="triggerImport">
                   <Upload class="mr-2 size-4" />
-                  Import…
+                  Import...
                 </DropdownMenuItem>
 
                 <DropdownMenuItem @click="exportAllData">
                   <Download class="mr-2 size-4" />
-                  Export…
+                  Export...
                 </DropdownMenuItem>
               </DropdownMenuGroup>
 
