@@ -6,11 +6,13 @@ import { toast } from "vue-sonner";
 
 import { AddApplicationDialog } from "@/components/app/applications/add-application-dialog";
 import { CategoryCard } from "@/components/app/sites/category-card";
-import { useAddApplicationDialog } from "@/composables/use-add-application-dialog";
-import { useApplications } from "@/composables/use-applications";
-import { useATSDetection } from "@/composables/use-ats-detection";
-import { useCategoryProgress } from "@/composables/use-category-progress";
-import { useVisitedSites } from "@/composables/use-visited-sites";
+import { useCategoryProgress } from "@/composables/dashboard";
+import {
+  useApplications,
+  useATSDetection,
+  useVisitedSites,
+} from "@/composables/data";
+import { useAddApplicationDialog } from "@/composables/ui";
 import type { JobSite, Application } from "@/types";
 
 // Composables

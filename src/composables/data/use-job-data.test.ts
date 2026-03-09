@@ -1,8 +1,8 @@
-// /src/composables/use-job-data.test.ts
+// /src/composables/data/use-job-data.test.ts
 
 import { describe, expect, it } from "vitest";
 
-import { useJobData } from "@/composables/use-job-data";
+import { useJobData } from "./use-job-data";
 
 describe("useJobData", () => {
   it("returns data", () => {

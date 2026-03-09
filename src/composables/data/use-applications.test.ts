@@ -1,4 +1,4 @@
-// /src/composables/use-applications.test.ts
+// /src/composables/data/use-applications.test.ts
 
 import { Temporal } from "@js-temporal/polyfill";
 import { describe, it, expect, beforeEach } from "vitest";
@@ -7,10 +7,11 @@ import {
   TEST_APPLICATIONS_HISTORY_STORAGE_KEY,
   TEST_APPLICATIONS_STORAGE_KEY,
 } from "@/composables/keys";
-import { useApplications } from "@/composables/use-applications";
 import { toInstant, toPlainDate } from "@/lib/time";
 import { withFrozenTime } from "@/test-utils/with-frozen-time";
 import type { Application, ApplicationHistory } from "@/types";
+
+import { useApplications } from "./use-applications";
 
 describe("useApplications", () => {
   const useApplicationsParams = {

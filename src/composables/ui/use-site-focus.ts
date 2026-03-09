@@ -1,4 +1,4 @@
-// /src/composables/use-site-focus.ts
+// /src/composables/ui/use-site-focus.ts
 
 import { ref } from "vue";
 

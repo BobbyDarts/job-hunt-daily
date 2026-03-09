@@ -37,12 +37,13 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { useCommandPalette } from "@/composables/use-command-palette";
-import { useDataManagement } from "@/composables/use-data-management";
-import { useJobData } from "@/composables/use-job-data";
-import { useKeyboardShortcuts } from "@/composables/use-keyboard-shortcuts";
-import { useShortcutReference } from "@/composables/use-shortcut-reference";
-import { useVisitedSites } from "@/composables/use-visited-sites";
+import {
+  useDataManagement,
+  useJobData,
+  useVisitedSites,
+} from "@/composables/data";
+import { useKeyboardShortcuts } from "@/composables/keyboard";
+import { useCommandPalette, useShortcutReference } from "@/composables/ui";
 
 // Composables
 const colorMode = useColorMode();

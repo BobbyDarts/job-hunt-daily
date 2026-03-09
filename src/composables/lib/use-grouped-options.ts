@@ -1,4 +1,4 @@
-// /src/composables/use-grouped-options.ts
+// /src/composables/lib/use-grouped-options.ts
 
 import { computed, type Ref } from "vue";
 

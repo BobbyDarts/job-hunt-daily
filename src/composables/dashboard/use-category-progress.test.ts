@@ -1,10 +1,11 @@
-// /src/composables/use-category-progress.test.ts
+// /src/composables/dashboard/use-category-progress.test.ts
 
 import { describe, expect, it } from "vitest";
 
-import { useCategoryProgress } from "@/composables/use-category-progress";
 import { mockJobHuntData } from "@/test-utils/mocks";
 import type { JobHuntData } from "@/types";
+
+import { useCategoryProgress } from "./use-category-progress";
 
 describe("useCategoryProgress", () => {
   it("sorts categories by site count and sites alphabetically", () => {

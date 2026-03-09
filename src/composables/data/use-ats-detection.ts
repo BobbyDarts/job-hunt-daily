@@ -1,4 +1,4 @@
-// /src/composables/use-ats-detection.ts
+// /src/composables/data/use-ats-detection.ts
 
 import type { ATSInfo } from "@/lib/ats-detection";
 import { getATSInfo, getATSType } from "@/lib/ats-detection";

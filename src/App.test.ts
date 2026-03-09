@@ -11,7 +11,7 @@ import App from "./App.vue";
 
 // Mock composables to avoid localStorage and network dependencies
 
-vi.mock("@/composables/use-visited-sites", () => ({
+vi.mock("@/composables/data/use-visited-sites", () => ({
   useVisitedSites: () => ({
     visitedCount: ref(5),
     isComplete: ref(false),
@@ -20,7 +20,7 @@ vi.mock("@/composables/use-visited-sites", () => ({
   }),
 }));
 
-vi.mock("@/composables/use-data-management", () => ({
+vi.mock("@/composables/data/use-data-management", () => ({
   useDataManagement: () => ({
     exportAllData: vi.fn(),
     triggerImport: vi.fn(),

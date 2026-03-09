@@ -10,7 +10,7 @@ import { mockApplications } from "@/test-utils/mocks";
 import { Applications } from "@/views";
 
 // Mock the composable
-vi.mock("@/composables/use-applications", () => ({
+vi.mock("@/composables/data/use-applications", () => ({
   useApplications: () => ({
     applications: ref(mockApplications),
     addApplication: vi.fn(),

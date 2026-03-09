@@ -1,4 +1,4 @@
-// /src/composables/use-add-application-dialog.ts
+// /src/composables/ui/use-add-application-dialog.ts
 
 import { createDialogState } from "@/components/app/lib/dialog";
 import type { JobSite } from "@/types";

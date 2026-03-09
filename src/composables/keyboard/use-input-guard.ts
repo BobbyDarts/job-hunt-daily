@@ -1,4 +1,4 @@
-// /src/composables/use-input-guard.ts
+// /src/composables/keyboard/use-input-guard.ts
 
 import { useActiveElement } from "@vueuse/core";
 import { computed } from "vue";

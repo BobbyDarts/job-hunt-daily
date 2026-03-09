@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useShortcutReference } from "@/composables/use-shortcut-reference";
+import { useShortcutReference } from "@/composables/ui";
 
 const { open, closeDialog } = useShortcutReference();
 </script>

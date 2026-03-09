@@ -13,9 +13,8 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { useAddApplicationDialog } from "@/composables/use-add-application-dialog";
-import { useCommandPalette } from "@/composables/use-command-palette";
-import { useDataManagement } from "@/composables/use-data-management";
+import { useDataManagement } from "@/composables/data";
+import { useAddApplicationDialog, useCommandPalette } from "@/composables/ui";
 
 // composables
 const router = useRouter();

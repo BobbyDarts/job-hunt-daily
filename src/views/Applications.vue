@@ -25,9 +25,8 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
-import { useAddApplicationDialog } from "@/composables/use-add-application-dialog";
-import { useApplications } from "@/composables/use-applications";
-import { useJobData } from "@/composables/use-job-data";
+import { useApplications, useJobData } from "@/composables/data";
+import { useAddApplicationDialog } from "@/composables/ui";
 import { comparePlainDate } from "@/lib/time";
 import type { Application, ApplicationStatus, JobSite } from "@/types";
 import { getStatusInfo } from "@/types";

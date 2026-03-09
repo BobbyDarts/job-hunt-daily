@@ -1,4 +1,4 @@
-// /src/composables/use-shortcut-reference.ts
+// /src/composables/ui/use-shortcut-reference.ts
 
 import { createDialogState } from "@/components/app/lib";
 

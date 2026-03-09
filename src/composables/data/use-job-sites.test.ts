@@ -1,9 +1,10 @@
-// /src/composables/use-job-sites.test.ts
+// /src/composables/data/use-job-sites.test.ts
 
 import { describe, it, expect } from "vitest";
 
-import { useJobSites } from "@/composables/use-job-sites";
 import { mockJobHuntData } from "@/test-utils/mocks";
+
+import { useJobSites } from "./use-job-sites";
 
 describe("useJobSites", () => {
   describe("getSiteById", () => {
