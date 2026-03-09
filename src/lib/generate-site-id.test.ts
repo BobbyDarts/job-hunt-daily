@@ -2,7 +2,7 @@
 
 import { describe, it, expect } from "vitest";
 
-import { generateSiteId, ensureUniqueSiteIds } from "./generate-site-id";
+import { generateSiteId, ensureUniqueSiteIds } from "@/lib/generate-site-id";
 
 describe("generateSiteId", () => {
   it("generates ID from ATS type and company name", () => {

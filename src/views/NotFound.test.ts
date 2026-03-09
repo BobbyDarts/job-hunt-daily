@@ -4,7 +4,7 @@ import { screen, render, fireEvent, waitFor } from "@testing-library/vue";
 import { describe, it, expect } from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
 
-import NotFound from "./NotFound.vue";
+import { NotFound } from "@/views";
 
 async function createTestRouter(initialPath = "/nonexistent") {
   const router = createRouter({

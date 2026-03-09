@@ -1,6 +1,6 @@
 // /src/types/job-sites.ts
 
-import type { ATSType } from "./ats";
+import type { ATSType } from "@/types";
 
 export interface JobSite {
   id: string;

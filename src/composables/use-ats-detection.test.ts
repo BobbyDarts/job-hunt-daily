@@ -2,10 +2,9 @@
 
 import { describe, expect, it } from "vitest";
 
+import { useATSDetection } from "@/composables/use-ats-detection";
 import { mockJobHuntData } from "@/test-utils/mocks";
 import type { JobHuntData, JobSite } from "@/types";
-
-import { useATSDetection } from "./use-ats-detection";
 
 describe("useATSDetection", () => {
   describe("getATS", () => {

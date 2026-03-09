@@ -3,15 +3,14 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { describe, it, expect, beforeEach } from "vitest";
 
-import { toInstant, toPlainDate } from "@/lib/time";
-import { withFrozenTime } from "@/test-utils/with-frozen-time";
-import type { Application, ApplicationHistory } from "@/types";
-
 import {
   TEST_APPLICATIONS_HISTORY_STORAGE_KEY,
   TEST_APPLICATIONS_STORAGE_KEY,
-} from "./keys";
-import { useApplications } from "./use-applications";
+} from "@/composables/keys";
+import { useApplications } from "@/composables/use-applications";
+import { toInstant, toPlainDate } from "@/lib/time";
+import { withFrozenTime } from "@/test-utils/with-frozen-time";
+import type { Application, ApplicationHistory } from "@/types";
 
 describe("useApplications", () => {
   const useApplicationsParams = {
@@ -107,13 +106,13 @@ describe("useApplications", () => {
             status: "interviewing",
             appliedDate: toPlainDate("2026-02-03").toString(),
             atsType: "greenhouse",
-            tags: ["phone_screen", "referral"],
+            tags: ["virtual", "technical"],
             notes: "Referred by John",
             followUpDate: "2026-02-10",
           });
 
           expect(newApp.atsType).toBe("greenhouse");
-          expect(newApp.tags).toEqual(["phone_screen", "referral"]);
+          expect(newApp.tags).toEqual(["virtual", "technical"]);
           expect(newApp.notes).toBe("Referred by John");
           expect(newApp.followUpDate).toBe("2026-02-10");
           expect(applications.value[0]).toEqual(newApp);
@@ -197,12 +196,12 @@ describe("useApplications", () => {
             fn: () => {
               const updated = updateApplication(app.id, {
                 status: "interviewing",
-                tags: ["phone_screen"],
+                tags: ["virtual"],
               });
 
               expect(updated).toBeDefined();
               expect(updated?.status).toBe("interviewing");
-              expect(updated?.tags).toEqual(["phone_screen"]);
+              expect(updated?.tags).toEqual(["virtual"]);
               expect(updated?.company).toBe("Tech Co"); // Unchanged
               expect(updated?.updatedAt).not.toBe(app.updatedAt);
               expect(applications.value[0]).toEqual(updated);
@@ -462,7 +461,7 @@ describe("useApplications", () => {
         jobSiteUrl: "https://a.com",
         status: "applied",
         appliedDate: toPlainDate("2026-02-03").toString(),
-        tags: ["referral", "phone_screen"],
+        tags: ["virtual", "behavioral"],
       });
 
       addApplication({
@@ -472,17 +471,17 @@ describe("useApplications", () => {
         jobSiteUrl: "https://b.com",
         status: "applied",
         appliedDate: toPlainDate("2026-02-03").toString(),
-        tags: ["cold_apply"],
+        tags: ["offer_negotiation"],
       });
 
-      const referrals = filterByTag("referral");
-      const coldApply = filterByTag("cold_apply");
+      const virtual = filterByTag("virtual");
+      const offerNegotiation = filterByTag("offer_negotiation");
       const technical = filterByTag("technical");
 
-      expect(referrals).toHaveLength(1);
-      expect(referrals[0].company).toBe("Company A");
-      expect(coldApply).toHaveLength(1);
-      expect(coldApply[0].company).toBe("Company B");
+      expect(virtual).toHaveLength(1);
+      expect(virtual[0].company).toBe("Company A");
+      expect(offerNegotiation).toHaveLength(1);
+      expect(offerNegotiation[0].company).toBe("Company B");
       expect(technical).toHaveLength(0);
     });
 
@@ -500,7 +499,7 @@ describe("useApplications", () => {
         appliedDate: toPlainDate("2026-02-03").toString(),
       });
 
-      const results = filterByTag("referral");
+      const results = filterByTag("onsite");
 
       expect(results).toHaveLength(0);
     });
@@ -745,7 +744,7 @@ describe("useApplications", () => {
               jobSiteUrl: "https://test.com",
               appliedDate: toPlainDate("2024-01-15").toString(),
               status: "applied",
-              tags: ["referral"],
+              tags: ["behavioral"],
               notes: "Initial notes",
             });
 
@@ -763,7 +762,7 @@ describe("useApplications", () => {
 
             expect(historySnapshot.company).toBe("Test Co");
             expect(historySnapshot.position).toBe("Developer");
-            expect(historySnapshot.tags).toEqual(["referral"]);
+            expect(historySnapshot.tags).toEqual(["behavioral"]);
             expect(historySnapshot.notes).toBe("Initial notes");
           },
         });
@@ -905,7 +904,7 @@ describe("useApplications", () => {
             withFrozenTime({
               now: "2024-01-15T10:00:02Z",
               fn: () => {
-                updateApplication(app.id, { tags: ["referral"] });
+                updateApplication(app.id, { tags: ["behavioral"] });
               },
             });
 

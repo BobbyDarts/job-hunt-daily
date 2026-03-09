@@ -45,11 +45,6 @@ export function useJobSites(data: JobHuntData) {
     return siteByUrl.value.get(url);
   };
 
-  // Get all sites as a flat array
-  const allSites = computed(() => {
-    return data.categories.flatMap(category => category.sites);
-  });
-
   const allSitesWithCategory = computed((): JobSiteWithCategory[] => {
     return data.categories.flatMap(category =>
       category.sites.map(site => ({
@@ -68,7 +63,6 @@ export function useJobSites(data: JobHuntData) {
     siteByUrl,
     getSiteById,
     getSiteByUrl,
-    allSites,
     allSitesWithCategory,
     totalSites,
   };

@@ -7,8 +7,7 @@ import { createRouter, createMemoryHistory } from "vue-router";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { mockApplications } from "@/test-utils/mocks";
-
-import Applications from "./Applications.vue";
+import { Applications } from "@/views";
 
 // Mock the composable
 vi.mock("@/composables/use-applications", () => ({
@@ -96,8 +95,9 @@ describe("Applications View", () => {
 
   it("shows filter dropdowns", async () => {
     await renderApplications();
-    // Status and Site filter dropdowns
-    const selects = screen.getAllByRole("combobox");
-    expect(selects.length).toBeGreaterThanOrEqual(2);
+    const dropdowns = screen.getAllByRole("button", {
+      name: /all statuses|all sites/i,
+    });
+    expect(dropdowns.length).toBeGreaterThanOrEqual(2);
   });
 });

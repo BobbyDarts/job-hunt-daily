@@ -4,26 +4,24 @@
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 
-import { AddApplicationDialog } from "@/components/add-application-dialog";
-import { CategoryCard } from "@/components/category-card";
+import { AddApplicationDialog } from "@/components/app/applications/add-application-dialog";
+import { CategoryCard } from "@/components/app/sites/category-card";
 import { useAddApplicationDialog } from "@/composables/use-add-application-dialog";
 import { useApplications } from "@/composables/use-applications";
 import { useATSDetection } from "@/composables/use-ats-detection";
 import { useCategoryProgress } from "@/composables/use-category-progress";
-import { useJobData } from "@/composables/use-job-data";
 import { useVisitedSites } from "@/composables/use-visited-sites";
 import type { JobSite, Application } from "@/types";
 
 // Composables
 const router = useRouter();
-const { data } = useJobData();
 const { markVisited, isSiteVisited } = useVisitedSites();
 const {
   sortedCategories,
   getCategoryProgress,
   getCategoryVisitedCount,
   maxCategoryHeight,
-} = useCategoryProgress(data, isSiteVisited);
+} = useCategoryProgress();
 const { getATS } = useATSDetection();
 const { addApplication, applications } = useApplications();
 const {

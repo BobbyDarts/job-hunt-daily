@@ -2,9 +2,8 @@
 
 import { describe, it, expect } from "vitest";
 
+import { buildApplicationPayload } from "@/lib/application-utils";
 import { mockSites } from "@/test-utils/mocks";
-
-import { buildApplicationPayload } from "./application-utils";
 
 const baseContext = {
   jobSiteId: mockSites.greenhouse.id,
@@ -82,14 +81,14 @@ describe("buildApplicationPayload", () => {
 
   it("preserves tags when provided", () => {
     const result = buildApplicationPayload(
-      { ...baseFormData, tags: ["referral", "onsite"] },
+      { ...baseFormData, tags: ["virtual", "onsite"] },
       baseContext,
     );
-    expect(result.tags).toEqual(["referral", "onsite"]);
+    expect(result.tags).toEqual(["virtual", "onsite"]);
   });
 
   it("returns a new tags array, not the original reference", () => {
-    const tags = ["referral"] as const;
+    const tags = ["virtual"] as const;
     const result = buildApplicationPayload(
       { ...baseFormData, tags: [...tags] },
       baseContext,

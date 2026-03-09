@@ -1,11 +1,12 @@
 // /src/composables/use-keyboard-shortcuts.ts
 
-import { useActiveElement, useMagicKeys, whenever } from "@vueuse/core";
+import { useMagicKeys, whenever } from "@vueuse/core";
 import { logicAnd } from "@vueuse/math";
 import { computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useAddApplicationDialog } from "@/composables/use-add-application-dialog";
+import { useInputGuard } from "@/composables/use-input-guard";
 import { useShortcutReference } from "@/composables/use-shortcut-reference";
 import { useSiteFocus } from "@/composables/use-site-focus";
 import { useVisitedSites } from "@/composables/use-visited-sites";
@@ -25,13 +26,10 @@ export function useKeyboardShortcuts() {
   const route = useRoute();
   const router = useRouter();
 
-  const activeElement = useActiveElement();
   const { openDialog: openShortcutReference } = useShortcutReference();
 
   const onHome = computed(() => route.name === "Home");
-  const notUsingInput = computed(
-    () => !["INPUT", "TEXTAREA"].includes(activeElement.value?.tagName ?? ""),
-  );
+  const { notUsingInput } = useInputGuard();
 
   const { clear, focusNext, focusPrev, focusedSite } = useSiteFocus();
   const { openDialog } = useAddApplicationDialog();

@@ -1,17 +1,9 @@
 // /src/composables/use-shortcut-reference.ts
 
-import { ref } from "vue";
+import { createDialogState } from "@/components/app/lib";
 
-const open = ref(false);
+const state = createDialogState();
 
 export function useShortcutReference() {
-  return {
-    open,
-    openDialog: () => {
-      open.value = true;
-    },
-    closeDialog: () => {
-      open.value = false;
-    },
-  };
+  return state;
 }

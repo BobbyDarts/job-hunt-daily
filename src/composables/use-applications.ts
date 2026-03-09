@@ -3,6 +3,10 @@
 import { useLocalStorage } from "@vueuse/core";
 import { computed } from "vue";
 
+import {
+  APPLICATIONS_HISTORY_STORAGE_KEY,
+  APPLICATIONS_STORAGE_KEY,
+} from "@/composables/keys";
 import { compareInstants, getNow } from "@/lib/time";
 import type {
   Application,
@@ -10,11 +14,6 @@ import type {
   ApplicationStatus,
   ApplicationTag,
 } from "@/types";
-
-import {
-  APPLICATIONS_HISTORY_STORAGE_KEY,
-  APPLICATIONS_STORAGE_KEY,
-} from "./keys";
 
 type UseApplicationsParams = {
   storageKey?: string;

@@ -2,14 +2,20 @@
 
 import { computed } from "vue";
 
+import { useJobData } from "@/composables/use-job-data";
+import { useVisitedSites } from "@/composables/use-visited-sites";
 import type { JobCategory, JobHuntData } from "@/types";
 
 export function useCategoryProgress(
-  data: JobHuntData,
-  isSiteVisited: (url: string) => boolean,
+  data?: JobHuntData,
+  isSiteVisited?: (url: string) => boolean,
 ) {
+  const resolvedData = data ?? useJobData().data;
+  const resolvedIsSiteVisited =
+    isSiteVisited ?? useVisitedSites().isSiteVisited;
+
   const sortedCategories = computed(() =>
-    [...data.categories]
+    [...resolvedData.categories]
       .map(category => ({
         ...category,
         sites: [...category.sites].sort((a, b) => a.name.localeCompare(b.name)),
@@ -21,7 +27,7 @@ export function useCategoryProgress(
   const categoryStats = computed(() => {
     return sortedCategories.value.map(category => {
       const visitedCount = category.sites.filter(site =>
-        isSiteVisited(site.url),
+        resolvedIsSiteVisited(site.url),
       ).length;
 
       return {
@@ -49,13 +55,15 @@ export function useCategoryProgress(
 
   const maxCategoryHeight = computed(() => {
     if (
-      !data.categories.length ||
-      !data.categories.some(cat => cat.sites.length > 0)
+      !resolvedData.categories.length ||
+      !resolvedData.categories.some(cat => cat.sites.length > 0)
     ) {
       return 0;
     }
 
-    const maxItems = Math.max(...data.categories.map(cat => cat.sites.length));
+    const maxItems = Math.max(
+      ...resolvedData.categories.map(cat => cat.sites.length),
+    );
     return Math.min(maxItems, 6);
   });
 

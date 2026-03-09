@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { detectATS, getATSType } from "@/lib/ats-detection";
 import type { JobSite } from "@/types";
-
-import { detectATS, getATSType } from "./ats-detection";
 
 describe("detectATS", () => {
   describe("Workday detection", () => {
