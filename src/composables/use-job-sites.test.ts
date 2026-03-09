@@ -2,9 +2,8 @@
 
 import { describe, it, expect } from "vitest";
 
+import { useJobSites } from "@/composables/use-job-sites";
 import { mockJobHuntData } from "@/test-utils/mocks";
-
-import { useJobSites } from "./use-job-sites";
 
 describe("useJobSites", () => {
   describe("getSiteById", () => {
@@ -58,24 +57,6 @@ describe("useJobSites", () => {
     });
   });
 
-  describe("allSites", () => {
-    it("returns all sites as a flat array", () => {
-      const { allSites } = useJobSites(mockJobHuntData);
-
-      // mockJobHuntData has 3 categories with total of 7 sites
-      expect(allSites.value.length).toBeGreaterThan(0);
-      expect(allSites.value.map(s => s.id)).toContain("workday-company");
-      expect(allSites.value.map(s => s.id)).toContain("greenhouse-company");
-    });
-
-    it("preserves site order from categories", () => {
-      const { allSites } = useJobSites(mockJobHuntData);
-
-      // First category's first site should be first
-      expect(allSites.value[0].id).toBe("workday-company");
-    });
-  });
-
   describe("siteById map", () => {
     it("creates a complete map of all sites by ID", () => {
       const { siteById } = useJobSites(mockJobHuntData);
@@ -122,20 +103,10 @@ describe("useJobSites", () => {
   describe("edge cases", () => {
     it("handles empty categories array", () => {
       const emptyData = { categories: [] };
-      const { allSites, getSiteById, getSiteByUrl } = useJobSites(emptyData);
+      const { getSiteById, getSiteByUrl } = useJobSites(emptyData);
 
-      expect(allSites.value).toHaveLength(0);
       expect(getSiteById("any-id")).toBeUndefined();
       expect(getSiteByUrl("https://any.url")).toBeUndefined();
-    });
-
-    it("handles category with empty sites array", () => {
-      const dataWithEmptyCategory = {
-        categories: [{ name: "Empty Category", sites: [] }],
-      };
-      const { allSites } = useJobSites(dataWithEmptyCategory);
-
-      expect(allSites.value).toHaveLength(0);
     });
   });
 });

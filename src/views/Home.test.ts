@@ -7,8 +7,7 @@ import { createRouter, createMemoryHistory } from "vue-router";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { mockJobHuntData } from "@/test-utils/mocks";
-
-import Home from "./Home.vue";
+import { Home } from "@/views";
 
 // Mock the composables
 vi.mock("@/composables/use-applications", () => ({

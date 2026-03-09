@@ -1,6 +1,6 @@
 // /src/types/applications.ts
 
-import type { ATSType } from "./ats";
+import type { ATSType } from "@/types";
 
 export type ApplicationStatus =
   | "applied"
@@ -193,7 +193,7 @@ export interface Application {
   id: string;
   company: string;
   position: string;
-  jobSiteId: string; // NEW: Reference to JobSite.id
+  jobSiteId: string; // Reference to JobSite.id
   jobSiteUrl: string; // DEPRECATED: Keep for backwards compatibility, remove later
   atsType?: ATSType;
   jobPostingUrl?: string; // Actual job posting

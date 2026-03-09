@@ -13,11 +13,11 @@ import { computed, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { toast } from "vue-sonner";
 
-import { AddApplicationDialog } from "@/components/add-application-dialog";
-import { ApplicationCard } from "@/components/application-card";
-import { EditApplicationDialog } from "@/components/edit-application-dialog";
-import { SiteSelect } from "@/components/site-select";
-import { StatusSelect } from "@/components/status-select";
+import { AddApplicationDialog } from "@/components/app/applications/add-application-dialog";
+import { ApplicationCard } from "@/components/app/applications/application-card";
+import { EditApplicationDialog } from "@/components/app/applications/edit-application-dialog";
+import { StatusSelect } from "@/components/app/applications/status-select";
+import { SiteSelect } from "@/components/app/sites/site-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

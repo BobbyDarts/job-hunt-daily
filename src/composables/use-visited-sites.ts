@@ -1,6 +1,6 @@
 // /src/composables/use-visited-sites.ts
 
-import { useLocalStorage, watchDebounced, useWindowFocus } from "@vueuse/core";
+import { useLocalStorage, useWindowFocus, watchDebounced } from "@vueuse/core";
 import { computed } from "vue";
 
 import { VISITED_SITES_STORAGE_KEY } from "@/composables/keys";
@@ -17,6 +17,8 @@ export function useVisitedSites(params: UseVisitedSitesParams = {}) {
   const { storageKey = VISITED_SITES_STORAGE_KEY, skipInitReset = false } =
     params;
 
+  // composables
+  const focused = useWindowFocus();
   const storedData = useLocalStorage<VisitedSites>(
     storageKey,
     {
@@ -26,7 +28,7 @@ export function useVisitedSites(params: UseVisitedSitesParams = {}) {
     { flush: "sync" },
   );
 
-  const focused = useWindowFocus();
+  const { totalSites } = useJobData();
 
   const visitedSites = computed({
     get: () => new Set(storedData.value.visited),
@@ -38,14 +40,12 @@ export function useVisitedSites(params: UseVisitedSitesParams = {}) {
     },
   });
 
-  const { totalSites } = useJobData();
   const visitedCount = computed(() => visitedSites.value.size);
   const isComplete = computed(
     () => totalSites.value > 0 && visitedCount.value === totalSites.value,
   );
 
   const needsReset = computed(() => !isSameDayIso(storedData.value.date));
-
   const resetData = () => {
     storedData.value = {
       date: todayIso(),
@@ -59,19 +59,20 @@ export function useVisitedSites(params: UseVisitedSitesParams = {}) {
   }
 
   // Auto-reset when day changes
-  const unwatchReset = watchDebounced(
+  let hydrating = false;
+
+  watchDebounced(
     needsReset,
     shouldReset => {
-      if (shouldReset) resetData();
+      if (!hydrating && shouldReset) resetData();
     },
     { debounce: 100 },
   );
 
-  // Also check when window regains focus (catches overnight tabs)
-  const unwatchFocus = watchDebounced(
+  watchDebounced(
     focused,
     isFocused => {
-      if (isFocused && needsReset.value) resetData();
+      if (!hydrating && isFocused && needsReset.value) resetData();
     },
     { debounce: 100 },
   );
@@ -99,8 +100,7 @@ export function useVisitedSites(params: UseVisitedSitesParams = {}) {
     }
 
     // Temporarily stop watchers during hydration
-    unwatchReset();
-    unwatchFocus();
+    hydrating = true;
 
     storedData.value = {
       date: data.date,
@@ -108,8 +108,7 @@ export function useVisitedSites(params: UseVisitedSitesParams = {}) {
     };
 
     // restart original watchers
-    unwatchReset();
-    unwatchFocus();
+    hydrating = false;
   };
 
   return {

@@ -16,10 +16,10 @@ import { RouterLink } from "vue-router";
 import { Toaster, toast } from "vue-sonner";
 import "vue-sonner/style.css";
 
-import { CommandPalette } from "@/components/command-palette";
-import { Header } from "@/components/header";
-import { MenuToggle } from "@/components/menu-toggle";
-import { ShortcutReferenceDialog } from "@/components/shortcut-reference-dialog";
+import { CommandPalette } from "@/components/app/shell/command-palette";
+import { Header } from "@/components/app/shell/header";
+import { MenuToggle } from "@/components/app/shell/menu-toggle";
+import { ShortcutReferenceDialog } from "@/components/app/shell/shortcut-reference-dialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

@@ -1,17 +1,12 @@
-// /src/composables/use-command-palette.ts
+import { useMagicKeys, whenever } from "@vueuse/core";
 
-import { useActiveElement, useMagicKeys, whenever } from "@vueuse/core";
-import { computed, ref } from "vue";
+import { createDialogState } from "@/components/app/lib/dialog";
+import { useInputGuard } from "@/composables/use-input-guard";
 
-const open = ref(false);
+const state = createDialogState();
 
 export function useCommandPalette() {
-  const activeElement = useActiveElement();
-  const notUsingInput = computed(() => {
-    return !["INPUT", "TEXTAREA"].includes(activeElement.value?.tagName ?? "");
-  });
-
-  const setOpen = (value: boolean) => (open.value = value);
+  const { notUsingInput } = useInputGuard();
 
   const { ctrl_k, meta_k } = useMagicKeys({
     passive: false,
@@ -21,16 +16,19 @@ export function useCommandPalette() {
   });
 
   whenever(ctrl_k, () => {
-    if (notUsingInput.value) setOpen(true);
+    if (notUsingInput.value) state.open.value = true;
   });
-
   whenever(meta_k, () => {
-    if (notUsingInput.value) setOpen(true);
+    if (notUsingInput.value) state.open.value = true;
   });
 
   return {
-    open,
-    openCommandPalette: () => setOpen(true),
-    closeCommandPalette: () => setOpen(false),
+    ...state,
+    openCommandPalette: () => {
+      state.open.value = true;
+    },
+    closeCommandPalette: () => {
+      state.open.value = false;
+    },
   };
 }

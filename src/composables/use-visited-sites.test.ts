@@ -3,11 +3,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { nextTick } from "vue";
 
+import { TEST_VISITED_SITES_STORAGE_KEY } from "@/composables/keys";
+import { useVisitedSites } from "@/composables/use-visited-sites";
 import { getToday, todayIso } from "@/lib/time";
 import { withFrozenTime } from "@/test-utils/with-frozen-time";
-
-import { TEST_VISITED_SITES_STORAGE_KEY } from "./keys";
-import { useVisitedSites } from "./use-visited-sites";
 
 describe("useVisitedSites", () => {
   beforeEach(() => {

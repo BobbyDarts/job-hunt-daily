@@ -3,8 +3,6 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { describe, it, expect, beforeEach } from "vitest";
 
-import { withFrozenTime } from "@/test-utils/with-frozen-time";
-
 import {
   getNow,
   setNow,
@@ -25,7 +23,8 @@ import {
   isEqual,
   maxInstant,
   minInstant,
-} from "./time";
+} from "@/lib/time";
+import { withFrozenTime } from "@/test-utils/with-frozen-time";
 
 describe("time utilities", () => {
   describe("Time Source Management", () => {
