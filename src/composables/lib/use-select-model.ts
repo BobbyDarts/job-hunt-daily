@@ -1,4 +1,4 @@
-// /src/composables/use-select-model.ts
+// /src/composables/lib/use-select-model.ts
 
 import { computed } from "vue";
 

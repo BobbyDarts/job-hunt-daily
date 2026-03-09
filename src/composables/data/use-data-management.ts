@@ -1,4 +1,4 @@
-// /src/composables/use-data-management.ts
+// /src/composables/data/use-data-management.ts
 
 import { toast } from "vue-sonner";
 
@@ -7,10 +7,11 @@ import {
   APPLICATIONS_HISTORY_STORAGE_KEY,
   VISITED_SITES_STORAGE_KEY,
 } from "@/composables/keys";
-import { useApplications } from "@/composables/use-applications";
-import { useVisitedSites } from "@/composables/use-visited-sites";
 import { getNow } from "@/lib/time";
 import type { Application, ApplicationHistory, VisitedSites } from "@/types";
+
+import { useApplications } from "./use-applications";
+import { useVisitedSites } from "./use-visited-sites";
 
 export interface ExportData {
   version: string;

@@ -10,8 +10,7 @@ import {
   CommandSeparator,
   useCommand,
 } from "@/components/ui/command";
-import { useJobData } from "@/composables/use-job-data";
-import { useVisitedSites } from "@/composables/use-visited-sites";
+import { useJobData, useVisitedSites } from "@/composables/data";
 
 const emit = defineEmits<{
   siteSelect: [url: string];

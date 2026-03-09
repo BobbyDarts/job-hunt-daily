@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { useJobData } from "@/composables/use-job-data";
+import { useJobData } from "@/composables/data";
 import { buildApplicationPayload } from "@/lib/application-utils";
 import { todayIso } from "@/lib/time";
 import type { JobSite, Application, ApplicationTag } from "@/types";

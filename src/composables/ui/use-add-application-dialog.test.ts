@@ -1,8 +1,8 @@
-// /src/composables/use-add-application-dialog.test.ts
+// /src/composables/ui/use-add-application-dialog.test.ts
 
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { useAddApplicationDialog } from "@/composables/use-add-application-dialog";
+import { useAddApplicationDialog } from "@/composables/ui";
 import { mockSites } from "@/test-utils/mocks";
 
 describe("useAddApplicationDialog", () => {

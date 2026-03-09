@@ -1,7 +1,9 @@
+// /src/composables/ui/use-command-palette.ts
+
 import { useMagicKeys, whenever } from "@vueuse/core";
 
 import { createDialogState } from "@/components/app/lib/dialog";
-import { useInputGuard } from "@/composables/use-input-guard";
+import { useInputGuard } from "@/composables/keyboard";
 
 const state = createDialogState();
 

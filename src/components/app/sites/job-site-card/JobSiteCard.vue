@@ -12,7 +12,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useSiteFocus } from "@/composables/use-site-focus";
+import { useSiteFocus } from "@/composables/ui";
 import type { ATSInfo } from "@/lib/ats-detection";
 import type { JobSite, Application } from "@/types";
 

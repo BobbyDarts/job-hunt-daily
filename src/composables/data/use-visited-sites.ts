@@ -1,12 +1,13 @@
-// /src/composables/use-visited-sites.ts
+// /src/composables/data/use-visited-sites.ts
 
 import { useLocalStorage, useWindowFocus, watchDebounced } from "@vueuse/core";
 import { computed } from "vue";
 
 import { VISITED_SITES_STORAGE_KEY } from "@/composables/keys";
-import { useJobData } from "@/composables/use-job-data";
 import { isSameDayIso, todayIso } from "@/lib/time";
 import type { VisitedSites } from "@/types";
+
+import { useJobData } from "./use-job-data";
 
 type UseVisitedSitesParams = {
   storageKey?: string;

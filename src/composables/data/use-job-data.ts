@@ -1,7 +1,8 @@
-// src/composables/use-job-data.ts
-import { useJobSites } from "@/composables/use-job-sites";
+// src/composables/data/use-job-data.ts
 import jobData from "@/data/job-hunt-daily.json";
 import type { JobHuntData } from "@/types";
+
+import { useJobSites } from "./use-job-sites";
 
 const data = jobData as JobHuntData;
 const instance = useJobSites(data);

@@ -10,27 +10,27 @@ import { mockJobHuntData } from "@/test-utils/mocks";
 import { Home } from "@/views";
 
 // Mock the composables
-vi.mock("@/composables/use-applications", () => ({
+vi.mock("@/composables/data/use-applications", () => ({
   useApplications: () => ({
     applications: ref([]),
     addApplication: vi.fn(),
   }),
 }));
 
-vi.mock("@/composables/use-visited-sites", () => ({
+vi.mock("@/composables/data/use-visited-sites", () => ({
   useVisitedSites: () => ({
     markVisited: vi.fn(),
     isSiteVisited: vi.fn(() => false),
   }),
 }));
 
-vi.mock("@/composables/use-ats-detection", () => ({
+vi.mock("@/composables/data/use-ats-detection", () => ({
   useATSDetection: () => ({
     getATS: vi.fn(),
   }),
 }));
 
-vi.mock("@/composables/use-category-progress", () => ({
+vi.mock("@/composables/dashboard/use-category-progress", () => ({
   useCategoryProgress: () => ({
     sortedCategories: computed(() => mockJobHuntData.categories),
     splitCategorySites: vi.fn(category => ({

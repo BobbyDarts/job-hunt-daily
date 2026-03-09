@@ -1,15 +1,18 @@
-// /src/composables/use-keyboard-shortcuts.ts
+// /src/composables/keyboard/use-keyboard-shortcuts.ts
 
 import { useMagicKeys, whenever } from "@vueuse/core";
 import { logicAnd } from "@vueuse/math";
 import { computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import { useAddApplicationDialog } from "@/composables/use-add-application-dialog";
-import { useInputGuard } from "@/composables/use-input-guard";
-import { useShortcutReference } from "@/composables/use-shortcut-reference";
-import { useSiteFocus } from "@/composables/use-site-focus";
-import { useVisitedSites } from "@/composables/use-visited-sites";
+import { useVisitedSites } from "@/composables/data";
+import {
+  useAddApplicationDialog,
+  useShortcutReference,
+  useSiteFocus,
+} from "@/composables/ui";
+
+import { useInputGuard } from "./use-input-guard";
 
 /**
  * | Key | Action |

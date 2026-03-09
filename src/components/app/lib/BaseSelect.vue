@@ -37,8 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useGroupedOptions } from "@/composables/use-grouped-options";
-import { useSelectModel } from "@/composables/use-select-model";
+import { useGroupedOptions, useSelectModel } from "@/composables/lib";
 import { cn } from "@/lib/utils";
 
 export interface BaseSelectOption {

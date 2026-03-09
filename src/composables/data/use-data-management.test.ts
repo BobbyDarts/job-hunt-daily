@@ -1,4 +1,4 @@
-// /src/composables/use-data-management.test.ts
+// /src/composables/data/use-data-management.test.ts
 
 import { Temporal } from "@js-temporal/polyfill";
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -8,11 +8,12 @@ import {
   TEST_APPLICATIONS_STORAGE_KEY,
   TEST_VISITED_SITES_STORAGE_KEY,
 } from "@/composables/keys";
-import { useDataManagement } from "@/composables/use-data-management";
-import type { UseDataManagementParams } from "@/composables/use-data-management";
 import { getNow, toInstant, toPlainDate } from "@/lib/time";
 import { withFrozenTime } from "@/test-utils/with-frozen-time";
 import type { Application, VisitedSites } from "@/types";
+
+import type { UseDataManagementParams } from "./use-data-management";
+import { useDataManagement } from "./use-data-management";
 
 describe("useDataManagement", () => {
   const useDataManagementParams: Partial<UseDataManagementParams> = {

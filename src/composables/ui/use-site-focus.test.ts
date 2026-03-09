@@ -1,8 +1,8 @@
-// /src/composables/use-site-focus.test.ts
+// /src/composables/ui/use-site-focus.test.ts
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useSiteFocus } from "@/composables/use-site-focus";
+import { useSiteFocus } from "@/composables/ui";
 import { mockSites } from "@/test-utils/mocks";
 
 function makeFocusableEl(): HTMLElement {

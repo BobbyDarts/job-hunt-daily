@@ -1,9 +1,8 @@
-// /src/composables/use-category-progress.ts
+// /src/composables/dashboard/use-category-progress.ts
 
 import { computed } from "vue";
 
-import { useJobData } from "@/composables/use-job-data";
-import { useVisitedSites } from "@/composables/use-visited-sites";
+import { useJobData, useVisitedSites } from "@/composables/data";
 import type { JobCategory, JobHuntData } from "@/types";
 
 export function useCategoryProgress(
