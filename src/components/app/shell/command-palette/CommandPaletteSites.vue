@@ -10,14 +10,14 @@ import {
   CommandSeparator,
   useCommand,
 } from "@/components/ui/command";
-import { useJobData, useVisitedSites } from "@/composables/data";
+import { useJobSites, useVisitedSites } from "@/composables/data";
 
 const emit = defineEmits<{
   siteSelect: [url: string];
 }>();
 
 const { filterState } = useCommand();
-const { allSitesWithCategory } = useJobData();
+const { allSitesWithCategory } = useJobSites();
 const { markVisited } = useVisitedSites();
 
 const matchingSites = computed(() => {

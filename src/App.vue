@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/tooltip";
 import {
   useDataManagement,
-  useJobData,
+  useJobSites,
   useVisitedSites,
 } from "@/composables/data";
 import { useKeyboardShortcuts } from "@/composables/keyboard";
@@ -49,7 +49,7 @@ import { useCommandPalette, useShortcutReference } from "@/composables/ui";
 const colorMode = useColorMode();
 const isOnline = useOnline();
 
-const { totalSites } = useJobData();
+const { totalSites } = useJobSites();
 const { visitedCount, isComplete } = useVisitedSites();
 const { openCommandPalette } = useCommandPalette();
 const { openDialog: openShortcutReference } = useShortcutReference();

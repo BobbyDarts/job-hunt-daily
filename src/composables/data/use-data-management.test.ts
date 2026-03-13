@@ -2,16 +2,17 @@
 
 import { Temporal } from "@js-temporal/polyfill";
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { nextTick } from "vue";
+
+import { getNow, toInstant, toPlainDate } from "@/lib/time";
+import { withFrozenTime } from "@/test-utils/with-frozen-time";
+import type { Application, VisitedSites } from "@/types";
 
 import {
   TEST_APPLICATIONS_HISTORY_STORAGE_KEY,
   TEST_APPLICATIONS_STORAGE_KEY,
   TEST_VISITED_SITES_STORAGE_KEY,
-} from "@/composables/keys";
-import { getNow, toInstant, toPlainDate } from "@/lib/time";
-import { withFrozenTime } from "@/test-utils/with-frozen-time";
-import type { Application, VisitedSites } from "@/types";
-
+} from "./keys";
 import type { UseDataManagementParams } from "./use-data-management";
 import { useDataManagement } from "./use-data-management";
 
@@ -29,9 +30,9 @@ describe("useDataManagement", () => {
 
   describe("exportAllData", () => {
     it("exports both visited sites and applications as JSON", async () => {
-      withFrozenTime({
+      await withFrozenTime({
         now: "2026-02-03T15:00:00Z",
-        fn: () => {
+        fn: async () => {
           const visitedData: VisitedSites = {
             date: "2026-02-03",
             visited: ["https://example.com", "https://test.com"],
@@ -74,7 +75,8 @@ describe("useDataManagement", () => {
             .mockReturnValue("blob:mock-url");
           const revokeObjectURLSpy = vi.spyOn(URL, "revokeObjectURL");
 
-          exportAllData();
+          await exportAllData();
+          await nextTick();
 
           expect(createObjectURLSpy).toHaveBeenCalled();
           const blobCall = createObjectURLSpy.mock.calls[0][0] as Blob;
@@ -139,7 +141,8 @@ describe("useDataManagement", () => {
             download: "",
           } as unknown as HTMLAnchorElement);
 
-          exportAllData();
+          await exportAllData();
+          await nextTick();
 
           const text = await capturedBlob!.text();
           const exportedData = JSON.parse(text);
@@ -173,7 +176,8 @@ describe("useDataManagement", () => {
             download: "",
           } as unknown as HTMLAnchorElement);
 
-          exportAllData();
+          await exportAllData();
+          await nextTick();
 
           const text = await capturedBlob!.text();
           const exportedData = JSON.parse(text);
@@ -206,7 +210,8 @@ describe("useDataManagement", () => {
           } as unknown as HTMLAnchorElement);
 
           const beforeExport = getNow().toString();
-          exportAllData();
+          await exportAllData();
+          await nextTick();
           const afterExport = getNow().toString();
 
           const text = await capturedBlob!.text();
@@ -259,6 +264,7 @@ describe("useDataManagement", () => {
           });
 
           await importAllData(file);
+          await nextTick();
 
           const visitedSites = JSON.parse(
             localStorage.getItem(TEST_VISITED_SITES_STORAGE_KEY)!,
@@ -334,6 +340,7 @@ describe("useDataManagement", () => {
           });
 
           await importAllData(file);
+          await nextTick();
 
           const visitedSites = JSON.parse(
             localStorage.getItem(TEST_VISITED_SITES_STORAGE_KEY)!,
@@ -451,6 +458,7 @@ describe("useDataManagement", () => {
           });
 
           await importAllData(file);
+          await nextTick();
 
           const applications = JSON.parse(
             localStorage.getItem(TEST_APPLICATIONS_STORAGE_KEY)!,
@@ -528,7 +536,8 @@ describe("useDataManagement", () => {
             download: "",
           } as unknown as HTMLAnchorElement);
 
-          exportAllData();
+          await exportAllData();
+          await nextTick();
 
           // Clear localStorage
           localStorage.clear();
@@ -540,6 +549,7 @@ describe("useDataManagement", () => {
           });
 
           await importAllData(file);
+          await nextTick();
 
           const reimportedVisited = JSON.parse(
             localStorage.getItem(TEST_VISITED_SITES_STORAGE_KEY)!,

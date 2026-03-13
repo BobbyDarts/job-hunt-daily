@@ -144,7 +144,7 @@ describe("EditApplicationDialog", () => {
 
       await waitFor(() => {
         expect(emitted().submit).toBeTruthy();
-        expect(emitted().submit?.[0]?.[0]).toMatchObject({
+        expect((emitted().submit as Application[][])?.[0]?.[0]).toMatchObject({
           company: "Updated Company",
         });
       });
@@ -157,7 +157,9 @@ describe("EditApplicationDialog", () => {
       await user.click(saveButton);
 
       await waitFor(() => {
-        expect(emitted()["update:open"]?.some(e => e[0] === false)).toBe(true);
+        expect(
+          emitted()["update:open"]?.some(e => (e as unknown[])[0] === false),
+        ).toBe(true);
       });
     });
   });
@@ -170,7 +172,9 @@ describe("EditApplicationDialog", () => {
       await user.click(cancelButton);
 
       await waitFor(() => {
-        expect(emitted()["update:open"]?.some(e => e[0] === false)).toBe(true);
+        expect(
+          emitted()["update:open"]?.some(e => (e as unknown[])[0] === false),
+        ).toBe(true);
       });
     });
 

@@ -76,8 +76,8 @@ export function useKeyboardShortcuts() {
     }
   });
 
-  whenever(logicAnd(v, notUsingInput), () => {
-    if (focusedSite.value) markVisited(focusedSite.value.url);
+  whenever(logicAnd(v, notUsingInput), async () => {
+    if (focusedSite.value) await markVisited(focusedSite.value.url);
   });
 
   // shift+/ === "?"

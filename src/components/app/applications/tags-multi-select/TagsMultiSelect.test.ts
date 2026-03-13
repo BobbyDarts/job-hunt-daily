@@ -51,7 +51,8 @@ describe("TagsMultiSelect", () => {
       await user.click(screen.getByText(firstTag.label));
 
       expect(emitted()["update:modelValue"]).toBeTruthy();
-      expect(emitted()["update:modelValue"][0][0]).toContain(firstTag.tag);
+      const emitArgs = emitted()["update:modelValue"][0] as unknown[];
+      expect(emitArgs[0] as ApplicationTag[]).toContain(firstTag.tag);
     });
 
     it("removes tag from modelValue when clicked again", async () => {
@@ -62,7 +63,8 @@ describe("TagsMultiSelect", () => {
 
       await user.click(screen.getByText(firstTag.label));
 
-      expect(emitted()["update:modelValue"][0][0]).not.toContain(firstTag.tag);
+      const emitArgs = emitted()["update:modelValue"][0] as unknown[];
+      expect(emitArgs[0] as ApplicationTag[]).not.toContain(firstTag.tag);
     });
 
     it("applies selected styles when tag is in modelValue", () => {

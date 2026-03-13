@@ -1,64 +1,63 @@
 // /src/composables/data/use-job-sites.ts
 
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
+import type { DataSourceParam } from "@/composables/types";
 import type { JobHuntData, JobSite } from "@/types";
 
-export interface JobSiteWithCategory extends JobSite {
+import { useJobSitesRepository } from "./use-job-sites-repository";
+
+interface JobSiteWithCategory extends JobSite {
   category: string;
 }
 
-/**
- * Composable for working with job sites
- * Provides lookup by ID and URL
- */
-export function useJobSites(data: JobHuntData) {
-  // Create a map of ID -> JobSite for quick lookups
+export function useJobSites(params: DataSourceParam = {}) {
+  const repo = useJobSitesRepository(params);
+  const data = ref<JobHuntData | null>(null);
+
+  void repo.getData().then(d => {
+    data.value = d;
+  });
+
   const siteById = computed(() => {
     const map = new Map<string, JobSite>();
-    data.categories.forEach(category => {
-      category.sites.forEach(site => {
-        map.set(site.id, site);
-      });
+    data.value?.categories.forEach(category => {
+      category.sites.forEach(site => map.set(site.id, site));
     });
     return map;
   });
 
-  // Create a map of URL -> JobSite for backwards compatibility
   const siteByUrl = computed(() => {
     const map = new Map<string, JobSite>();
-    data.categories.forEach(category => {
-      category.sites.forEach(site => {
-        map.set(site.url, site);
-      });
+    data.value?.categories.forEach(category => {
+      category.sites.forEach(site => map.set(site.url, site));
     });
     return map;
   });
 
-  // Get site by ID
-  const getSiteById = (id: string): JobSite | undefined => {
-    return siteById.value.get(id);
-  };
-
-  // Get site by URL (for backwards compatibility)
-  const getSiteByUrl = (url: string): JobSite | undefined => {
-    return siteByUrl.value.get(url);
-  };
+  const getSiteById = (id: string): JobSite | undefined =>
+    siteById.value.get(id);
+  const getSiteByUrl = (url: string): JobSite | undefined =>
+    siteByUrl.value.get(url);
 
   const allSitesWithCategory = computed((): JobSiteWithCategory[] => {
-    return data.categories.flatMap(category =>
-      category.sites.map(site => ({
-        ...site,
-        category: category.name,
-      })),
+    return (
+      data.value?.categories.flatMap(category =>
+        category.sites.map(site => ({ ...site, category: category.name })),
+      ) ?? []
     );
   });
 
-  const totalSites = computed(() =>
-    data.categories.reduce((sum, cat) => sum + cat.sites.length, 0),
+  const totalSites = computed(
+    () =>
+      data.value?.categories.reduce((sum, cat) => sum + cat.sites.length, 0) ??
+      0,
   );
 
+  const categories = computed(() => data.value?.categories ?? []);
+
   return {
+    categories,
     siteById,
     siteByUrl,
     getSiteById,

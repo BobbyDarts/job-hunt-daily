@@ -98,8 +98,8 @@ async function submitAndExpectSuccess(
 }
 
 type DialogEmits = {
-  submit: [Application];
-  "update:open": [boolean];
+  submit: Application[][];
+  "update:open": boolean[][];
 };
 
 function getEmitted<E extends Record<string, unknown[]>>(

@@ -1,13 +1,8 @@
 // /src/composables/data/use-applications.ts
 
-import { useLocalStorage } from "@vueuse/core";
 import { computed } from "vue";
 
-import {
-  APPLICATIONS_HISTORY_STORAGE_KEY,
-  APPLICATIONS_STORAGE_KEY,
-} from "@/composables/keys";
-import { compareInstants, getNow } from "@/lib/time";
+import { compareInstants } from "@/lib/time";
 import type {
   Application,
   ApplicationHistory,
@@ -15,102 +10,46 @@ import type {
   ApplicationTag,
 } from "@/types";
 
-type UseApplicationsParams = {
-  storageKey?: string;
-  historyStorageKey?: string;
-};
+import type { UseApplicationsParams } from "./types";
+import { useApplicationsRepository } from "./use-applications-repository";
 
 export function useApplications(params: UseApplicationsParams = {}) {
-  const {
-    storageKey = APPLICATIONS_STORAGE_KEY,
-    historyStorageKey = APPLICATIONS_HISTORY_STORAGE_KEY,
-  } = params;
+  const repo = useApplicationsRepository(params);
+  const applications = repo.applications;
+  const applicationHistory = repo.applicationHistory;
 
-  const applications = useLocalStorage<Application[]>(storageKey, [], {
-    flush: "sync",
-  });
-
-  const applicationHistory = useLocalStorage<ApplicationHistory[]>(
-    historyStorageKey,
-    [],
-    {
-      flush: "sync",
-    },
-  );
-
-  // Helper to generate unique ID
-  const generateId = (): string => {
-    return `app_${getNow().epochMilliseconds}_${Math.random().toString(36).substring(2, 9)}`;
-  };
-
-  // Create a new application
-  const addApplication = (
+  const addApplication = async (
     data: Omit<Application, "id" | "createdAt" | "updatedAt">,
-  ): Application => {
-    // Validation
-    if (!data.company?.trim()) {
-      throw new Error("Company name is required");
-    }
-    if (!data.position?.trim()) {
-      throw new Error("Position is required");
-    }
-    if (!data.jobSiteUrl?.trim()) {
-      throw new Error("Job site URL is required");
-    }
+  ): Promise<Application> => {
+    if (!data.company?.trim()) throw new Error("Company name is required");
+    if (!data.position?.trim()) throw new Error("Position is required");
+    if (!data.jobSiteUrl?.trim()) throw new Error("Job site URL is required");
 
-    const newApplication: Application = {
-      ...data,
-      id: generateId(),
-      createdAt: getNow().toString(),
-      updatedAt: getNow().toString(),
-    };
-
-    applications.value = [...applications.value, newApplication];
-    return newApplication;
+    const application = await repo.create(data);
+    return application;
   };
 
-  // Update an existing application
-  const updateApplication = (
+  const updateApplication = async (
     id: string,
     updates: Partial<Omit<Application, "id" | "createdAt">>,
-  ): Application | undefined => {
-    const index = applications.value.findIndex(app => app.id === id);
-    if (index === -1) return undefined;
-
-    const currentApp = applications.value[index];
-
-    // Save current state to history BEFORE updating
-    const snapshot: ApplicationHistory = {
-      ...currentApp,
-      id: generateId(), // Unique ID for this history record
-      applicationId: currentApp.id, // Reference to original application
-      historyTimestamp: getNow().toString(),
-    };
-    applicationHistory.value = [...applicationHistory.value, snapshot];
-
-    const updatedApplication: Application = {
-      ...currentApp,
-      ...updates,
-      updatedAt: getNow().toString(),
-    };
-
-    applications.value = [
-      ...applications.value.slice(0, index),
-      updatedApplication,
-      ...applications.value.slice(index + 1),
-    ];
-
-    return updatedApplication;
+  ): Promise<Application | undefined> => {
+    try {
+      const updated = await repo.update(id, updates);
+      return updated;
+    } catch {
+      return undefined;
+    }
   };
 
-  // Delete an application
-  const deleteApplication = (id: string): boolean => {
-    const initialLength = applications.value.length;
-    applications.value = applications.value.filter(app => app.id !== id);
-    return applications.value.length < initialLength;
+  const deleteApplication = async (id: string): Promise<boolean> => {
+    try {
+      await repo.remove(id);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
-  // Get a single application by ID
   const getApplication = (id: string): Application | undefined => {
     return applications.value.find(app => app.id === id);
   };
@@ -156,10 +95,8 @@ export function useApplications(params: UseApplicationsParams = {}) {
     return changes;
   };
 
-  // Computed: Total count
   const totalCount = computed(() => applications.value.length);
 
-  // Computed: Count by status
   const countByStatus = computed(() => {
     const counts: Partial<Record<ApplicationStatus, number>> = {};
     applications.value.forEach(app => {
@@ -168,12 +105,10 @@ export function useApplications(params: UseApplicationsParams = {}) {
     return counts;
   });
 
-  // Filter by status
   const filterByStatus = (status: ApplicationStatus): Application[] => {
     return applications.value.filter(app => app.status === status);
   };
 
-  // Filter by tag
   const filterByTag = (tag: ApplicationTag): Application[] => {
     return applications.value.filter(app => app.tags?.includes(tag));
   };
@@ -189,25 +124,16 @@ export function useApplications(params: UseApplicationsParams = {}) {
   };
 
   return {
-    // State
     applications,
     applicationHistory,
-
-    // CRUD
     addApplication,
     updateApplication,
     deleteApplication,
     getApplication,
-
-    // History
     getApplicationTimeline,
     getStatusChanges,
-
-    // Computed
     totalCount,
     countByStatus,
-
-    // Filters
     filterByStatus,
     filterByTag,
     search,

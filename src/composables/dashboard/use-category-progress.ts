@@ -2,19 +2,23 @@
 
 import { computed } from "vue";
 
-import { useJobData, useVisitedSites } from "@/composables/data";
-import type { JobCategory, JobHuntData } from "@/types";
+import { useJobSites, useVisitedSites } from "@/composables/data";
+import type { DataSourceParam } from "@/composables/types";
+import type { JobCategory } from "@/types";
 
-export function useCategoryProgress(
-  data?: JobHuntData,
-  isSiteVisited?: (url: string) => boolean,
-) {
-  const resolvedData = data ?? useJobData().data;
+type UseCategoryProgressParams = DataSourceParam & {
+  isSiteVisited?: (url: string) => boolean;
+};
+
+export function useCategoryProgress(params: UseCategoryProgressParams = {}) {
+  const { isSiteVisited: isSiteVisitedOverride, ...repoParams } = params;
+
+  const { categories } = useJobSites(repoParams);
   const resolvedIsSiteVisited =
-    isSiteVisited ?? useVisitedSites().isSiteVisited;
+    isSiteVisitedOverride ?? useVisitedSites().isSiteVisited;
 
   const sortedCategories = computed(() =>
-    [...resolvedData.categories]
+    [...categories.value]
       .map(category => ({
         ...category,
         sites: [...category.sites].sort((a, b) => a.name.localeCompare(b.name)),
@@ -22,7 +26,6 @@ export function useCategoryProgress(
       .sort((a, b) => b.sites.length - a.sites.length),
   );
 
-  // Cache category stats to avoid recalculating
   const categoryStats = computed(() => {
     return sortedCategories.value.map(category => {
       const visitedCount = category.sites.filter(site =>
@@ -39,7 +42,6 @@ export function useCategoryProgress(
     });
   });
 
-  // Now these become lookups instead of recalculations
   const getCategoryStats = (category: JobCategory) => {
     return categoryStats.value.find(s => s.category.name === category.name);
   };
@@ -54,15 +56,13 @@ export function useCategoryProgress(
 
   const maxCategoryHeight = computed(() => {
     if (
-      !resolvedData.categories.length ||
-      !resolvedData.categories.some(cat => cat.sites.length > 0)
+      !categories.value.length ||
+      !categories.value.some(cat => cat.sites.length > 0)
     ) {
       return 0;
     }
 
-    const maxItems = Math.max(
-      ...resolvedData.categories.map(cat => cat.sites.length),
-    );
+    const maxItems = Math.max(...categories.value.map(cat => cat.sites.length));
     return Math.min(maxItems, 6);
   });
 

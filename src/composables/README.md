@@ -13,10 +13,13 @@ import { useCommandPalette } from '@/composables/ui'
 
 ## `data/`
 
-Composables that own or interact with the app's data layer — reading from and writing to localStorage, the static job data file, or (in the future) a remote backend. These are the composables that will be refactored to sit on top of the repository/service layer in [#23](https://github.com/BobbyDarts/job-hunt-daily/issues/23).
+Composables that own or interact with the app's data layer — reading from and writing to localStorage, the static job data file, or (in the future) a remote backend. Repository composables abstract the persistence layer; their consumers are thin reactive wrappers that expose the public API to the rest of the app.
 
 ### `use-applications`
-Full CRUD interface for job applications backed by `localStorage`. Handles create, update, delete, and retrieval, as well as application history snapshots on every update. Also exposes computed stats (`totalCount`, `countByStatus`) and filter/search helpers.
+Full CRUD interface for job applications. Handles create, update, delete, and retrieval, as well as application history snapshots on every update. Also exposes computed stats (`totalCount`, `countByStatus`) and filter/search helpers.
+
+### `use-applications-repository`
+Owns all persistence logic for applications and application history. Backed by `localStorage` via `useLocalStorage`. Handles the snapshot-before-update behavior that powers application history. Accepts optional `storageKey` and `historyStorageKey` overrides for test isolation.
 
 ### `use-ats-detection`
 Thin wrapper around the ATS detection library. Given a `JobSite`, returns either an `ATSInfo` object (type, initials, color classes, URL patterns) or `undefined`. Also exposes a boolean `isATS(site)` helper.
@@ -24,14 +27,17 @@ Thin wrapper around the ATS detection library. Given a `JobSite`, returns either
 ### `use-data-management`
 Orchestrates full data export and import. On export, serializes visited sites and applications to a JSON blob and triggers a download. On import, parses and validates the JSON, then hydrates visited sites and replaces application data. Accepts optional storage key overrides for testability.
 
-### `use-job-data`
-Singleton wrapper around the real `job-hunt-daily.json` data file. Calls `useJobSites` once at module level and re-exports everything — `data`, site lookups, `allSitesWithCategory`, and `totalSites`. The single source of truth for the app's job data.
-
 ### `use-job-sites`
-Accepts any `JobHuntData` object and builds reactive lookup maps and computed arrays. Returns `siteById`, `siteByUrl`, `getSiteById()`, `getSiteByUrl()`, `allSitesWithCategory`, and `totalSites`. Parameterized for testability — `use-job-data` wraps this with the real data.
+Builds reactive lookup maps and computed arrays from job site data. Returns `categories`, `siteById`, `siteByUrl`, `getSiteById()`, `getSiteByUrl()`, `allSitesWithCategory`, and `totalSites`. Accepts an optional `DataSourceParam` for test injection.
+
+### `use-job-sites-repository`
+Owns the job site data source. Currently reads from the static `job-hunt-daily.json` file. Will be extended to support localStorage CRUD in Issue [#10](https://github.com/BobbyDarts/job-hunt-daily/issues/10) and Supabase in Issue [#24](https://github.com/BobbyDarts/job-hunt-daily/issues/24). Accepts an optional `DataSourceParam` for test injection.
 
 ### `use-visited-sites`
-Tracks which job site URLs have been visited today, backed by `localStorage`. Automatically resets at midnight and on window focus regain. Exposes `markVisited()`, `isSiteVisited()`, `visitedCount`, `isComplete`, and `serialize`/`hydrate` for export/import.
+Tracks which job site URLs have been visited today. Automatically resets at midnight and on window focus regain. Exposes `markVisited()`, `isSiteVisited()`, `visitedCount`, `isComplete`, and `serialize`/`hydrate` for export/import.
+
+### `use-visited-sites-repository`
+Owns all persistence logic for visited sites. Backed by `localStorage` via `useLocalStorage`. Handles day-change detection, auto-reset via `watchDebounced`, and overnight tab detection via `useWindowFocus`. Accepts optional `storageKey` and `skipInitReset` overrides for test isolation.
 
 ---
 
@@ -82,4 +88,4 @@ Generic selection state composable for single and multi-select. Accepts a `getVa
 Composables that compute derived, view-specific data for the dashboard. These sit above the data layer and below the component layer — they transform raw data into what the dashboard views need.
 
 ### `use-category-progress`
-Computes sorted categories (by site count descending, sites alphabetically), per-category visited counts and progress percentages, and `maxCategoryHeight` for card layout. Results are cached in a `categoryStats` computed to avoid redundant recalculation. Both params are optional — if omitted, data is pulled from `useJobData()` and `isSiteVisited` from `useVisitedSites()`. Pass them explicitly in tests to inject mock data.
+Computes sorted categories (by site count descending, sites alphabetically), per-category visited counts and progress percentages, and `maxCategoryHeight` for card layout. Results are cached in a `categoryStats` computed to avoid redundant recalculation. Both params are optional — if omitted, data is pulled from `useJobSites()` and `isSiteVisited` from `useVisitedSites()`. Pass them explicitly in tests to inject mock data.
