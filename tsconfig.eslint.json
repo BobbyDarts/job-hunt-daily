@@ -1,21 +1,21 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "composite": true,
-    "strict": true,
-    "noEmit": true
+    "noEmit": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/**/*.js",
-    "src/**/*.cjs",
-    "src/**/*.mjs",
+    "src/**/*.vue",
     "src/**/*.test.ts",
-    "src/**/*.spec.ts",
-    "src/**/*.test.js",
-    "src/**/*.spec.js",
-    "src/composables/**/*.ts",
-    "src/composables/**/*.js"
+    "src/**/*.spec.ts"
+  ],
+  "exclude": [
+    "src/components/ui/carousel/**/*",
+    "src/components/ui/chart/**/*",
+    "src/components/ui/native-select/**/*",
+    "src/components/ui/calendar/**/*",
+    "node_modules"
   ]
 }

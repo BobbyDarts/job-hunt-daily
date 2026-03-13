@@ -28,19 +28,22 @@ export type WithFrozenTimeParams<T = void> = {
  * @returns The value returned by the callback.
  *
  * @example
- * withFrozenTime({
+ * await withFrozenTime({
  *   now: "2026-02-19T15:00:00Z",
- *   fn: () => {
+ *   fn: async () => {
  *     console.log(getNow().toString()); // "2026-02-19T15:00:00Z"
  *     console.log(getToday().toString()); // "2026-02-19" (derived from instant)
  *   }
  * });
  */
-export function withFrozenTime<T>({ now, fn }: WithFrozenTimeParams<T>): T {
+export async function withFrozenTime<T>({
+  now,
+  fn,
+}: WithFrozenTimeParams<T>): Promise<T> {
   setNow(toInstant(now));
 
   try {
-    return fn();
+    return await fn();
   } finally {
     resetTimeSource();
   }

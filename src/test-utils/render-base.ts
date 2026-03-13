@@ -4,11 +4,13 @@ import { render } from "@testing-library/vue";
 import type { RenderOptions } from "@testing-library/vue";
 import { defineComponent, h, type Component } from "vue";
 
+type GlobalPlugins = NonNullable<RenderOptions<object>["global"]>["plugins"];
+
 export function renderBase<TProps extends object>(
   component: Component,
   defaults: TProps,
   overrides: Partial<TProps> = {},
-  plugins?: RenderOptions<object>["global"]["plugins"],
+  plugins?: GlobalPlugins,
 ) {
   return render(component, {
     props: {
@@ -24,7 +26,7 @@ export function renderBase<TProps extends object>(
 interface RenderBaseWithProvidersOptions {
   providers?: Component[];
   slots?: Record<string, unknown>;
-  plugins?: RenderOptions<object>["global"]["plugins"];
+  plugins?: GlobalPlugins;
 }
 
 export function renderBaseWithProviders<TProps extends object>(

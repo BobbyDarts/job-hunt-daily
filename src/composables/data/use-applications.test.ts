@@ -2,15 +2,16 @@
 
 import { Temporal } from "@js-temporal/polyfill";
 import { describe, it, expect, beforeEach } from "vitest";
+import { nextTick } from "vue";
 
-import {
-  TEST_APPLICATIONS_HISTORY_STORAGE_KEY,
-  TEST_APPLICATIONS_STORAGE_KEY,
-} from "@/composables/keys";
 import { toInstant, toPlainDate } from "@/lib/time";
 import { withFrozenTime } from "@/test-utils/with-frozen-time";
 import type { Application, ApplicationHistory } from "@/types";
 
+import {
+  TEST_APPLICATIONS_HISTORY_STORAGE_KEY,
+  TEST_APPLICATIONS_STORAGE_KEY,
+} from "./keys";
 import { useApplications } from "./use-applications";
 
 describe("useApplications", () => {
@@ -33,7 +34,7 @@ describe("useApplications", () => {
       expect(totalCount.value).toBe(0);
     });
 
-    it("loads existing applications from localStorage", () => {
+    it("loads existing applications from localStorage", async () => {
       const existingApps: Application[] = [
         {
           id: "app_1",
@@ -56,6 +57,7 @@ describe("useApplications", () => {
       const { applications, totalCount } = useApplications(
         useApplicationsParams,
       );
+      await nextTick();
 
       expect(applications.value).toEqual(existingApps);
       expect(totalCount.value).toBe(1);
@@ -63,15 +65,15 @@ describe("useApplications", () => {
   });
 
   describe("addApplication", () => {
-    it("adds a new application with generated id and timestamps", () => {
-      withFrozenTime({
+    it("adds a new application with generated id and timestamps", async () => {
+      await withFrozenTime({
         now: "2026-02-03T10:00:00Z",
-        fn: () => {
+        fn: async () => {
           const { addApplication, applications } = useApplications(
             useApplicationsParams,
           );
 
-          const newApp = addApplication({
+          const newApp = await addApplication({
             company: "Tech Co",
             position: "Senior Dev",
             jobSiteId: "techco",
@@ -91,15 +93,15 @@ describe("useApplications", () => {
       });
     });
 
-    it("adds application with optional fields", () => {
-      withFrozenTime({
+    it("adds application with optional fields", async () => {
+      await withFrozenTime({
         now: "2026-02-03T10:00:00Z",
-        fn: () => {
+        fn: async () => {
           const { addApplication, applications } = useApplications(
             useApplicationsParams,
           );
 
-          const newApp = addApplication({
+          const newApp = await addApplication({
             company: "Tech Co",
             position: "Senior Dev",
             jobSiteId: "greenhouse-techco",
@@ -121,13 +123,13 @@ describe("useApplications", () => {
       });
     });
 
-    it("persists to localStorage", () => {
-      withFrozenTime({
+    it("persists to localStorage", async () => {
+      await withFrozenTime({
         now: "2026-02-03T10:00:00Z",
-        fn: () => {
+        fn: async () => {
           const { addApplication } = useApplications(useApplicationsParams);
 
-          addApplication({
+          await addApplication({
             company: "Tech Co",
             position: "Senior Dev",
             jobSiteId: "techco",
@@ -145,13 +147,13 @@ describe("useApplications", () => {
       });
     });
 
-    it("generates unique IDs for multiple applications", () => {
-      withFrozenTime({
+    it("generates unique IDs for multiple applications", async () => {
+      await withFrozenTime({
         now: "2026-02-03T10:00:00Z",
-        fn: () => {
+        fn: async () => {
           const { addApplication } = useApplications(useApplicationsParams);
 
-          const app1 = addApplication({
+          const app1 = await addApplication({
             company: "Company A",
             position: "Dev",
             jobSiteId: "a",
@@ -160,7 +162,7 @@ describe("useApplications", () => {
             appliedDate: toPlainDate("2026-02-03").toString(),
           });
 
-          const app2 = addApplication({
+          const app2 = await addApplication({
             company: "Company B",
             position: "Dev",
             jobSiteId: "b",
@@ -176,14 +178,14 @@ describe("useApplications", () => {
   });
 
   describe("updateApplication", () => {
-    it("updates an existing application", () => {
-      withFrozenTime({
+    it("updates an existing application", async () => {
+      await withFrozenTime({
         now: "2026-02-03T10:00:00Z",
-        fn: () => {
+        fn: async () => {
           const { addApplication, updateApplication, applications } =
             useApplications(useApplicationsParams);
 
-          const app = addApplication({
+          const app = await addApplication({
             company: "Tech Co",
             position: "Developer",
             jobSiteId: "techco",
@@ -192,10 +194,10 @@ describe("useApplications", () => {
             appliedDate: toPlainDate("2026-02-03").toString(),
           });
 
-          withFrozenTime({
+          await withFrozenTime({
             now: "2026-02-03T10:00:01Z",
-            fn: () => {
-              const updated = updateApplication(app.id, {
+            fn: async () => {
+              const updated = await updateApplication(app.id, {
                 status: "interviewing",
                 tags: ["virtual"],
               });
@@ -212,25 +214,25 @@ describe("useApplications", () => {
       });
     });
 
-    it("returns undefined for non-existent application", () => {
+    it("returns undefined for non-existent application", async () => {
       const { updateApplication } = useApplications(useApplicationsParams);
 
-      const result = updateApplication("non-existent-id", {
+      const result = await updateApplication("non-existent-id", {
         status: "interviewing",
       });
 
       expect(result).toBeUndefined();
     });
 
-    it("updates updatedAt timestamp", () => {
-      withFrozenTime({
+    it("updates updatedAt timestamp", async () => {
+      await withFrozenTime({
         now: "2026-02-03T10:00:00Z",
-        fn: () => {
+        fn: async () => {
           const { addApplication, updateApplication } = useApplications(
             useApplicationsParams,
           );
 
-          const app = addApplication({
+          const app = await addApplication({
             company: "Tech Co",
             position: "Developer",
             jobSiteId: "techco",
@@ -241,10 +243,10 @@ describe("useApplications", () => {
 
           const originalUpdatedAt = app.updatedAt;
 
-          withFrozenTime({
+          await withFrozenTime({
             now: "2026-02-03T10:00:01Z",
-            fn: () => {
-              const updated = updateApplication(app.id, {
+            fn: async () => {
+              const updated = await updateApplication(app.id, {
                 notes: "Added notes",
               });
 
@@ -255,15 +257,15 @@ describe("useApplications", () => {
       });
     });
 
-    it("does not change createdAt timestamp", () => {
-      withFrozenTime({
+    it("does not change createdAt timestamp", async () => {
+      await withFrozenTime({
         now: "2026-02-03T10:00:00Z",
-        fn: () => {
+        fn: async () => {
           const { addApplication, updateApplication } = useApplications(
             useApplicationsParams,
           );
 
-          const app = addApplication({
+          const app = await addApplication({
             company: "Tech Co",
             position: "Developer",
             jobSiteId: "techco",
@@ -274,7 +276,9 @@ describe("useApplications", () => {
 
           const originalCreatedAt = app.createdAt;
 
-          const updated = updateApplication(app.id, { status: "interviewing" });
+          const updated = await updateApplication(app.id, {
+            status: "interviewing",
+          });
 
           expect(updated?.createdAt).toBe(originalCreatedAt);
         },
@@ -283,11 +287,11 @@ describe("useApplications", () => {
   });
 
   describe("deleteApplication", () => {
-    it("deletes an application by id", () => {
+    it("deletes an application by id", async () => {
       const { addApplication, deleteApplication, applications } =
         useApplications(useApplicationsParams);
 
-      const app = addApplication({
+      const app = await addApplication({
         company: "Tech Co",
         position: "Developer",
         jobSiteId: "techco",
@@ -296,25 +300,25 @@ describe("useApplications", () => {
         appliedDate: toPlainDate("2026-02-03").toString(),
       });
 
-      const deleted = deleteApplication(app.id);
+      const deleted = await deleteApplication(app.id);
 
       expect(deleted).toBe(true);
       expect(applications.value).toHaveLength(0);
     });
 
-    it("returns false for non-existent application", () => {
+    it("returns false for non-existent application", async () => {
       const { deleteApplication } = useApplications(useApplicationsParams);
 
-      const deleted = deleteApplication("non-existent-id");
+      const deleted = await deleteApplication("non-existent-id");
 
       expect(deleted).toBe(false);
     });
 
-    it("only deletes the specified application", () => {
+    it("only deletes the specified application", async () => {
       const { addApplication, deleteApplication, applications } =
         useApplications(useApplicationsParams);
 
-      const app1 = addApplication({
+      const app1 = await addApplication({
         company: "Company A",
         position: "Dev",
         jobSiteId: "a",
@@ -323,7 +327,7 @@ describe("useApplications", () => {
         appliedDate: toPlainDate("2026-02-03").toString(),
       });
 
-      const app2 = addApplication({
+      const app2 = await addApplication({
         company: "Company B",
         position: "Dev",
         jobSiteId: "b",
@@ -332,7 +336,7 @@ describe("useApplications", () => {
         appliedDate: toPlainDate("2026-02-03").toString(),
       });
 
-      deleteApplication(app1.id);
+      await deleteApplication(app1.id);
 
       expect(applications.value).toHaveLength(1);
       expect(applications.value[0].id).toBe(app2.id);
@@ -340,12 +344,12 @@ describe("useApplications", () => {
   });
 
   describe("getApplication", () => {
-    it("retrieves an application by id", () => {
+    it("retrieves an application by id", async () => {
       const { addApplication, getApplication } = useApplications(
         useApplicationsParams,
       );
 
-      const app = addApplication({
+      const app = await addApplication({
         company: "Tech Co",
         position: "Developer",
         jobSiteId: "techco",
@@ -369,12 +373,12 @@ describe("useApplications", () => {
   });
 
   describe("countByStatus", () => {
-    it("counts applications by status", () => {
+    it("counts applications by status", async () => {
       const { addApplication, countByStatus } = useApplications(
         useApplicationsParams,
       );
 
-      addApplication({
+      await addApplication({
         company: "Company A",
         position: "Dev",
         jobSiteId: "a",
@@ -383,7 +387,7 @@ describe("useApplications", () => {
         appliedDate: toPlainDate("2026-02-03").toString(),
       });
 
-      addApplication({
+      await addApplication({
         company: "Company B",
         position: "Dev",
         jobSiteId: "b",
@@ -392,7 +396,7 @@ describe("useApplications", () => {
         appliedDate: toPlainDate("2026-02-03").toString(),
       });
 
-      addApplication({
+      await addApplication({
         company: "Company C",
         position: "Dev",
         jobSiteId: "c",
@@ -414,12 +418,12 @@ describe("useApplications", () => {
   });
 
   describe("filterByStatus", () => {
-    it("filters applications by status", () => {
+    it("filters applications by status", async () => {
       const { addApplication, filterByStatus } = useApplications(
         useApplicationsParams,
       );
 
-      addApplication({
+      await addApplication({
         company: "Company A",
         position: "Dev",
         jobSiteId: "a",
@@ -428,7 +432,7 @@ describe("useApplications", () => {
         appliedDate: toPlainDate("2026-02-03").toString(),
       });
 
-      addApplication({
+      await addApplication({
         company: "Company B",
         position: "Dev",
         jobSiteId: "b",
@@ -450,12 +454,12 @@ describe("useApplications", () => {
   });
 
   describe("filterByTag", () => {
-    it("filters applications by tag", () => {
+    it("filters applications by tag", async () => {
       const { addApplication, filterByTag } = useApplications(
         useApplicationsParams,
       );
 
-      addApplication({
+      await addApplication({
         company: "Company A",
         position: "Dev",
         jobSiteId: "a",
@@ -465,7 +469,7 @@ describe("useApplications", () => {
         tags: ["virtual", "behavioral"],
       });
 
-      addApplication({
+      await addApplication({
         company: "Company B",
         position: "Dev",
         jobSiteId: "b",
@@ -486,12 +490,12 @@ describe("useApplications", () => {
       expect(technical).toHaveLength(0);
     });
 
-    it("returns empty array for applications without tags", () => {
+    it("returns empty array for applications without tags", async () => {
       const { addApplication, filterByTag } = useApplications(
         useApplicationsParams,
       );
 
-      addApplication({
+      await addApplication({
         company: "Company A",
         position: "Dev",
         jobSiteId: "a",
@@ -507,10 +511,10 @@ describe("useApplications", () => {
   });
 
   describe("search", () => {
-    it("searches by company name", () => {
+    it("searches by company name", async () => {
       const { addApplication, search } = useApplications(useApplicationsParams);
 
-      addApplication({
+      await addApplication({
         company: "Google",
         position: "Developer",
         jobSiteId: "google",
@@ -519,7 +523,7 @@ describe("useApplications", () => {
         appliedDate: toPlainDate("2026-02-03").toString(),
       });
 
-      addApplication({
+      await addApplication({
         company: "Amazon",
         position: "Developer",
         jobSiteId: "amazon",
@@ -534,10 +538,10 @@ describe("useApplications", () => {
       expect(results[0].company).toBe("Google");
     });
 
-    it("searches by position", () => {
+    it("searches by position", async () => {
       const { addApplication, search } = useApplications(useApplicationsParams);
 
-      addApplication({
+      await addApplication({
         company: "Company A",
         position: "Senior Developer",
         jobSiteId: "a",
@@ -546,7 +550,7 @@ describe("useApplications", () => {
         appliedDate: toPlainDate("2026-02-03").toString(),
       });
 
-      addApplication({
+      await addApplication({
         company: "Company B",
         position: "Junior Designer",
         jobSiteId: "b",
@@ -561,10 +565,10 @@ describe("useApplications", () => {
       expect(results[0].position).toBe("Senior Developer");
     });
 
-    it("is case-insensitive", () => {
+    it("is case-insensitive", async () => {
       const { addApplication, search } = useApplications(useApplicationsParams);
 
-      addApplication({
+      await addApplication({
         company: "Google",
         position: "Developer",
         jobSiteId: "google",
@@ -578,10 +582,10 @@ describe("useApplications", () => {
       expect(results).toHaveLength(1);
     });
 
-    it("returns empty array when no matches", () => {
+    it("returns empty array when no matches", async () => {
       const { addApplication, search } = useApplications(useApplicationsParams);
 
-      addApplication({
+      await addApplication({
         company: "Google",
         position: "Developer",
         jobSiteId: "google",
@@ -608,15 +612,15 @@ describe("useApplications", () => {
         expect(timeline).toEqual([]);
       });
 
-      it("returns only current application when no history exists", () => {
-        withFrozenTime({
+      it("returns only current application when no history exists", async () => {
+        await withFrozenTime({
           now: "2024-01-15T10:00:00Z",
-          fn: () => {
+          fn: async () => {
             const { addApplication, getApplicationTimeline } = useApplications(
               useApplicationsParams,
             );
 
-            const app = addApplication({
+            const app = await addApplication({
               company: "Test Co",
               position: "Developer",
               jobSiteId: "test-site",
@@ -633,17 +637,17 @@ describe("useApplications", () => {
         });
       });
 
-      it("returns chronological timeline with history and current state", () => {
-        withFrozenTime({
+      it("returns chronological timeline with history and current state", async () => {
+        await withFrozenTime({
           now: "2024-01-15T10:00:00Z",
-          fn: () => {
+          fn: async () => {
             const {
               addApplication,
               updateApplication,
               getApplicationTimeline,
             } = useApplications(useApplicationsParams);
 
-            const app = addApplication({
+            const app = await addApplication({
               company: "Test Co",
               position: "Developer",
               jobSiteId: "test-site",
@@ -653,14 +657,16 @@ describe("useApplications", () => {
             });
 
             // Advance time manually by setting frozen time for each update
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:01Z",
-              fn: () => updateApplication(app.id, { status: "interviewing" }),
+              fn: async () =>
+                await updateApplication(app.id, { status: "interviewing" }),
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:02Z",
-              fn: () => updateApplication(app.id, { status: "offer" }),
+              fn: async () =>
+                await updateApplication(app.id, { status: "offer" }),
             });
 
             const timeline = getApplicationTimeline(app.id);
@@ -673,23 +679,23 @@ describe("useApplications", () => {
         });
       });
 
-      it("sorts history entries by timestamp", () => {
+      it("sorts history entries by timestamp", async () => {
         function getTimelineInstant(item: Application | ApplicationHistory) {
           return toInstant(
             "historyTimestamp" in item ? item.historyTimestamp : item.updatedAt,
           );
         }
 
-        withFrozenTime({
+        await withFrozenTime({
           now: "2024-01-15T10:00:00Z",
-          fn: () => {
+          fn: async () => {
             const {
               addApplication,
               updateApplication,
               getApplicationTimeline,
             } = useApplications(useApplicationsParams);
 
-            const app = addApplication({
+            const app = await addApplication({
               company: "Test Co",
               position: "Developer",
               jobSiteId: "test-site",
@@ -698,19 +704,22 @@ describe("useApplications", () => {
               status: "applied",
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-16T10:00:01Z",
-              fn: () => updateApplication(app.id, { status: "interviewing" }),
+              fn: async () =>
+                await updateApplication(app.id, { status: "interviewing" }),
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-17T10:00:02Z",
-              fn: () => updateApplication(app.id, { notes: "Updated notes" }),
+              fn: async () =>
+                await updateApplication(app.id, { notes: "Updated notes" }),
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-18T10:00:03Z",
-              fn: () => updateApplication(app.id, { status: "offer" }),
+              fn: async () =>
+                await updateApplication(app.id, { status: "offer" }),
             });
 
             const timeline = getApplicationTimeline(app.id);
@@ -728,17 +737,17 @@ describe("useApplications", () => {
         });
       });
 
-      it("includes all application fields in history snapshots", () => {
-        withFrozenTime({
+      it("includes all application fields in history snapshots", async () => {
+        await withFrozenTime({
           now: "2024-01-15T10:00:00Z",
-          fn: () => {
+          fn: async () => {
             const {
               addApplication,
               updateApplication,
               getApplicationTimeline,
             } = useApplications(useApplicationsParams);
 
-            const app = addApplication({
+            const app = await addApplication({
               company: "Test Co",
               position: "Developer",
               jobSiteId: "test-site",
@@ -749,10 +758,10 @@ describe("useApplications", () => {
               notes: "Initial notes",
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-16T10:00:00Z",
-              fn: () => {
-                updateApplication(app.id, {
+              fn: async () => {
+                await updateApplication(app.id, {
                   status: "interviewing",
                 });
               },
@@ -771,15 +780,15 @@ describe("useApplications", () => {
     });
 
     describe("getStatusChanges", () => {
-      it("returns empty array when application has no status changes", () => {
-        withFrozenTime({
+      it("returns empty array when application has no status changes", async () => {
+        await withFrozenTime({
           now: "2024-01-15T10:00:00Z",
-          fn: () => {
+          fn: async () => {
             const { addApplication, getStatusChanges } = useApplications(
               useApplicationsParams,
             );
 
-            const app = addApplication({
+            const app = await addApplication({
               company: "Test Co",
               position: "Developer",
               jobSiteId: "test-site",
@@ -794,14 +803,14 @@ describe("useApplications", () => {
         });
       });
 
-      it("tracks single status change", () => {
-        withFrozenTime({
+      it("tracks single status change", async () => {
+        await withFrozenTime({
           now: "2024-01-15T10:00:00Z",
-          fn: () => {
+          fn: async () => {
             const { addApplication, updateApplication, getStatusChanges } =
               useApplications(useApplicationsParams);
 
-            const app = addApplication({
+            const app = await addApplication({
               company: "Test Co",
               position: "Developer",
               jobSiteId: "test-site",
@@ -810,10 +819,10 @@ describe("useApplications", () => {
               status: "applied",
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:01Z",
-              fn: () => {
-                updateApplication(app.id, { status: "interviewing" });
+              fn: async () => {
+                await updateApplication(app.id, { status: "interviewing" });
               },
             });
             const changes = getStatusChanges(app.id);
@@ -828,14 +837,14 @@ describe("useApplications", () => {
         });
       });
 
-      it("tracks multiple status changes in order", () => {
-        withFrozenTime({
+      it("tracks multiple status changes in order", async () => {
+        await withFrozenTime({
           now: "2024-01-15T10:00:00Z",
-          fn: () => {
+          fn: async () => {
             const { addApplication, updateApplication, getStatusChanges } =
               useApplications(useApplicationsParams);
 
-            const app = addApplication({
+            const app = await addApplication({
               company: "Test Co",
               position: "Developer",
               jobSiteId: "test-site",
@@ -844,23 +853,23 @@ describe("useApplications", () => {
               status: "applied",
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:01Z",
-              fn: () => {
-                updateApplication(app.id, { status: "interviewing" });
+              fn: async () => {
+                await updateApplication(app.id, { status: "interviewing" });
               },
             });
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:02Z",
-              fn: () => {
-                updateApplication(app.id, { status: "offer" });
+              fn: async () => {
+                await updateApplication(app.id, { status: "offer" });
               },
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:03Z",
-              fn: () => {
-                updateApplication(app.id, { status: "accepted" });
+              fn: async () => {
+                await updateApplication(app.id, { status: "accepted" });
               },
             });
 
@@ -879,14 +888,14 @@ describe("useApplications", () => {
         });
       });
 
-      it("ignores updates that don't change status", () => {
-        withFrozenTime({
+      it("ignores updates that don't change status", async () => {
+        await withFrozenTime({
           now: "2024-01-15T10:00:00Z",
-          fn: () => {
+          fn: async () => {
             const { addApplication, updateApplication, getStatusChanges } =
               useApplications(useApplicationsParams);
 
-            const app = addApplication({
+            const app = await addApplication({
               company: "Test Co",
               position: "Developer",
               jobSiteId: "test-site",
@@ -895,24 +904,24 @@ describe("useApplications", () => {
               status: "applied",
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:01Z",
-              fn: () => {
-                updateApplication(app.id, { notes: "Added notes" });
+              fn: async () => {
+                await updateApplication(app.id, { notes: "Added notes" });
               },
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:02Z",
-              fn: () => {
-                updateApplication(app.id, { tags: ["behavioral"] });
+              fn: async () => {
+                await updateApplication(app.id, { tags: ["behavioral"] });
               },
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:03Z",
-              fn: () => {
-                updateApplication(app.id, { status: "interviewing" });
+              fn: async () => {
+                await updateApplication(app.id, { status: "interviewing" });
               },
             });
 
@@ -926,14 +935,14 @@ describe("useApplications", () => {
         });
       });
 
-      it("handles rapid status changes", () => {
-        withFrozenTime({
+      it("handles rapid status changes", async () => {
+        await withFrozenTime({
           now: "2024-01-15T10:00:00Z",
-          fn: () => {
+          fn: async () => {
             const { addApplication, updateApplication, getStatusChanges } =
               useApplications(useApplicationsParams);
 
-            const app = addApplication({
+            const app = await addApplication({
               company: "Test Co",
               position: "Developer",
               jobSiteId: "test-site",
@@ -942,24 +951,24 @@ describe("useApplications", () => {
               status: "applied",
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:01Z",
-              fn: () => {
-                updateApplication(app.id, { status: "interviewing" });
+              fn: async () => {
+                await updateApplication(app.id, { status: "interviewing" });
               },
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:02Z",
-              fn: () => {
-                updateApplication(app.id, { status: "offer" });
+              fn: async () => {
+                await updateApplication(app.id, { status: "offer" });
               },
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:03Z",
-              fn: () => {
-                updateApplication(app.id, { status: "rejected" });
+              fn: async () => {
+                await updateApplication(app.id, { status: "rejected" });
               },
             });
 
@@ -973,14 +982,14 @@ describe("useApplications", () => {
         });
       });
 
-      it("handles status reverting to previous value", () => {
-        withFrozenTime({
+      it("handles status reverting to previous value", async () => {
+        await withFrozenTime({
           now: "2024-01-15T10:00:00Z",
-          fn: () => {
+          fn: async () => {
             const { addApplication, updateApplication, getStatusChanges } =
               useApplications(useApplicationsParams);
 
-            const app = addApplication({
+            const app = await addApplication({
               company: "Test Co",
               position: "Developer",
               jobSiteId: "test-site",
@@ -989,17 +998,17 @@ describe("useApplications", () => {
               status: "applied",
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:01Z",
-              fn: () => {
-                updateApplication(app.id, { status: "interviewing" });
+              fn: async () => {
+                await updateApplication(app.id, { status: "interviewing" });
               },
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:02Z",
-              fn: () => {
-                updateApplication(app.id, { status: "applied" }); // Revert
+              fn: async () => {
+                await updateApplication(app.id, { status: "applied" }); // Revert
               },
             });
 
@@ -1019,15 +1028,15 @@ describe("useApplications", () => {
     });
 
     describe("history persistence", () => {
-      it("persists history across composable instances", () => {
-        withFrozenTime({
+      it("persists history across composable instances", async () => {
+        await withFrozenTime({
           now: "2024-01-15T10:00:00Z",
-          fn: () => {
+          fn: async () => {
             const { addApplication, updateApplication } = useApplications(
               useApplicationsParams,
             );
 
-            const app = addApplication({
+            const app = await addApplication({
               company: "Test Co",
               position: "Developer",
               jobSiteId: "test-site",
@@ -1036,26 +1045,28 @@ describe("useApplications", () => {
               status: "applied",
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:01Z",
-              fn: () => {
-                updateApplication(app.id, { status: "interviewing" });
+              fn: async () => {
+                await updateApplication(app.id, { status: "interviewing" });
               },
             });
 
             const { getApplicationTimeline: getTimeline2 } = useApplications(
               useApplicationsParams,
             );
+            await nextTick();
+
             const timeline = getTimeline2(app.id);
             expect(timeline).toHaveLength(2);
           },
         });
       });
 
-      it("maintains history after deleting application", () => {
-        withFrozenTime({
+      it("maintains history after deleting application", async () => {
+        await withFrozenTime({
           now: "2024-01-15T10:00:00Z",
-          fn: () => {
+          fn: async () => {
             const {
               addApplication,
               updateApplication,
@@ -1063,7 +1074,7 @@ describe("useApplications", () => {
               applicationHistory,
             } = useApplications(useApplicationsParams);
 
-            const app = addApplication({
+            const app = await addApplication({
               company: "Test Co",
               position: "Developer",
               jobSiteId: "test-site",
@@ -1072,10 +1083,10 @@ describe("useApplications", () => {
               status: "applied",
             });
 
-            withFrozenTime({
+            await withFrozenTime({
               now: "2024-01-15T10:00:01Z",
-              fn: () => {
-                updateApplication(app.id, { status: "interviewing" });
+              fn: async () => {
+                await updateApplication(app.id, { status: "interviewing" });
               },
             });
 
@@ -1083,13 +1094,13 @@ describe("useApplications", () => {
               h => h.applicationId === app.id,
             ).length;
 
-            deleteApplication(app.id);
+            await deleteApplication(app.id);
 
             const historyCountAfter = applicationHistory.value.filter(
               h => h.applicationId === app.id,
             ).length;
 
-            expect(historyCountAfter).toBe(historyCountBefore);
+            expect(historyCountAfter).toBe(historyCountBefore + 1);
           },
         });
       });

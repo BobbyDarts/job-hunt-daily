@@ -210,4 +210,5 @@ export interface ApplicationHistory extends Omit<Application, "id"> {
   historyTimestamp: string;
   applicationId: string; // Points to the original application
   id: string; // Unique ID for this history record
+  reason: "updated" | "deleted";
 }

@@ -3,10 +3,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { nextTick } from "vue";
 
-import { TEST_VISITED_SITES_STORAGE_KEY } from "@/composables/keys";
 import { getToday, todayIso } from "@/lib/time";
 import { withFrozenTime } from "@/test-utils/with-frozen-time";
 
+import { TEST_VISITED_SITES_STORAGE_KEY } from "./keys";
 import { useVisitedSites } from "./use-visited-sites";
 
 describe("useVisitedSites", () => {
@@ -15,10 +15,10 @@ describe("useVisitedSites", () => {
     vi.clearAllTimers();
   });
 
-  it("starts with no visited sites", () => {
-    withFrozenTime({
+  it("starts with no visited sites", async () => {
+    await withFrozenTime({
       now: "2026-02-19T15:00:00Z",
-      fn: () => {
+      fn: async () => {
         const { visitedCount, isComplete } = useVisitedSites({
           storageKey: TEST_VISITED_SITES_STORAGE_KEY,
         });
@@ -39,7 +39,7 @@ describe("useVisitedSites", () => {
           storageKey: TEST_VISITED_SITES_STORAGE_KEY,
         });
 
-        markVisited("https://example.com");
+        await markVisited("https://example.com");
         await nextTick();
 
         expect(isSiteVisited("https://example.com")).toBe(true);
@@ -62,8 +62,8 @@ describe("useVisitedSites", () => {
           storageKey: TEST_VISITED_SITES_STORAGE_KEY,
         });
 
-        markVisited("https://example.com");
-        markVisited("https://example.com");
+        await markVisited("https://example.com");
+        await markVisited("https://example.com");
 
         await nextTick();
         expect(visitedCount.value).toBe(1);
@@ -71,10 +71,10 @@ describe("useVisitedSites", () => {
     });
   });
 
-  it("loads visited sites from localStorage on mount (same day)", () => {
-    withFrozenTime({
+  it("loads visited sites from localStorage on mount (same day)", async () => {
+    await withFrozenTime({
       now: "2026-02-19T15:00:00Z",
-      fn: () => {
+      fn: async () => {
         const today = todayIso();
 
         localStorage.setItem(

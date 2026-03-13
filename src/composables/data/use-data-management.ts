@@ -2,18 +2,18 @@
 
 import { toast } from "vue-sonner";
 
+import { getNow } from "@/lib/time";
+import type { Application, ApplicationHistory, VisitedSites } from "@/types";
+
 import {
   APPLICATIONS_STORAGE_KEY,
   APPLICATIONS_HISTORY_STORAGE_KEY,
   VISITED_SITES_STORAGE_KEY,
-} from "@/composables/keys";
-import { getNow } from "@/lib/time";
-import type { Application, ApplicationHistory, VisitedSites } from "@/types";
+} from "./keys";
+import { useApplicationsRepository } from "./use-applications-repository";
+import { useVisitedSitesRepository } from "./use-visited-sites-repository";
 
-import { useApplications } from "./use-applications";
-import { useVisitedSites } from "./use-visited-sites";
-
-export interface ExportData {
+interface ExportData {
   version: string;
   exportedAt: string;
   dailyChecklist: VisitedSites;
@@ -34,21 +34,21 @@ export function useDataManagement(params: UseDataManagementParams = {}) {
     visitedSitesStorageKey = VISITED_SITES_STORAGE_KEY,
   } = params;
 
-  const { applications, applicationHistory } = useApplications({
+  const appRepo = useApplicationsRepository({
     storageKey: applicationStorageKey,
     historyStorageKey: applicationHistoryStorageKey,
   });
 
-  const { serialize, hydrate } = useVisitedSites({
+  const visitedRepo = useVisitedSitesRepository({
     storageKey: visitedSitesStorageKey,
     skipInitReset: true,
   });
 
-  const exportAllData = (): void => {
+  const exportAllData = async (): Promise<void> => {
     const data: ExportData = {
-      applications: applications.value,
-      applicationHistory: applicationHistory.value,
-      dailyChecklist: serialize(),
+      applications: await appRepo.getAll(),
+      applicationHistory: await appRepo.getAllHistory(),
+      dailyChecklist: await visitedRepo.serialize(),
       exportedAt: getNow().toString(),
       version: "1.1",
     };
@@ -93,9 +93,8 @@ export function useDataManagement(params: UseDataManagementParams = {}) {
       const text = await file.text();
       const data = parseImportData(text);
 
-      hydrate(data.dailyChecklist);
-      applications.value = data.applications;
-      applicationHistory.value = data.applicationHistory ?? [];
+      await visitedRepo.hydrate(data.dailyChecklist);
+      await appRepo.setAll(data.applications, data.applicationHistory ?? []);
 
       toast.success("Data imported successfully");
     } catch (error) {

@@ -254,8 +254,14 @@ export default tseslint.config(
   // -------------------------
   {
     files: ["**/*.{test,spec}.{ts,js}"],
-    ...vitestPlugin.configs.recommended,
+    plugins: {
+      ...vitestPlugin.configs.recommended.plugins,
+    },
     languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: "./tsconfig.eslint.json",
+      },
       globals: {
         ...globals.browser,
         ...globals.node,

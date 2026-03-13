@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
-import { useApplications, useJobData } from "@/composables/data";
+import { useApplications, useJobSites } from "@/composables/data";
 import { useAddApplicationDialog } from "@/composables/ui";
 import { comparePlainDate } from "@/lib/time";
 import type { Application, ApplicationStatus, JobSite } from "@/types";
@@ -33,7 +33,7 @@ import { getStatusInfo } from "@/types";
 
 const router = useRouter();
 const route = useRoute();
-const { data } = useJobData();
+const { categories } = useJobSites();
 const {
   applications,
   addApplication,
@@ -91,7 +91,7 @@ const sitesWithApplications = computed(() => {
   // Get sites with their category information
   const sitesMap = new Map<string, { site: JobSite; category: string }>();
 
-  data.categories.forEach(category => {
+  categories.value.forEach(category => {
     category.sites.forEach(site => {
       if (siteIds.has(site.id)) {
         sitesMap.set(site.id, {
@@ -151,10 +151,10 @@ const groupedApplications = computed(() => {
 });
 
 // Handlers
-const handleAddApplication = (
+const handleAddApplication = async (
   data: Omit<Application, "id" | "createdAt" | "updatedAt">,
 ) => {
-  addApplication(data);
+  await addApplication(data);
   toast.success("Application added successfully");
 };
 
@@ -163,12 +163,15 @@ const handleEditApplication = (app: Application) => {
   isEditDialogOpen.value = true;
 };
 
-const handleUpdateApplication = (
+const handleUpdateApplication = async (
   updates: Partial<Omit<Application, "id" | "createdAt">>,
 ) => {
   if (!selectedApplication.value) return;
 
-  const updated = updateApplication(selectedApplication.value.id, updates);
+  const updated = await updateApplication(
+    selectedApplication.value.id,
+    updates,
+  );
   if (updated) {
     toast.success("Application updated successfully");
   } else {
@@ -176,8 +179,8 @@ const handleUpdateApplication = (
   }
 };
 
-const handleDeleteApplication = (id: string) => {
-  const deleted = deleteApplication(id);
+const handleDeleteApplication = async (id: string) => {
+  const deleted = await deleteApplication(id);
   if (deleted) {
     toast.success("Application deleted successfully");
   } else {

@@ -83,13 +83,13 @@ describe("time utilities", () => {
       expect(todayIso()).not.toBe("1999-01-01");
     });
 
-    it("withFrozenTime auto-resets after callback", () => {
+    it("withFrozenTime auto-resets after callback", async () => {
       // Use raw Temporal API to capture current date (not using helper)
       const beforeTime = Temporal.Now.plainDateISO().toString();
 
-      withFrozenTime({
+      await withFrozenTime({
         now: "2026-02-19T15:00:00Z",
-        fn: () => {
+        fn: async () => {
           // Inside frozen time, using helper is OK - we're testing the integration
           expect(todayIso()).toBe("2026-02-19");
         },
@@ -164,10 +164,10 @@ describe("time utilities", () => {
   });
 
   describe("todayIso", () => {
-    it("returns today as ISO string", () => {
-      withFrozenTime({
+    it("returns today as ISO string", async () => {
+      await withFrozenTime({
         now: "2026-02-19T15:00:00Z",
-        fn: () => {
+        fn: async () => {
           const iso = todayIso();
           expect(iso).toBe("2026-02-19");
         },
@@ -181,29 +181,29 @@ describe("time utilities", () => {
   });
 
   describe("isSameDayIso", () => {
-    it("returns true for today's date", () => {
-      withFrozenTime({
+    it("returns true for today's date", async () => {
+      await withFrozenTime({
         now: "2026-02-19T15:00:00Z",
-        fn: () => {
+        fn: async () => {
           expect(isSameDayIso("2026-02-19")).toBe(true);
         },
       });
     });
 
-    it("returns false for different date", () => {
-      withFrozenTime({
+    it("returns false for different date", async () => {
+      await withFrozenTime({
         now: "2026-02-19T15:00:00Z",
-        fn: () => {
+        fn: async () => {
           expect(isSameDayIso("2026-02-20")).toBe(false);
           expect(isSameDayIso("2026-02-18")).toBe(false);
         },
       });
     });
 
-    it("returns false for different year", () => {
-      withFrozenTime({
+    it("returns false for different year", async () => {
+      await withFrozenTime({
         now: "2026-02-19T15:00:00Z",
-        fn: () => {
+        fn: async () => {
           expect(isSameDayIso("2025-02-19")).toBe(false);
         },
       });

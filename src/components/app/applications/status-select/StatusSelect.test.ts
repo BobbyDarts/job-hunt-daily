@@ -2,7 +2,7 @@
 
 import userEvent from "@testing-library/user-event";
 import { screen, waitFor, within } from "@testing-library/vue";
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import { StatusSelect } from "@/components/app/applications/status-select";
 import type { StatusSelectProps } from "@/components/app/applications/status-select";
