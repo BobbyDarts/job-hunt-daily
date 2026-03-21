@@ -2,8 +2,9 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { useAddApplicationDialog } from "@/composables/ui";
 import { mockSites } from "@/test-utils/mocks";
+
+import { useAddApplicationDialog } from ".";
 
 describe("useAddApplicationDialog", () => {
   beforeEach(() => {

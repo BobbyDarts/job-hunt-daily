@@ -1,5 +1,6 @@
 // /src/router/index.test.ts
 
+import { flushPromises } from "@vue/test-utils";
 import { describe, it, expect, beforeEach } from "vitest";
 import type { Router } from "vue-router";
 import { createRouter, createMemoryHistory } from "vue-router";
@@ -15,7 +16,7 @@ beforeEach(async () => {
   });
 
   await router.push("/");
-  await router.isReady();
+  await flushPromises();
 });
 
 describe("Router Configuration", () => {
@@ -33,6 +34,12 @@ describe("Router Configuration", () => {
     expect(appRoute?.path).toBe("/applications");
   });
 
+  it("includes a 404 catch-all route", () => {
+    const notFound = router.getRoutes().find(r => r.name === "NotFound");
+
+    expect(notFound).toBeDefined();
+  });
+
   it("uses lazy loading for route components", () => {
     const routes = router.getRoutes();
 
@@ -47,6 +54,8 @@ describe("Router Configuration", () => {
 
     expect(routeNames).toContain("Home");
     expect(routeNames).toContain("Applications");
+    expect(routeNames).toContain("JobSites");
+    expect(routeNames).toContain("NotFound");
   });
 
   it("supports history mode navigation", () => {
@@ -63,6 +72,11 @@ describe("Router Navigation", () => {
   it("navigates to applications route", async () => {
     await router.push("/applications");
     expect(router.currentRoute.value.name).toBe("Applications");
+  });
+
+  it("navigates to job sites route", async () => {
+    await router.push("/job-sites");
+    expect(router.currentRoute.value.name).toBe("JobSites");
   });
 
   it("supports applications route with site query param", async () => {

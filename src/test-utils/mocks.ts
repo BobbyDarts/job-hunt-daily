@@ -1,5 +1,7 @@
 // /src/test-utils/mocks.ts
 
+import { vi, type Mock } from "vitest";
+
 import type { ATSInfo } from "@/lib/ats-detection";
 import { toInstant, toPlainDate } from "@/lib/time";
 import type { Application, JobCategory, JobSite, JobHuntData } from "@/types";
@@ -10,62 +12,71 @@ import type { Application, JobCategory, JobSite, JobHuntData } from "@/types";
 
 export const mockSites = {
   greenhouse: {
-    id: "greenhouse-company",
+    id: "greenhouse-greenhouse-company",
     name: "Greenhouse Company",
     url: "https://my.greenhouse.io",
+    categoryId: "tech-companies",
     atsType: "greenhouse" as const,
   },
   workday: {
-    id: "workday-company",
+    id: "workday-workday-company",
     name: "Workday Company",
     url: "https://company.wd1.myworkdayjobs.com/jobs",
+    categoryId: "tech-companies",
     atsType: "workday" as const,
   },
   lever: {
-    id: "lever-company",
+    id: "lever-lever-company",
     name: "Lever Company",
     url: "https://jobs.lever.co/company",
+    categoryId: "startups",
     atsType: "lever" as const,
   },
   bamboohr: {
-    id: "bamboohr-company",
+    id: "bamboohr-bamboohr-company",
     name: "BambooHR Company",
     url: "https://company.bamboohr.com/jobs",
+    categoryId: "startups",
     atsType: "bamboohr" as const,
   },
   regular: {
-    id: "regular-company",
+    id: "regular-site",
     name: "Regular Site",
     url: "https://example.com/careers",
+    categoryId: "tech-companies",
   },
   zebra: {
     id: "zebra-corp",
     name: "Zebra Corp",
     url: "https://zebra.com/careers",
+    categoryId: "tech-companies",
   },
   alpha: {
     id: "alpha-inc",
     name: "Alpha Inc",
     url: "https://alpha.com/jobs",
+    categoryId: "tech-companies",
   },
   delta: {
     id: "delta-company",
     name: "Delta Company",
     url: "https://delta.com/careers",
+    categoryId: "small-category",
   },
   siteA: {
     id: "sitea",
     name: "Site A",
     url: "https://a.com",
+    categoryId: "test-category",
   },
   siteB: {
     id: "siteb",
     name: "Site B",
     url: "https://b.com",
+    categoryId: "test-category",
   },
 } satisfies Record<string, JobSite>;
 
-// Legacy exports for backward compatibility
 export const mockSite = mockSites.greenhouse;
 
 // ============================================================================
@@ -74,33 +85,26 @@ export const mockSite = mockSites.greenhouse;
 
 export const mockCategories = {
   techCompanies: {
+    id: "tech-companies",
     name: "Tech Companies",
     description: "Technology company career pages",
-    sites: [
-      mockSites.workday,
-      mockSites.greenhouse,
-      mockSites.regular,
-      mockSites.zebra,
-      mockSites.alpha,
-    ],
   },
   startups: {
+    id: "startups",
     name: "Startups",
     description: "Startup company listings",
-    sites: [mockSites.lever, mockSites.bamboohr],
   },
   smallCategory: {
+    id: "small-category",
     name: "Small Category",
     description: "Small companies",
-    sites: [mockSites.delta],
   },
   testCategory: {
+    id: "test-category",
     name: "Test Category",
-    sites: [mockSites.siteA, mockSites.siteB],
   },
 } satisfies Record<string, JobCategory>;
 
-// Legacy export for backward compatibility
 export const mockCategory = mockCategories.testCategory;
 
 // ============================================================================
@@ -112,6 +116,16 @@ export const mockJobHuntData: JobHuntData = {
     mockCategories.techCompanies,
     mockCategories.startups,
     mockCategories.smallCategory,
+  ],
+  sites: [
+    mockSites.workday,
+    mockSites.greenhouse,
+    mockSites.regular,
+    mockSites.zebra,
+    mockSites.alpha,
+    mockSites.lever,
+    mockSites.bamboohr,
+    mockSites.delta,
   ],
 };
 
@@ -151,9 +165,6 @@ export const mockApplications: Application[] = [
 // Helper Functions
 // ============================================================================
 
-/**
- * Create a custom JobSite for testing
- */
 export function createMockSite(overrides: Partial<JobSite> = {}): JobSite {
   return {
     ...mockSites.siteA,
@@ -161,9 +172,6 @@ export function createMockSite(overrides: Partial<JobSite> = {}): JobSite {
   };
 }
 
-/**
- * Create a custom Application for testing
- */
 export function createMockApplication(
   overrides: Partial<Application> = {},
 ): Application {
@@ -171,4 +179,50 @@ export function createMockApplication(
     ...mockApplications[0],
     ...overrides,
   };
+}
+
+type MockResetConfig =
+  | { mock: Mock; type: "resolved"; value?: unknown }
+  | { mock: Mock; type: "return"; value?: unknown }
+  | { mock: Mock; type: "implementation"; fn: (...args: unknown[]) => unknown };
+
+export const resolved = (mock: Mock, value?: unknown): MockResetConfig => ({
+  mock,
+  type: "resolved",
+  value,
+});
+
+export const returned = (mock: Mock, value?: unknown): MockResetConfig => ({
+  mock,
+  type: "return",
+  value,
+});
+
+export const implementation = (
+  mock: Mock,
+  fn: (...args: unknown[]) => unknown,
+): MockResetConfig => ({
+  mock,
+  type: "implementation",
+  fn,
+});
+
+export function resetMocks(configs: MockResetConfig[] = []) {
+  vi.resetAllMocks();
+
+  for (const config of configs) {
+    switch (config.type) {
+      case "resolved":
+        config.mock.mockResolvedValue(config.value);
+        break;
+
+      case "return":
+        config.mock.mockReturnValue(config.value);
+        break;
+
+      case "implementation":
+        config.mock.mockImplementation(config.fn);
+        break;
+    }
+  }
 }

@@ -1,11 +1,11 @@
-// /src/views/Home.vue
+<!-- // /src/views/Home.vue -->
 
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 
-import { AddApplicationDialog } from "@/components/app/applications/add-application-dialog";
-import { CategoryCard } from "@/components/app/sites/category-card";
+import { AddApplicationDialog } from "@/components/app/applications";
+import { CategoryCard } from "@/components/app/sites";
 import { useCategoryProgress } from "@/composables/dashboard";
 import {
   useApplications,
@@ -19,7 +19,7 @@ import type { JobSite, Application } from "@/types";
 const router = useRouter();
 const { markVisited, isSiteVisited } = useVisitedSites();
 const {
-  sortedCategories,
+  categoryStats,
   getCategoryProgress,
   getCategoryVisitedCount,
   maxCategoryHeight,
@@ -32,18 +32,15 @@ const {
   openDialog,
 } = useAddApplicationDialog();
 
-// Handle site click
 const handleSiteClick = (url: string) => {
   markVisited(url);
   window.open(url, "_blank", "noopener,noreferrer");
 };
 
-// Handler for "Add Application" button
 const handleAddApplication = (site: JobSite) => {
   openDialog(site);
 };
 
-// Handler for "Manage Applications" button
 const handleManageApplications = async (site: JobSite) => {
   try {
     await router.push({
@@ -56,7 +53,6 @@ const handleManageApplications = async (site: JobSite) => {
   }
 };
 
-// Get applications for a specific site (by ID)
 const getApplicationsForSite = (siteId: string) => {
   return applications.value.filter(app => app.jobSiteId === siteId);
 };
@@ -75,11 +71,12 @@ const handleApplicationSubmit = (
       class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"
     >
       <CategoryCard
-        v-for="category in sortedCategories"
-        :key="category.name"
-        :category="category"
-        :visited-count="getCategoryVisitedCount(category)"
-        :progress="getCategoryProgress(category)"
+        v-for="stat in categoryStats"
+        :key="stat.category.id"
+        :category="stat.category"
+        :sites="stat.sites"
+        :visited-count="getCategoryVisitedCount(stat.category)"
+        :progress="getCategoryProgress(stat.category)"
         :max-height="maxCategoryHeight"
         :get-a-t-s="getATS"
         :is-site-visited="isSiteVisited"
@@ -91,7 +88,6 @@ const handleApplicationSubmit = (
     </div>
   </div>
 
-  <!-- Add Application Dialog -->
   <AddApplicationDialog
     v-model:open="isAddApplicationDialogOpen"
     :site="selectedSite"

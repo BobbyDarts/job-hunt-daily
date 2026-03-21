@@ -53,7 +53,7 @@ watchEffect(() => {
           <WifiOff
             v-if="!props.isOnline"
             class="size-5 text-destructive"
-            title="Offline"
+            aria-label="Offline"
           />
         </div>
 

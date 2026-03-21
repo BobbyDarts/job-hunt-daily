@@ -4,37 +4,38 @@ import userEvent from "@testing-library/user-event";
 import { screen, waitFor, within } from "@testing-library/vue";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-import { SiteSelect } from "@/components/app/sites/site-select";
-import type {
-  SiteSelectProps,
-  SiteWithCategory,
-} from "@/components/app/sites/site-select";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
+
+import { SiteSelect, type SiteSelectProps, type SiteWithCategory } from ".";
 
 const mockSites: SiteWithCategory[] = [
   {
     id: "linkedin",
     name: "LinkedIn",
     url: "https://linkedin.com",
+    categoryId: "general-job-boards",
     category: "General Job Boards",
   },
   {
     id: "indeed",
     name: "Indeed",
     url: "https://indeed.com",
+    categoryId: "general-job-boards",
     category: "General Job Boards",
   },
   {
     id: "angellist",
     name: "AngelList",
     url: "https://angel.co",
+    categoryId: "tech-startup-boards",
     category: "Tech & Startup Boards",
   },
   {
     id: "weworkremotely",
     name: "We Work Remotely",
     url: "https://weworkremotely.com",
+    categoryId: "remote-focused-boards",
     category: "Remote-Focused Boards",
   },
 ];
@@ -53,6 +54,7 @@ function renderSiteSelect(
 ) {
   return renderBaseWithProviders(SiteSelect, DEFAULT_PROPS, overrides, {
     providers: [TooltipProvider],
+    events: ["update:modelValue"],
     ...options,
   });
 }
@@ -182,6 +184,7 @@ describe("SiteSelect", () => {
           id: "custom",
           name: "Custom Site",
           url: "https://custom.com",
+          categoryId: "other",
         },
       ];
 
@@ -336,12 +339,25 @@ describe("SiteSelect", () => {
   describe("Sorting", () => {
     it("sorts sites alphabetically within each category", async () => {
       const unsortedSites: SiteWithCategory[] = [
-        { id: "z", name: "Zebra Site", url: "https://z.com", category: "Test" },
-        { id: "a", name: "Alpha Site", url: "https://a.com", category: "Test" },
+        {
+          id: "z",
+          name: "Zebra Site",
+          url: "https://z.com",
+          categoryId: "test",
+          category: "Test",
+        },
+        {
+          id: "a",
+          name: "Alpha Site",
+          url: "https://a.com",
+          categoryId: "test",
+          category: "Test",
+        },
         {
           id: "m",
           name: "Middle Site",
           url: "https://m.com",
+          categoryId: "test",
           category: "Test",
         },
       ];

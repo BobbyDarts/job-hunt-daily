@@ -1,8 +1,12 @@
-// /src/lib/generate-site-id.test.ts
+// /src/lib/generate-id.test.ts
 
 import { describe, it, expect } from "vitest";
 
-import { generateSiteId, ensureUniqueSiteIds } from "@/lib/generate-site-id";
+import {
+  generateSiteId,
+  generateCategoryId,
+  ensureUniqueSiteIds,
+} from "./generate-id";
 
 describe("generateSiteId", () => {
   it("generates ID from ATS type and company name", () => {
@@ -50,16 +54,26 @@ describe("generateSiteId", () => {
     );
   });
 
-  it("works without ATS type using domain", () => {
-    expect(
-      generateSiteId("Acme Corp", "https://acme.wd5.myworkdayjobs.com"),
-    ).toBe("acme-acme-corp");
+  it("uses name slug when name and domain are related", () => {
+    // "acme-corp" normalized is "acmecorp", "acme" normalized is "acme"
+    // domainNormalized.includes(nameNormalized) is false
+    // nameNormalized.includes(domainNormalized) is true → use nameSlug
+    expect(generateSiteId("Acme Corp", "https://acme.com")).toBe("acme-corp");
   });
 
-  it("handles sites with no ATS and uses domain", () => {
+  it("uses name slug when domain contains name", () => {
+    // "custom-site" normalized is "customsite", "customsite" normalized is "customsite"
+    // nameNormalized.includes(domainNormalized) → true → use nameSlug
     expect(
       generateSiteId("Custom Site", "https://customsite.com/careers"),
-    ).toBe("customsite-custom-site");
+    ).toBe("custom-site");
+  });
+
+  it("uses domain prefix when name and domain are unrelated", () => {
+    // "myworkdayjobs" does not contain "acmecorp" and vice versa
+    expect(
+      generateSiteId("Acme Corp", "https://acme.wd5.myworkdayjobs.com"),
+    ).toBe("myworkdayjobs-acme-corp");
   });
 
   it("falls back to name slug for invalid URLs", () => {
@@ -70,20 +84,22 @@ describe("generateSiteId", () => {
     expect(generateSiteId("", "https://test.com", "workday")).toBe("workday");
   });
 
-  it("handles URLs with subdomains", () => {
+  it("handles URLs with subdomains — uses second-to-last domain segment", () => {
+    // "careers.acme.com" → at(-2) = "acme", name "Acme" contains "acme" → "acme"
     expect(
       generateSiteId("Acme", "https://careers.acme.com/jobs", "greenhouse"),
     ).toBe("greenhouse-acme");
   });
 
-  it("extracts first subdomain as domain", () => {
+  it("extracts second-to-last segment for multi-part domains", () => {
+    // "sub.domain.example.com" → at(-2) = "example"
+    // "test" does not contain "example" and vice versa → "example-test"
     expect(generateSiteId("Test", "https://sub.domain.example.com")).toBe(
-      "sub-test",
+      "example-test",
     );
   });
 
   it("handles URLs without protocol", () => {
-    // Should fail to parse and fall back to name only
     expect(generateSiteId("Acme", "acme.com")).toBe("acme");
   });
 
@@ -96,6 +112,54 @@ describe("generateSiteId", () => {
   it("handles numeric characters in name", () => {
     expect(generateSiteId("3M Company", "https://3m.com", "workday")).toBe(
       "workday-3m-company",
+    );
+  });
+
+  it("uses name slug when domain is substring of name (dataman case)", () => {
+    // "dataman" normalized is "dataman", "datamanusa" normalized is "datamanusa"
+    // domainNormalized.includes(nameNormalized) → true → use nameSlug
+    expect(generateSiteId("Dataman", "https://www.datamanusa.com/jobs")).toBe(
+      "dataman",
+    );
+  });
+
+  it("uses name slug when name and domain match after normalization (robert half case)", () => {
+    // "robert-half" normalized is "roberthalf", "roberthalf" normalized is "roberthalf"
+    // nameNormalized.includes(domainNormalized) → true → use nameSlug
+    expect(
+      generateSiteId("Robert Half", "https://www.roberthalf.com/jobs"),
+    ).toBe("robert-half");
+  });
+});
+
+describe("generateCategoryId", () => {
+  it("slugifies a simple category name", () => {
+    expect(generateCategoryId("General Job Boards")).toBe("general-job-boards");
+  });
+
+  it("handles special characters", () => {
+    expect(generateCategoryId("Tech & Startup Boards")).toBe(
+      "tech-startup-boards",
+    );
+  });
+
+  it("handles already-lowercase input", () => {
+    expect(generateCategoryId("remote-focused boards")).toBe(
+      "remote-focused-boards",
+    );
+  });
+
+  it("strips leading and trailing hyphens", () => {
+    expect(generateCategoryId("---Category---")).toBe("category");
+  });
+
+  it("returns unknown for empty string", () => {
+    expect(generateCategoryId("")).toBe("unknown");
+  });
+
+  it("handles nonprofit and mission-driven category", () => {
+    expect(generateCategoryId("Nonprofit & Mission-Driven")).toBe(
+      "nonprofit-mission-driven",
     );
   });
 });
@@ -143,7 +207,8 @@ describe("ensureUniqueSiteIds", () => {
     const idMap = ensureUniqueSiteIds(sites);
 
     expect(idMap.get("https://wd.com")).toBe("workday-workday-site");
-    expect(idMap.get("https://custom.com/careers")).toBe("custom-custom-site");
+    // "custom-site" normalized matches "custom" → use nameSlug
+    expect(idMap.get("https://custom.com/careers")).toBe("custom-site");
   });
 
   it("maintains uniqueness across different ATS types", () => {
@@ -160,17 +225,17 @@ describe("ensureUniqueSiteIds", () => {
 
   it("handles collision between ATS and non-ATS sites", () => {
     const sites = [
-      { name: "Acme", url: "https://acme.wd5.myworkdayjobs.com" }, // will be "acme-acme"
-      { name: "Acme", url: "https://careers.acme.com", atsType: "acme" }, // will be "acme-acme"
+      { name: "Acme", url: "https://acme.wd5.myworkdayjobs.com" }, // "myworkdayjobs-acme"
+      { name: "Acme", url: "https://careers.acme.com" }, // "acme"
     ];
 
     const idMap = ensureUniqueSiteIds(sites);
 
     expect(idMap.size).toBe(2);
-    // One should get base ID, other should get -1 suffix
-    const ids = Array.from(idMap.values());
-    expect(ids).toContain("acme-acme");
-    expect(ids).toContain("acme-acme-1");
+    expect(idMap.get("https://acme.wd5.myworkdayjobs.com")).toBe(
+      "myworkdayjobs-acme",
+    );
+    expect(idMap.get("https://careers.acme.com")).toBe("acme");
   });
 
   it("preserves URL to ID mapping", () => {
@@ -181,7 +246,6 @@ describe("ensureUniqueSiteIds", () => {
 
     const idMap = ensureUniqueSiteIds(sites);
 
-    // Each URL should map to exactly one ID
     expect(idMap.get("https://test1.com")).toBeDefined();
     expect(idMap.get("https://test2.com")).toBeDefined();
     expect(idMap.get("https://test1.com")).not.toBe(
@@ -200,8 +264,6 @@ describe("ensureUniqueSiteIds", () => {
 
     expect(idMap.size).toBe(10);
     const ids = Array.from(idMap.values());
-
-    // Should have base ID and numbered variants
     expect(ids).toContain("workday-duplicate");
     expect(ids).toContain("workday-duplicate-1");
     expect(ids).toContain("workday-duplicate-2");
@@ -213,7 +275,6 @@ describe("ensureUniqueSiteIds", () => {
       { name: "Test", url: "https://test.com", atsType: "workday" },
     ];
     const idMap = ensureUniqueSiteIds(sites);
-
     expect(idMap.has("https://test.com")).toBe(true);
   });
 

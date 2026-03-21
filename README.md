@@ -1,92 +1,105 @@
 # Job Hunt Daily
 
-A simple daily job hunting tracker to help you stay consistent with checking job sites.
+A daily job hunting tracker to help you stay consistent with checking job sites, logging applications, and managing your job search.
 
 ## Features
 
 - ✅ Track which job sites you've visited today
-- 📊 Visual progress indicator
-- 🔄 Automatically resets daily
-- 🎯 Organized by categories
-- 💾 Persists progress in localStorage
-- 🏢 **ATS Detection** - Automatically identifies Applicant Tracking Systems (Workday, Greenhouse, Lever, BambooHR)
+- 📊 Visual progress indicator per category
+- 🔄 Automatically resets daily at midnight
+- 🎯 Sites organized into customizable categories
+- 📝 Full application tracking (status, notes, tags, follow-up dates)
+- 🏢 ATS Detection — automatically identifies Applicant Tracking Systems
+- 🔍 Command palette (`⌘K`) for quick navigation and actions
+- ⌨️ Vim-style keyboard shortcuts
+- 💾 All data persists in localStorage
+- 🌙 Light/dark theme support
+- 📦 Export/import all data as JSON
+
+## Views
+
+### Home (`/`)
+Your daily dashboard. Shows all job site categories with progress bars. Click a site to open it and mark it visited. Use action buttons on each card to add applications or manage existing ones.
+
+### Applications (`/applications`)
+Full application tracker. Add, edit, and delete applications. Filter by status, site, or search query. Grouped by company.
+
+### Job Sites (`/job-sites`)
+Manage your job site list. Add, edit, and delete sites and categories directly in the app — no JSON editing required.
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `⌘K` / `Ctrl+K` | Open command palette |
+| `j` / `k` | Move focus down / up (Home only) |
+| `a` | Add application for focused site |
+| `v` | Mark focused site as visited |
+| `g h` | Go to Home |
+| `g a` | Go to Applications |
+| `g j` | Go to Job Sites |
+| `t` | Toggle theme |
+| `?` | Show shortcut reference |
 
 ## ATS Detection
 
-Job Hunt Daily automatically detects which Applicant Tracking System (ATS) each job site uses and displays a color-coded badge:
+Job Hunt Daily automatically detects which Applicant Tracking System each job site uses and displays a color-coded badge:
 
-- 🔵 **Workday (WD)** - Blue badge
-- 🟢 **Greenhouse (GH)** - Green badge  
-- 🟣 **Lever (LV)** - Purple badge
-- 🟠 **BambooHR (BH)** - Orange badge
+| Badge | ATS | Color |
+|-------|-----|-------|
+| WD | Workday | Blue |
+| GH | Greenhouse | Green |
+| LV | Lever | Purple |
+| BH | BambooHR | Orange |
+| PL | Polymer | Cyan |
+| CT | Custom | Gray |
 
-### Supported ATS Platforms
+Detection is based on URL patterns. You can also set `atsType` explicitly when adding or editing a site in the app.
 
-The app automatically detects ATS from URL patterns:
-- **Workday**: `myworkdayjobs.com`, `wd1.`, `wd5.`, `wd501.`
-- **Greenhouse**: `greenhouse.io`
-- **Lever**: `lever.co`
-- **BambooHR**: `bamboohr.com`
+## Data Management
 
-### Manual Override
+All data is stored in `localStorage` and can be exported and imported as JSON.
 
-If auto-detection doesn't work or you want to explicitly tag a site, add the `atsType` field to your job site in `job-hunt-daily.json`:
+### Export
+Header menu → Export... — downloads a full backup including visited sites, applications, and job sites.
 
+### Import
+Header menu → Import... — restores from a previously exported file. All sections are optional; only present sections are applied.
+
+### Export format (v1.2)
 ```json
 {
-  "name": "Company Name",
-  "url": "https://company.com/careers",
-  "atsType": "workday"
+  "version": "1.2",
+  "exportedAt": "...",
+  "dailyChecklist": { "date": "...", "visited": ["..."] },
+  "applications": [],
+  "applicationHistory": [],
+  "jobSites": { "categories": [], "sites": [] }
 }
 ```
 
-Hover over any ATS badge to see the full ATS name in a tooltip.
+Files exported from v1.1 (applications and visited sites only) are still supported on import.
 
 ## Setup
-
-1. Install dependencies:
 ```bash
 npm install
-```
-
-2. Run development server:
-```bash
 npm run dev
 ```
 
-3. Run tests:
+## Scripts
 ```bash
-npm test
-```
-
-4. Run tests with UI:
-```bash
-npm run test:ui
-```
-
-5. Run tests with coverage:
-```bash
-npm run test:coverage
-```
-
-## Configuration
-
-Edit `src/data/job-hunt-daily.json` to customize your job sites:
-
-```json
-{
-  "categories": [
-    {
-      "name": "Job Boards",
-      "sites": [
-        {
-          "name": "LinkedIn Jobs",
-          "url": "https://www.linkedin.com/jobs/"
-        }
-      ]
-    }
-  ]
-}
+npm run dev          # Start development server
+npm run build        # Production build
+npm run test         # Run tests in watch mode
+npm run test:run     # Run tests once
+npm run test:ui      # Run tests with UI
+npm run test:coverage # Run tests with coverage
+npm run lint         # Lint
+npm run lint:fix     # Lint and auto-fix
+npm run format       # Format with Prettier
+npm run format:check # Check formatting
+npm run validate     # Lint + format check + tests + typecheck
+npm run typecheck    # TypeScript type check only
 ```
 
 ## Tech Stack
@@ -94,52 +107,26 @@ Edit `src/data/job-hunt-daily.json` to customize your job sites:
 - Vue 3 + TypeScript
 - Vite
 - Tailwind CSS
-- shadcn-vue
+- shadcn-vue / reka-ui
+- TanStack Table
+- VueUse
+- Vitest + Testing Library
 
 ## Development
 
-### Code Quality Tools
+### Code Quality
 
-The project uses ESLint and Prettier to maintain code quality and consistency:
-
-- **ESLint**: Configured with Vue, TypeScript, and import sorting rules
-- **Prettier**: Handles code formatting with consistent style
-- **Auto-format on save**: Enabled by default in VSCode
+- **ESLint** — Vue, TypeScript, and import sorting rules
+- **Prettier** — consistent formatting
+- **TypeScript** — strict type checking via `vue-tsc`
 
 ### Recommended VSCode Extensions
 
-The project includes workspace recommendations for VSCode extensions:
+The project includes workspace recommendations:
 
-- **ESLint** - Real-time linting
-- **Prettier** - Code formatting
-- **Vue - Official (Volar)** - Vue language support
-- **Tailwind CSS IntelliSense** - Tailwind class autocomplete
-- **Error Lens** - Inline error display
-- **Code Spell Checker** - Catch typos
-
-When you open the project in VSCode, you'll be prompted to install these extensions.
-
-### Linting & Formatting
-
-```bash
-# Lint code
-npm run lint
-
-# Lint and auto-fix issues
-npm run lint:fix
-
-# Format code with Prettier
-npm run format
-
-# Check formatting without changing files
-npm run format:check
-```
-
-The project is configured to automatically format and fix linting issues on save when using VSCode.
-
-## How It Works
-
-1. Click on any job site link to mark it as visited
-2. Links open in new tabs
-3. Progress is saved and resets automatically at midnight
-4. Complete all sites to see your completion message!
+- Vue - Official (Volar)
+- ESLint
+- Prettier
+- Tailwind CSS IntelliSense
+- Error Lens
+- Code Spell Checker

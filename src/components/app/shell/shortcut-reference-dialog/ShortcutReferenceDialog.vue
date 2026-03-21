@@ -69,6 +69,19 @@ const { open, closeDialog } = useShortcutReference();
                 >
               </div>
             </div>
+            <div class="flex items-center justify-between text-sm">
+              <span>Go to Job Sites</span>
+              <div class="flex gap-1">
+                <kbd
+                  class="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono"
+                  >g</kbd
+                >
+                <kbd
+                  class="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono"
+                  >j</kbd
+                >
+              </div>
+            </div>
           </div>
         </div>
 
@@ -123,12 +136,21 @@ const { open, closeDialog } = useShortcutReference();
           >
             General
           </h3>
-          <div class="flex items-center justify-between text-sm">
-            <span>Show this reference</span>
-            <kbd
-              class="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono"
-              >?</kbd
-            >
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-sm">
+              <span>Toggle theme</span>
+              <kbd
+                class="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono"
+                >t</kbd
+              >
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span>Show this reference</span>
+              <kbd
+                class="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono"
+                >?</kbd
+              >
+            </div>
           </div>
         </div>
       </div>

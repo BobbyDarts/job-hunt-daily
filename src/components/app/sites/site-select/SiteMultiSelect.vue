@@ -8,7 +8,7 @@ import {
   type BaseSelectOption,
   type BaseSelectProps,
 } from "@/components/app/lib";
-import type { SiteWithCategory } from "@/components/app/sites/site-select";
+import type { SiteWithCategory } from "@/components/app/sites";
 
 export interface Props extends Partial<BaseSelectProps> {
   modelValue: string[];

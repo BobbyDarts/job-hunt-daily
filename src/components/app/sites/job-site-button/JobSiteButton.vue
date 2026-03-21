@@ -3,7 +3,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { ATSAvatar } from "@/components/app/sites/ats-avatar";
+import { ATSAvatar } from "@/components/app/sites";
 import type { ATSInfo } from "@/lib/ats-detection";
 import { cn } from "@/lib/utils";
 import type { JobSite } from "@/types";

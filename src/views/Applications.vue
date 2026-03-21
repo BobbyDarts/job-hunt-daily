@@ -13,11 +13,13 @@ import { computed, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { toast } from "vue-sonner";
 
-import { AddApplicationDialog } from "@/components/app/applications/add-application-dialog";
-import { ApplicationCard } from "@/components/app/applications/application-card";
-import { EditApplicationDialog } from "@/components/app/applications/edit-application-dialog";
-import { StatusSelect } from "@/components/app/applications/status-select";
-import { SiteSelect } from "@/components/app/sites/site-select";
+import {
+  AddApplicationDialog,
+  ApplicationCard,
+  EditApplicationDialog,
+  StatusSelect,
+} from "@/components/app/applications";
+import { SiteSelect } from "@/components/app/sites";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,12 +30,12 @@ import {
 import { useApplications, useJobSites } from "@/composables/data";
 import { useAddApplicationDialog } from "@/composables/ui";
 import { comparePlainDate } from "@/lib/time";
-import type { Application, ApplicationStatus, JobSite } from "@/types";
+import type { Application, ApplicationStatus } from "@/types";
 import { getStatusInfo } from "@/types";
 
 const router = useRouter();
 const route = useRoute();
-const { categories } = useJobSites();
+const { allSitesWithCategory } = useJobSites();
 const {
   applications,
   addApplication,
@@ -87,26 +89,9 @@ const selectedApplication = ref<Application | null>(null);
 // Sites that have applications (for filter dropdown)
 const sitesWithApplications = computed(() => {
   const siteIds = new Set(applications.value.map(app => app.jobSiteId));
-
-  // Get sites with their category information
-  const sitesMap = new Map<string, { site: JobSite; category: string }>();
-
-  categories.value.forEach(category => {
-    category.sites.forEach(site => {
-      if (siteIds.has(site.id)) {
-        sitesMap.set(site.id, {
-          site,
-          category: category.name,
-        });
-      }
-    });
-  });
-
-  return Array.from(sitesMap.values()).map(({ site, category }) => ({
-    ...site,
-    category,
-  }));
+  return allSitesWithCategory.value.filter(site => siteIds.has(site.id));
 });
+
 // Filtered applications
 const filteredApplications = computed(() => {
   let results = [...applications.value];

@@ -265,7 +265,7 @@ const handleSelectChange = (val: AcceptableValue) => {
                   <CommandItem
                     v-if="showAllOption"
                     value="__all__"
-                    @select="handleSelect('__all__')"
+                    @select="() => handleSelect('__all__')"
                   >
                     {{ allOptionLabel ?? placeholder }}
                   </CommandItem>
@@ -279,7 +279,7 @@ const handleSelectChange = (val: AcceptableValue) => {
                       v-for="opt in group.options"
                       :key="opt.value"
                       :value="opt.value"
-                      @select="handleSelect(opt.value)"
+                      @select="() => handleSelect(opt.value)"
                     >
                       <Check
                         v-if="multiple"

@@ -3,8 +3,8 @@
 <script setup lang="ts">
 import { ref, watch, computed, nextTick } from "vue";
 
-import { TagsMultiSelect } from "@/components/app/applications/tags-multi-select";
-import { SiteSelect } from "@/components/app/sites/site-select";
+import { TagsMultiSelect } from "@/components/app/applications";
+import { SiteSelect } from "@/components/app/sites";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

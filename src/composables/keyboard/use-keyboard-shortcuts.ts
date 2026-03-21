@@ -10,6 +10,7 @@ import {
   useAddApplicationDialog,
   useShortcutReference,
   useSiteFocus,
+  useTheme,
 } from "@/composables/ui";
 
 import { useInputGuard } from "./use-input-guard";
@@ -22,6 +23,8 @@ import { useInputGuard } from "./use-input-guard";
  * | `v`       | Mark focused site as visited
  * | `g a`     | Go to Applications view
  * | `g h`     | Go to Home
+ * | `g j`     | Go to Job Sites
+ * | `t`       | Toggle theme
  * | `?`       | Show shortcut reference
  */
 export function useKeyboardShortcuts() {
@@ -37,8 +40,9 @@ export function useKeyboardShortcuts() {
   const { clear, focusNext, focusPrev, focusedSite } = useSiteFocus();
   const { openDialog } = useAddApplicationDialog();
   const { markVisited } = useVisitedSites();
+  const { toggleTheme } = useTheme();
 
-  const { j, k, a, v, g, h, shift_slash } = useMagicKeys({ passive: false });
+  const { j, k, a, v, g, h, t, shift_slash } = useMagicKeys({ passive: false });
 
   watch(
     () => route.name,
@@ -57,7 +61,14 @@ export function useKeyboardShortcuts() {
     }, 500);
   });
 
-  whenever(logicAnd(j, notUsingInput, onHome), () => focusNext());
+  whenever(logicAnd(j, notUsingInput), () => {
+    if (gPressed) {
+      gPressed = false;
+      void router.push("/job-sites");
+      return;
+    }
+    if (onHome.value) focusNext();
+  });
   whenever(logicAnd(k, notUsingInput, onHome), () => focusPrev());
 
   whenever(logicAnd(a, notUsingInput), () => {
@@ -78,6 +89,10 @@ export function useKeyboardShortcuts() {
 
   whenever(logicAnd(v, notUsingInput), async () => {
     if (focusedSite.value) await markVisited(focusedSite.value.url);
+  });
+
+  whenever(logicAnd(t, notUsingInput), async () => {
+    toggleTheme();
   });
 
   // shift+/ === "?"

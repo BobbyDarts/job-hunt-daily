@@ -83,6 +83,16 @@ export default tseslint.config(
       ],
 
       // ❌ Default: "off"
+      // Flags components used in <template> that are not imported in <script setup>.
+      // Catches missing imports without requiring strictTemplates.
+      "vue/no-undef-components": [
+        "error",
+        {
+          ignorePatterns: ["RouterView", "router-view"],
+        },
+      ],
+
+      // ❌ Default: "off"
       // Requires macro variables to follow conventional naming.
       // e.g., props = defineProps(), emit = defineEmits()
       "vue/require-macro-variable-name": "error",
@@ -109,6 +119,10 @@ export default tseslint.config(
       ],
       "import-x/no-unresolved": "error",
       "import-x/no-duplicates": "error",
+      // ❌ Default: "off"
+      // Flags imports that use an alias or absolute path when a relative path would be shorter.
+      // e.g., `@/composables/data/use-job-sites` from within `composables/data/` should be `./use-job-sites`
+      "import-x/no-useless-path-segments": ["warn", { noUselessIndex: true }],
       "import-x/no-extraneous-dependencies": [
         "error",
         { devDependencies: true },
@@ -212,6 +226,10 @@ export default tseslint.config(
       ],
       "import-x/no-unresolved": "error",
       "import-x/no-duplicates": "error",
+      // ❌ Default: "off"
+      // Flags imports that use an alias or absolute path when a relative path would be shorter.
+      // e.g., `@/composables/data/use-job-sites` from within `composables/data/` should be `./use-job-sites`
+      "import-x/no-useless-path-segments": ["warn", { noUselessIndex: true }],
       "import-x/no-extraneous-dependencies": [
         "error",
         { devDependencies: true },
