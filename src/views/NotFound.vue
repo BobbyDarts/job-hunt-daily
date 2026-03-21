@@ -1,4 +1,4 @@
-// /src/views/NotFound.vue
+<!-- // /src/views/NotFound.vue -->
 
 <script setup lang="ts">
 import { useRouter } from "vue-router";

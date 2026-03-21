@@ -45,7 +45,7 @@ function handleSiteSelect(url: string) {
         v-for="site in matchingSites"
         :key="site.id"
         :value="site.id"
-        @select="handleSiteSelect(site.url)"
+        @select="() => handleSiteSelect(site.url)"
       >
         <Globe class="mr-2 size-4" />
         <span>{{ site.name }}</span>

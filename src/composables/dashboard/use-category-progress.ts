@@ -3,67 +3,63 @@
 import { computed } from "vue";
 
 import { useJobSites, useVisitedSites } from "@/composables/data";
-import type { DataSourceParam } from "@/composables/types";
 import type { JobCategory } from "@/types";
 
-type UseCategoryProgressParams = DataSourceParam & {
+interface UseCategoryProgressParams {
+  storageKey?: string;
   isSiteVisited?: (url: string) => boolean;
-};
+}
 
 export function useCategoryProgress(params: UseCategoryProgressParams = {}) {
-  const { isSiteVisited: isSiteVisitedOverride, ...repoParams } = params;
+  const { isSiteVisited: isSiteVisitedOverride, storageKey } = params;
 
-  const { categories } = useJobSites(repoParams);
+  const { categories, getSitesByCategory } = useJobSites({ storageKey });
   const resolvedIsSiteVisited =
     isSiteVisitedOverride ?? useVisitedSites().isSiteVisited;
 
   const sortedCategories = computed(() =>
-    [...categories.value]
-      .map(category => ({
-        ...category,
-        sites: [...category.sites].sort((a, b) => a.name.localeCompare(b.name)),
-      }))
-      .sort((a, b) => b.sites.length - a.sites.length),
+    [...categories.value].sort(
+      (a, b) =>
+        getSitesByCategory(b.id).length - getSitesByCategory(a.id).length,
+    ),
   );
 
-  const categoryStats = computed(() => {
-    return sortedCategories.value.map(category => {
-      const visitedCount = category.sites.filter(site =>
+  const categoryStats = computed(() =>
+    sortedCategories.value.map(category => {
+      const sites = getSitesByCategory(category.id);
+      const sortedSites = [...sites].sort((a, b) =>
+        a.name.localeCompare(b.name),
+      );
+      const visitedCount = sortedSites.filter(site =>
         resolvedIsSiteVisited(site.url),
       ).length;
 
       return {
         category,
+        sites: sortedSites,
         visitedCount,
-        progress: category.sites.length
-          ? Math.round((visitedCount / category.sites.length) * 100)
+        progress: sortedSites.length
+          ? Math.round((visitedCount / sortedSites.length) * 100)
           : 0,
       };
-    });
-  });
+    }),
+  );
 
-  const getCategoryStats = (category: JobCategory) => {
-    return categoryStats.value.find(s => s.category.name === category.name);
-  };
+  const getCategoryStats = (category: JobCategory) =>
+    categoryStats.value.find(s => s.category.id === category.id);
 
-  const getCategoryProgress = (category: JobCategory) => {
-    return getCategoryStats(category)?.progress ?? 0;
-  };
+  const getCategoryProgress = (category: JobCategory) =>
+    getCategoryStats(category)?.progress ?? 0;
 
-  const getCategoryVisitedCount = (category: JobCategory) => {
-    return getCategoryStats(category)?.visitedCount ?? 0;
-  };
+  const getCategoryVisitedCount = (category: JobCategory) =>
+    getCategoryStats(category)?.visitedCount ?? 0;
 
   const maxCategoryHeight = computed(() => {
-    if (
-      !categories.value.length ||
-      !categories.value.some(cat => cat.sites.length > 0)
-    ) {
-      return 0;
-    }
-
-    const maxItems = Math.max(...categories.value.map(cat => cat.sites.length));
-    return Math.min(maxItems, 6);
+    if (!categories.value.length) return 0;
+    const maxItems = Math.max(
+      ...categories.value.map(c => getSitesByCategory(c.id).length),
+    );
+    return maxItems > 0 ? Math.min(maxItems, 6) : 0;
   });
 
   return {

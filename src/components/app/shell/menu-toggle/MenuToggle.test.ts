@@ -2,11 +2,11 @@
 
 import { describe, it, expect } from "vitest";
 
-import type { MenuToggleProps } from "@/components/app/shell/menu-toggle";
-import { MenuToggle } from "@/components/app/shell/menu-toggle";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getIconButton } from "@/test-utils/queries";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
+
+import { MenuToggle, type MenuToggleProps } from ".";
 
 const DEFAULT_PROPS: MenuToggleProps = {
   open: true,

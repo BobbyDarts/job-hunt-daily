@@ -3,11 +3,11 @@
 import { screen } from "@testing-library/vue";
 import { describe, it, expect, vi } from "vitest";
 
-import type { JobSiteCardProps } from "@/components/app/sites/job-site-card";
-import { JobSiteCard } from "@/components/app/sites/job-site-card";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { mockApplications, mockSite } from "@/test-utils/mocks";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
+
+import { JobSiteCard, type JobSiteCardProps } from ".";
 
 const DEFAULT_PROPS: JobSiteCardProps = {
   site: mockSite,

@@ -4,12 +4,12 @@ import userEvent from "@testing-library/user-event";
 import { screen, waitFor } from "@testing-library/vue";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { ApplicationCard } from "@/components/app/applications/application-card";
-import type { ApplicationCardProps } from "@/components/app/applications/application-card";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { createMockApplication, mockApplications } from "@/test-utils/mocks";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
 import { getStatuses } from "@/types";
+
+import { ApplicationCard, type ApplicationCardProps } from ".";
 
 const DEFAULT_PROPS: ApplicationCardProps = {
   application: mockApplications[0],
@@ -18,6 +18,7 @@ const DEFAULT_PROPS: ApplicationCardProps = {
 function renderApplicationCard(overrides: Partial<ApplicationCardProps> = {}) {
   return renderBaseWithProviders(ApplicationCard, DEFAULT_PROPS, overrides, {
     providers: [TooltipProvider],
+    events: ["edit", "delete"],
   });
 }
 
@@ -181,20 +182,12 @@ describe("ApplicationCard", () => {
     it("shows delete confirmation dialog when delete clicked", async () => {
       renderApplicationCard();
 
-      // Find and click the delete button (trash icon)
-      const deleteButtons = screen.getAllByRole("button");
-      const deleteButton = deleteButtons.find(btn =>
-        btn.querySelector('[class*="Trash"]'),
-      );
+      await user.click(screen.getByRole("button", { name: /delete/i }));
 
-      if (deleteButton) {
-        await user.click(deleteButton);
-
-        await waitFor(() => {
-          expect(screen.getByText("Delete Application")).toBeInTheDocument();
-          expect(screen.getByText(/Are you sure/i)).toBeInTheDocument();
-        });
-      }
+      await waitFor(() => {
+        expect(screen.getByText("Delete Application")).toBeInTheDocument();
+        expect(screen.getByText(/Are you sure/i)).toBeInTheDocument();
+      });
     });
   });
 

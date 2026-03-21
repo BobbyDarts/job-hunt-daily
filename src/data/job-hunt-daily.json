@@ -1,310 +1,347 @@
 {
   "categories": [
     {
+      "id": "general-job-boards",
       "name": "General Job Boards",
-      "description": "High-volume, broad-market job aggregators. Good for market scanning and keyword alerts.",
-      "sites": [
-        {
-          "id": "linkedin",
-          "name": "LinkedIn",
-          "url": "https://www.linkedin.com/jobs/",
-          "notes": "Strong networking signal; recruiter visibility matters as much as applications."
-        },
-        {
-          "id": "indeed",
-          "name": "Indeed",
-          "url": "https://www.indeed.com/",
-          "notes": "Largest aggregator; many reposts from ATS systems."
-        },
-        {
-          "id": "glassdoor",
-          "name": "Glassdoor",
-          "url": "https://www.glassdoor.com/Job/jobs.htm",
-          "notes": "Useful when combined with company reviews and salary data."
-        },
-        {
-          "id": "ziprecruiter",
-          "name": "ZipRecruiter",
-          "url": "https://www.ziprecruiter.com/",
-          "notes": "Good alerting, recruiter-driven outreach."
-        }
-      ]
+      "description": "High-volume, broad-market job aggregators. Good for market scanning and keyword alerts."
     },
-
     {
+      "id": "tech-startup-boards",
       "name": "Tech & Startup Boards",
-      "description": "Product, engineering, and startup-focused roles.",
-      "sites": [
-        {
-          "id": "wellfound",
-          "name": "Wellfound (AngelList Talent)",
-          "url": "https://wellfound.com/jobs",
-          "notes": "Startups, equity-heavy comp, early to mid-stage companies."
-        },
-        {
-          "id": "stackoverflow",
-          "name": "Stack Overflow Jobs",
-          "url": "https://stackoverflow.com/jobs",
-          "notes": "Developer-centric roles; fewer but higher-signal listings."
-        },
-        {
-          "id": "dice",
-          "name": "Dice",
-          "url": "https://www.dice.com",
-          "notes": "Strong for contract, enterprise tech, and legacy stacks."
-        },
-        {
-          "id": "builtin",
-          "name": "Built In",
-          "url": "https://builtin.com/jobs",
-          "notes": "Tech companies by metro and remote."
-        },
-        {
-          "id": "hackernews-whoishiring",
-          "name": "Hacker News – Who Is Hiring",
-          "url": "https://news.ycombinator.com/submitted?id=whoishiring",
-          "notes": "Monthly thread; informal but very high quality."
-        },
-        {
-          "id": "levelsfyi",
-          "name": "Levels.fyi Jobs",
-          "url": "https://www.levels.fyi/jobs",
-          "notes": "Comp-transparent listings; mostly mid-to-senior roles."
-        }
-      ]
+      "description": "Product, engineering, and startup-focused roles."
     },
-
     {
+      "id": "remote-focused-boards",
       "name": "Remote-Focused Boards",
-      "description": "Remote-first and location-flexible roles.",
-      "sites": [
-        {
-          "id": "remoteok",
-          "name": "Remote OK",
-          "url": "https://remoteok.com",
-          "notes": "Startup-heavy, global listings."
-        },
-        {
-          "id": "weworkremotely",
-          "name": "We Work Remotely",
-          "url": "https://weworkremotely.com",
-          "notes": "High-quality remote-only postings."
-        },
-        {
-          "id": "flexjobs",
-          "name": "FlexJobs",
-          "url": "https://www.flexjobs.com",
-          "notes": "Curated and vetted; paid access."
-        },
-        {
-          "id": "remoteco",
-          "name": "Remote.co",
-          "url": "https://remote.co/remote-jobs/",
-          "notes": "Smaller but cleaner listings."
-        }
-      ]
+      "description": "Remote-first and location-flexible roles."
     },
-
     {
+      "id": "company-career-pages",
       "name": "Company Career Pages",
-      "description": "Direct employer applications; lowest duplication and highest ATS fidelity.",
-      "sites": [
-        {
-          "id": "workday-unum",
-          "name": "Unum",
-          "url": "https://unum.wd1.myworkdayjobs.com/en-US/External",
-          "atsType": "workday"
-        },
-        {
-          "id": "workday-blackbaud",
-          "name": "Blackbaud",
-          "url": "https://blackbaud.wd1.myworkdayjobs.com/en-US/ExternalCareers",
-          "atsType": "workday"
-        },
-        {
-          "id": "workday-duckcreek",
-          "name": "Duck Creek Technologies",
-          "url": "https://duckcreek.wd1.myworkdayjobs.com/en-US/duckcreek-linkedin",
-          "atsType": "workday"
-        },
-        {
-          "id": "workday-travelers",
-          "name": "Travelers",
-          "url": "https://travelers.wd5.myworkdayjobs.com/en-US/External",
-          "atsType": "workday"
-        },
-        {
-          "id": "workday-homedepot",
-          "name": "The Home Depot",
-          "url": "https://homedepot.wd5.myworkdayjobs.com/en-US/CareerDepot",
-          "atsType": "workday"
-        },
-        {
-          "id": "workday-bcbsnc",
-          "name": "BCBSNC",
-          "url": "https://bcbsnc.wd5.myworkdayjobs.com/en-US/BCBSNC",
-          "atsType": "workday"
-        },
-        {
-          "id": "workday-bcbssc",
-          "name": "BCBSSC",
-          "url": "https://ourhrconnect.wd501.myworkdayjobs.com/SCBlues",
-          "atsType": "workday"
-        },
-        {
-          "id": "workday-centene",
-          "name": "Centene",
-          "url": "https://centene.wd5.myworkdayjobs.com/en-US/Centene_External",
-          "atsType": "workday"
-        },
-        {
-          "id": "workday-castandcrew",
-          "name": "Cast & Crew",
-          "url": "https://castandcrew.wd503.myworkdayjobs.com/CastandCrew",
-          "atsType": "workday"
-        },
-        {
-          "id": "workday-spglobal",
-          "name": "S&P Global",
-          "url": "https://spgi.wd5.myworkdayjobs.com/en-US/SPGI_Careers",
-          "atsType": "workday"
-        },
-        {
-          "id": "workday-cengage",
-          "name": "Cengage Group",
-          "url": "https://cengage.wd5.myworkdayjobs.com/en-US/CengageNorthAmericaCareers",
-          "atsType": "workday"
-        },
-        {
-          "id": "greenhouse",
-          "name": "Greenhouse Company",
-          "url": "https://my.greenhouse.io",
-          "atsType": "greenhouse",
-          "notes": "Common ATS for tech and growth-stage companies."
-        },
-        {
-          "id": "polymer-classroommosaic",
-          "name": "Classroom Mosaic",
-          "url": "https://jobs.classroommosaic.com/",
-          "atsType": "polymer",
-          "notes": "Direct career listings for roles at Classroom Mosaic (e.g., engineering, client success) powered by Polymer ATS."
-        },
-        {
-          "id": "sefl",
-          "name": "Southeastern Freight Lines",
-          "url": "https://www.seflcareers.com/#/",
-          "atsType": "custom",
-          "notes": "Official job portal for Southeastern Freight Lines, listing roles from driver to operations and administrative positions."
-        },
-        {
-          "id": "softdocs",
-          "name": "Softdocs",
-          "url": "https://softdocs.com/careers",
-          "atsType": "custom",
-          "notes": "Official Softdocs job board listing open positions at the company."
-        }
-      ]
+      "description": "Direct employer applications; lowest duplication and highest ATS fidelity."
     },
-
     {
+      "id": "staffing-recruiting-firms",
       "name": "Staffing & Recruiting Firms",
-      "description": "Contract, contract-to-hire, and recruiter-led placements.",
-      "sites": [
-        {
-          "id": "systemtec",
-          "name": "Systemtec",
-          "url": "https://systemtec.net/find-a-job/"
-        },
-        {
-          "id": "excelraise",
-          "name": "Excelraise",
-          "url": "https://excelraise.com/"
-        },
-        {
-          "id": "dataman",
-          "name": "Dataman",
-          "url": "https://www.datamanusa.com/jobs.aspx"
-        },
-        {
-          "id": "roberthalf",
-          "name": "Robert Half",
-          "url": "https://www.roberthalf.com/jobs"
-        },
-        {
-          "id": "teksystems",
-          "name": "TEKsystems",
-          "url": "https://www.teksystems.com/en/careers"
-        },
-        {
-          "id": "fgp",
-          "name": "Find Great People (FGP)",
-          "url": "https://www.fgp.com/careers/",
-          "atsType": "custom",
-          "notes": "Recruiting firm job search portal with listings across contract, direct hire, and staffing roles."
-        }
-      ]
+      "description": "Contract, contract-to-hire, and recruiter-led placements."
     },
-
     {
+      "id": "government-public-sector",
       "name": "Government & Public Sector",
-      "description": "Federal, state, and local government roles.",
-      "sites": [
-        {
-          "id": "usajobs",
-          "name": "USAJobs",
-          "url": "https://www.usajobs.gov/"
-        },
-        {
-          "id": "governmentjobs",
-          "name": "GovernmentJobs",
-          "url": "https://www.governmentjobs.com/"
-        },
-        {
-          "id": "sc-careers",
-          "name": "South Carolina State Careers",
-          "url": "https://careers.sc.gov/",
-          "notes": "Official statewide job portal for South Carolina government employment."
-        }
-      ]
+      "description": "Federal, state, and local government roles."
     },
-
     {
+      "id": "nonprofit-mission-driven",
       "name": "Nonprofit & Mission-Driven",
-      "description": "Education, nonprofit, and social impact organizations.",
-      "sites": [
-        {
-          "id": "idealist",
-          "name": "Idealist",
-          "url": "https://www.idealist.org/en/jobs"
-        },
-        {
-          "id": "techjobsforgood",
-          "name": "TechJobs for Good",
-          "url": "https://techjobsforgood.com/"
-        }
-      ]
+      "description": "Education, nonprofit, and social impact organizations."
+    },
+    {
+      "id": "freelance-contract-marketplaces",
+      "name": "Freelance & Contract Marketplaces",
+      "description": "Independent, short-term, or project-based work."
+    }
+  ],
+  "sites": [
+    {
+      "id": "linkedin",
+      "name": "LinkedIn",
+      "url": "https://www.linkedin.com/jobs/",
+      "categoryId": "general-job-boards",
+      "notes": "Strong networking signal; recruiter visibility matters as much as applications."
+    },
+    {
+      "id": "indeed",
+      "name": "Indeed",
+      "url": "https://www.indeed.com/",
+      "categoryId": "general-job-boards",
+      "notes": "Largest aggregator; many reposts from ATS systems."
+    },
+    {
+      "id": "glassdoor",
+      "name": "Glassdoor",
+      "url": "https://www.glassdoor.com/Job/jobs.htm",
+      "categoryId": "general-job-boards",
+      "notes": "Useful when combined with company reviews and salary data."
+    },
+    {
+      "id": "ziprecruiter",
+      "name": "ZipRecruiter",
+      "url": "https://www.ziprecruiter.com/",
+      "categoryId": "general-job-boards",
+      "notes": "Good alerting, recruiter-driven outreach."
     },
 
     {
-      "name": "Freelance & Contract Marketplaces",
-      "description": "Independent, short-term, or project-based work.",
-      "sites": [
-        {
-          "id": "upwork",
-          "name": "Upwork",
-          "url": "https://www.upwork.com/"
-        },
-        {
-          "id": "toptal",
-          "name": "Toptal",
-          "url": "https://www.toptal.com/talent/apply"
-        },
-        {
-          "id": "gunio",
-          "name": "Gun.io",
-          "url": "https://www.gun.io/"
-        }
-      ]
+      "id": "wellfound-angellist-talent",
+      "name": "Wellfound (AngelList Talent)",
+      "url": "https://wellfound.com/jobs",
+      "categoryId": "tech-startup-boards",
+      "notes": "Startups, equity-heavy comp, early to mid-stage companies."
+    },
+    {
+      "id": "stack-overflow-jobs",
+      "name": "Stack Overflow Jobs",
+      "url": "https://stackoverflow.com/jobs",
+      "categoryId": "tech-startup-boards",
+      "notes": "Developer-centric roles; fewer but higher-signal listings."
+    },
+    {
+      "id": "dice",
+      "name": "Dice",
+      "url": "https://www.dice.com",
+      "categoryId": "tech-startup-boards",
+      "notes": "Strong for contract, enterprise tech, and legacy stacks."
+    },
+    {
+      "id": "built-in",
+      "name": "Built In",
+      "url": "https://builtin.com/jobs",
+      "categoryId": "tech-startup-boards",
+      "notes": "Tech companies by metro and remote."
+    },
+    {
+      "id": "ycombinator-hacker-news-who-is-hiring",
+      "name": "Hacker News – Who Is Hiring",
+      "url": "https://news.ycombinator.com/submitted?id=whoishiring",
+      "categoryId": "tech-startup-boards",
+      "notes": "Monthly thread; informal but very high quality."
+    },
+    {
+      "id": "levels-fyi-jobs",
+      "name": "Levels.fyi Jobs",
+      "url": "https://www.levels.fyi/jobs",
+      "categoryId": "tech-startup-boards",
+      "notes": "Comp-transparent listings; mostly mid-to-senior roles."
+    },
+
+    {
+      "id": "remote-ok",
+      "name": "Remote OK",
+      "url": "https://remoteok.com",
+      "categoryId": "remote-focused-boards",
+      "notes": "Startup-heavy, global listings."
+    },
+    {
+      "id": "we-work-remotely",
+      "name": "We Work Remotely",
+      "url": "https://weworkremotely.com",
+      "categoryId": "remote-focused-boards",
+      "notes": "High-quality remote-only postings."
+    },
+    {
+      "id": "flexjobs",
+      "name": "FlexJobs",
+      "url": "https://www.flexjobs.com",
+      "categoryId": "remote-focused-boards",
+      "notes": "Curated and vetted; paid access."
+    },
+    {
+      "id": "remote-co",
+      "name": "Remote.co",
+      "url": "https://remote.co/remote-jobs/",
+      "categoryId": "remote-focused-boards",
+      "notes": "Smaller but cleaner listings."
+    },
+
+    {
+      "id": "workday-unum",
+      "name": "Unum",
+      "url": "https://unum.wd1.myworkdayjobs.com/en-US/External",
+      "categoryId": "company-career-pages",
+      "atsType": "workday"
+    },
+    {
+      "id": "workday-blackbaud",
+      "name": "Blackbaud",
+      "url": "https://blackbaud.wd1.myworkdayjobs.com/en-US/ExternalCareers",
+      "categoryId": "company-career-pages",
+      "atsType": "workday"
+    },
+    {
+      "id": "workday-duck-creek-technologies",
+      "name": "Duck Creek Technologies",
+      "url": "https://duckcreek.wd1.myworkdayjobs.com/en-US/duckcreek-linkedin",
+      "categoryId": "company-career-pages",
+      "atsType": "workday"
+    },
+    {
+      "id": "workday-travelers",
+      "name": "Travelers",
+      "url": "https://travelers.wd5.myworkdayjobs.com/en-US/External",
+      "categoryId": "company-career-pages",
+      "atsType": "workday"
+    },
+    {
+      "id": "workday-the-home-depot",
+      "name": "The Home Depot",
+      "url": "https://homedepot.wd5.myworkdayjobs.com/en-US/CareerDepot",
+      "categoryId": "company-career-pages",
+      "atsType": "workday"
+    },
+    {
+      "id": "workday-bcbsnc",
+      "name": "BCBSNC",
+      "url": "https://bcbsnc.wd5.myworkdayjobs.com/en-US/BCBSNC",
+      "categoryId": "company-career-pages",
+      "atsType": "workday"
+    },
+    {
+      "id": "workday-bcbssc",
+      "name": "BCBSSC",
+      "url": "https://ourhrconnect.wd501.myworkdayjobs.com/SCBlues",
+      "categoryId": "company-career-pages",
+      "atsType": "workday"
+    },
+    {
+      "id": "workday-centene",
+      "name": "Centene",
+      "url": "https://centene.wd5.myworkdayjobs.com/en-US/Centene_External",
+      "categoryId": "company-career-pages",
+      "atsType": "workday"
+    },
+    {
+      "id": "workday-cast-crew",
+      "name": "Cast & Crew",
+      "url": "https://castandcrew.wd503.myworkdayjobs.com/CastandCrew",
+      "categoryId": "company-career-pages",
+      "atsType": "workday"
+    },
+    {
+      "id": "workday-s-p-global",
+      "name": "S&P Global",
+      "url": "https://spgi.wd5.myworkdayjobs.com/en-US/SPGI_Careers",
+      "categoryId": "company-career-pages",
+      "atsType": "workday"
+    },
+    {
+      "id": "workday-cengage-group",
+      "name": "Cengage Group",
+      "url": "https://cengage.wd5.myworkdayjobs.com/en-US/CengageNorthAmericaCareers",
+      "categoryId": "company-career-pages",
+      "atsType": "workday"
+    },
+    {
+      "id": "greenhouse-greenhouse-company",
+      "name": "Greenhouse Company",
+      "url": "https://my.greenhouse.io",
+      "categoryId": "company-career-pages",
+      "atsType": "greenhouse",
+      "notes": "Common ATS for tech and growth-stage companies."
+    },
+    {
+      "id": "polymer-classroom-mosaic",
+      "name": "Classroom Mosaic",
+      "url": "https://jobs.classroommosaic.com/",
+      "categoryId": "company-career-pages",
+      "atsType": "polymer",
+      "notes": "Direct career listings for roles at Classroom Mosaic (e.g., engineering, client success) powered by Polymer ATS."
+    },
+    {
+      "id": "custom-southeastern-freight-lines",
+      "name": "Southeastern Freight Lines",
+      "url": "https://www.seflcareers.com/#/",
+      "categoryId": "company-career-pages",
+      "atsType": "custom",
+      "notes": "Official job portal for Southeastern Freight Lines, listing roles from driver to operations and administrative positions."
+    },
+    {
+      "id": "custom-softdocs",
+      "name": "Softdocs",
+      "url": "https://softdocs.com/careers",
+      "categoryId": "company-career-pages",
+      "atsType": "custom",
+      "notes": "Official Softdocs job board listing open positions at the company."
+    },
+
+    {
+      "id": "systemtec",
+      "name": "Systemtec",
+      "url": "https://systemtec.net/find-a-job/",
+      "categoryId": "staffing-recruiting-firms"
+    },
+    {
+      "id": "excelraise",
+      "name": "Excelraise",
+      "url": "https://excelraise.com/",
+      "categoryId": "staffing-recruiting-firms"
+    },
+    {
+      "id": "dataman",
+      "name": "Dataman",
+      "url": "https://www.datamanusa.com/jobs.aspx",
+      "categoryId": "staffing-recruiting-firms"
+    },
+    {
+      "id": "robert-half",
+      "name": "Robert Half",
+      "url": "https://www.roberthalf.com/jobs",
+      "categoryId": "staffing-recruiting-firms"
+    },
+    {
+      "id": "teksystems",
+      "name": "TEKsystems",
+      "url": "https://www.teksystems.com/en/careers",
+      "categoryId": "staffing-recruiting-firms"
+    },
+    {
+      "id": "custom-find-great-people-fgp",
+      "name": "Find Great People (FGP)",
+      "url": "https://www.fgp.com/careers/",
+      "categoryId": "staffing-recruiting-firms",
+      "atsType": "custom",
+      "notes": "Recruiting firm job search portal with listings across contract, direct hire, and staffing roles."
+    },
+
+    {
+      "id": "usajobs",
+      "name": "USAJobs",
+      "url": "https://www.usajobs.gov/",
+      "categoryId": "government-public-sector"
+    },
+    {
+      "id": "governmentjobs",
+      "name": "GovernmentJobs",
+      "url": "https://www.governmentjobs.com/",
+      "categoryId": "government-public-sector"
+    },
+    {
+      "id": "south-carolina-state-careers",
+      "name": "South Carolina State Careers",
+      "url": "https://careers.sc.gov/",
+      "categoryId": "government-public-sector",
+      "notes": "Official statewide job portal for South Carolina government employment."
+    },
+
+    {
+      "id": "idealist",
+      "name": "Idealist",
+      "url": "https://www.idealist.org/en/jobs",
+      "categoryId": "nonprofit-mission-driven"
+    },
+    {
+      "id": "tech-jobs-for-good",
+      "name": "TechJobs for Good",
+      "url": "https://techjobsforgood.com/",
+      "categoryId": "nonprofit-mission-driven"
+    },
+
+    {
+      "id": "upwork",
+      "name": "Upwork",
+      "url": "https://www.upwork.com/",
+      "categoryId": "freelance-contract-marketplaces"
+    },
+    {
+      "id": "toptal",
+      "name": "Toptal",
+      "url": "https://www.toptal.com/talent/apply",
+      "categoryId": "freelance-contract-marketplaces"
+    },
+    {
+      "id": "gun-io",
+      "name": "Gun.io",
+      "url": "https://www.gun.io/",
+      "categoryId": "freelance-contract-marketplaces"
     }
   ]
 }

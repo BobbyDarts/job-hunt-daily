@@ -4,12 +4,12 @@ import userEvent from "@testing-library/user-event";
 import { screen } from "@testing-library/vue";
 import { describe, it, expect } from "vitest";
 
-import type { TagsMultiSelectProps } from "@/components/app/applications/tags-multi-select";
-import { TagsMultiSelect } from "@/components/app/applications/tags-multi-select";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
 import type { ApplicationTag } from "@/types";
 import { getTags } from "@/types";
+
+import { TagsMultiSelect, type TagsMultiSelectProps } from ".";
 
 const DEFAULT_PROPS: TagsMultiSelectProps = {
   modelValue: [] as ApplicationTag[],
@@ -21,6 +21,7 @@ function renderTagsMultiSelect(
 ) {
   return renderBaseWithProviders(TagsMultiSelect, DEFAULT_PROPS, overrides, {
     providers: [TooltipProvider],
+    events: ["update:modelValue"],
     ...options,
   });
 }

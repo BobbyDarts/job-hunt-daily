@@ -1,10 +1,17 @@
 <!-- // /src/components/app/shell/command-palette/CommandPalette.vue -->
 
 <script setup lang="ts">
-import { Home, Download, Upload, FolderOpen, Plus } from "lucide-vue-next";
+import {
+  Home,
+  Download,
+  Upload,
+  FolderOpen,
+  Plus,
+  Globe,
+} from "lucide-vue-next";
 import { useRouter } from "vue-router";
 
-import { CommandPaletteSites } from "@/components/app/shell/command-palette";
+import { CommandPaletteSites } from "@/components/app/shell";
 import {
   CommandDialog,
   CommandEmpty,
@@ -14,20 +21,36 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useDataManagement } from "@/composables/data";
-import { useAddApplicationDialog, useCommandPalette } from "@/composables/ui";
+import {
+  useAddApplicationDialog,
+  useCommandPalette,
+  useAddJobSiteDialog,
+  useTheme,
+} from "@/composables/ui";
 
 // composables
 const router = useRouter();
+const { openDialog: openAddJobSite } = useAddJobSiteDialog();
 
 const { triggerImport, exportAllData } = useDataManagement();
-const { open, closeCommandPalette } = useCommandPalette();
+const { open, closeCommandPalette, withClose } = useCommandPalette();
 const { openDialog: openAddApplication } = useAddApplicationDialog();
+const { toggleTheme, themeText, themeIcon } = useTheme();
 
 // actions
-function handleRouteSelect(path: string = "/") {
-  closeCommandPalette();
-  void router.push(path);
-}
+const actions = {
+  home: withClose(() => void router.push("/")),
+  applications: withClose(() => void router.push("/applications")),
+  jobSites: withClose(() => void router.push("/job-sites")),
+
+  addApplication: withClose(() => openAddApplication()),
+  addJobSite: withClose(() => openAddJobSite()),
+
+  export: withClose(() => exportAllData()),
+  import: withClose(() => triggerImport()),
+
+  theme: withClose(() => toggleTheme()),
+};
 </script>
 
 <template>
@@ -40,57 +63,49 @@ function handleRouteSelect(path: string = "/") {
       <CommandEmpty>No results found.</CommandEmpty>
 
       <CommandGroup heading="Navigation">
-        <CommandItem value="home" @select="handleRouteSelect()">
+        <CommandItem value="home" @select="actions.home">
           <Home class="mr-2 size-4" />
           <span>Go to Home</span>
         </CommandItem>
-        <CommandItem
-          value="applications"
-          @select="handleRouteSelect('/applications')"
-        >
+        <CommandItem value="applications" @select="actions.applications">
           <FolderOpen class="mr-2 size-4" />
           <span>Go to Applications</span>
+        </CommandItem>
+        <CommandItem value="job-sites" @select="actions.jobSites">
+          <Globe class="mr-2 size-4" />
+          <span>Go to Job Sites</span>
         </CommandItem>
       </CommandGroup>
 
       <CommandGroup heading="Actions">
-        <CommandItem
-          value="application"
-          @select="
-            () => {
-              openAddApplication();
-              closeCommandPalette();
-            }
-          "
-        >
+        <CommandItem value="application" @select="actions.addApplication">
           <Plus class="mr-2 size-4" />
           <span>Add Application</span>
         </CommandItem>
-        <CommandItem
-          value="export"
-          @select="
-            () => {
-              exportAllData();
-              closeCommandPalette();
-            }
-          "
-        >
+        <CommandItem value="add-job-site" @select="actions.addJobSite">
+          <Plus class="mr-2 size-4" />
+          <span>Add Job Site</span>
+        </CommandItem>
+        <CommandItem value="export" @select="actions.export">
           <Download class="mr-2 size-4" />
           <span>Export Data</span>
         </CommandItem>
-        <CommandItem
-          value="import"
-          @select="
-            () => {
-              triggerImport();
-              closeCommandPalette();
-            }
-          "
-        >
+        <CommandItem value="import" @select="actions.import">
           <Upload class="mr-2 size-4" />
           <span>Import Data</span>
         </CommandItem>
       </CommandGroup>
+
+      <CommandGroup heading="Appearance">
+        <CommandItem value="theme" @select="actions.theme">
+          <Component :is="themeIcon" class="mr-2 size-4" />
+          Theme
+          <span class="ml-auto text-xs text-muted-foreground">
+            {{ themeText }}
+          </span>
+        </CommandItem>
+      </CommandGroup>
+
       <CommandPaletteSites @site-select="closeCommandPalette" />
     </CommandList>
   </CommandDialog>

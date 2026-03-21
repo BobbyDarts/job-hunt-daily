@@ -4,7 +4,7 @@
 import { Plus, FolderOpen } from "lucide-vue-next";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
-import { JobSiteButton } from "@/components/app/sites/job-site-button";
+import { JobSiteButton } from "@/components/app/sites";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {

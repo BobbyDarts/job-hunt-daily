@@ -20,6 +20,9 @@
       "@/*": ["./src/*"]
     }
   },
+  "vueCompilerOptions": {
+    "strictTemplates": false
+  },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
   "exclude": [
     "src/**/*.test.ts",

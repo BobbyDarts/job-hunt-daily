@@ -11,6 +11,7 @@ import type { Application, VisitedSites } from "@/types";
 import {
   TEST_APPLICATIONS_HISTORY_STORAGE_KEY,
   TEST_APPLICATIONS_STORAGE_KEY,
+  TEST_JOB_SITES_STORAGE_KEY,
   TEST_VISITED_SITES_STORAGE_KEY,
 } from "./keys";
 import type { UseDataManagementParams } from "./use-data-management";
@@ -21,6 +22,7 @@ describe("useDataManagement", () => {
     applicationStorageKey: TEST_APPLICATIONS_STORAGE_KEY,
     applicationHistoryStorageKey: TEST_APPLICATIONS_HISTORY_STORAGE_KEY,
     visitedSitesStorageKey: TEST_VISITED_SITES_STORAGE_KEY,
+    jobSitesStorageKey: TEST_JOB_SITES_STORAGE_KEY,
   };
 
   beforeEach(() => {
@@ -147,7 +149,7 @@ describe("useDataManagement", () => {
           const text = await capturedBlob!.text();
           const exportedData = JSON.parse(text);
 
-          expect(exportedData).toHaveProperty("version", "1.1");
+          expect(exportedData).toHaveProperty("version", "1.2");
           expect(exportedData).toHaveProperty("exportedAt");
           expect(exportedData.dailyChecklist).toEqual(visitedData);
           expect(exportedData.applications).toEqual(applicationsData);
@@ -182,8 +184,8 @@ describe("useDataManagement", () => {
           const text = await capturedBlob!.text();
           const exportedData = JSON.parse(text);
 
-          expect(exportedData.applications).toEqual([]);
-          expect(exportedData.dailyChecklist.visited).toEqual([]);
+          expect(exportedData.applications).toBeUndefined();
+          expect(exportedData.dailyChecklist).toBeUndefined();
         },
       });
     });
@@ -374,7 +376,7 @@ describe("useDataManagement", () => {
       });
     });
 
-    it("rejects file with missing dailyChecklist", async () => {
+    it("imports successfully without dailyChecklist", async () => {
       await withFrozenTime({
         now: "2026-02-03T15:00:00Z",
         fn: async () => {
@@ -382,22 +384,22 @@ describe("useDataManagement", () => {
             ...useDataManagementParams,
           });
 
-          const invalidData = {
-            version: "1.1",
+          const data = {
+            version: "1.2",
             exportedAt: "2026-02-03T10:00:00Z",
             applications: [],
           };
 
-          const file = new File([JSON.stringify(invalidData)], "backup.json", {
+          const file = new File([JSON.stringify(data)], "backup.json", {
             type: "application/json",
           });
 
-          await expect(importAllData(file)).rejects.toThrow();
+          await expect(importAllData(file)).resolves.not.toThrow();
         },
       });
     });
 
-    it("rejects file with missing applications", async () => {
+    it("imports successfully without applications", async () => {
       await withFrozenTime({
         now: "2026-02-03T15:00:00Z",
         fn: async () => {
@@ -405,17 +407,17 @@ describe("useDataManagement", () => {
             ...useDataManagementParams,
           });
 
-          const invalidData = {
-            version: "1.1",
+          const data = {
+            version: "1.2",
             exportedAt: "2026-02-03T10:00:00Z",
             dailyChecklist: { date: "2026-02-03", visited: [] },
           };
 
-          const file = new File([JSON.stringify(invalidData)], "backup.json", {
+          const file = new File([JSON.stringify(data)], "backup.json", {
             type: "application/json",
           });
 
-          await expect(importAllData(file)).rejects.toThrow();
+          await expect(importAllData(file)).resolves.not.toThrow();
         },
       });
     });
@@ -468,6 +470,103 @@ describe("useDataManagement", () => {
           expect(applications[0].tags).toEqual(["phone_screen", "technical"]);
           expect(applications[0].notes).toBe("Great conversation");
           expect(applications[0].followUpDate).toBe("2026-02-10");
+        },
+      });
+    });
+
+    it("imports jobSites when present", async () => {
+      await withFrozenTime({
+        now: "2026-02-03T15:00:00Z",
+        fn: async () => {
+          const { importAllData } = useDataManagement({
+            ...useDataManagementParams,
+            jobSitesStorageKey: TEST_JOB_SITES_STORAGE_KEY,
+          });
+
+          const data = {
+            version: "1.2",
+            exportedAt: "2026-02-03T10:00:00Z",
+            jobSites: {
+              categories: [{ id: "general", name: "General" }],
+              sites: [
+                {
+                  id: "linkedin",
+                  name: "LinkedIn",
+                  url: "https://linkedin.com",
+                  categoryId: "general",
+                },
+              ],
+            },
+          };
+
+          const file = new File([JSON.stringify(data)], "backup.json", {
+            type: "application/json",
+          });
+
+          await importAllData(file);
+          await nextTick();
+
+          const jobSites = JSON.parse(
+            localStorage.getItem(TEST_JOB_SITES_STORAGE_KEY)!,
+          );
+          expect(jobSites.categories).toHaveLength(1);
+          expect(jobSites.sites).toHaveLength(1);
+          expect(jobSites.sites[0].name).toBe("LinkedIn");
+        },
+      });
+    });
+
+    it("accepts v1.1 files without jobSites", async () => {
+      await withFrozenTime({
+        now: "2026-02-03T15:00:00Z",
+        fn: async () => {
+          const { importAllData } = useDataManagement({
+            ...useDataManagementParams,
+          });
+
+          const data = {
+            version: "1.1",
+            exportedAt: "2026-02-03T10:00:00Z",
+            dailyChecklist: {
+              date: "2026-02-03",
+              visited: ["https://example.com"],
+            },
+            applications: [],
+          };
+
+          const file = new File([JSON.stringify(data)], "backup.json", {
+            type: "application/json",
+          });
+
+          await expect(importAllData(file)).resolves.not.toThrow();
+
+          const visitedSites = JSON.parse(
+            localStorage.getItem(TEST_VISITED_SITES_STORAGE_KEY)!,
+          );
+          expect(visitedSites).toEqual(data.dailyChecklist);
+        },
+      });
+    });
+
+    it("rejects malformed jobSites", async () => {
+      await withFrozenTime({
+        now: "2026-02-03T15:00:00Z",
+        fn: async () => {
+          const { importAllData } = useDataManagement({
+            ...useDataManagementParams,
+          });
+
+          const data = {
+            version: "1.2",
+            exportedAt: "2026-02-03T10:00:00Z",
+            jobSites: { categories: "not-an-array" },
+          };
+
+          const file = new File([JSON.stringify(data)], "backup.json", {
+            type: "application/json",
+          });
+
+          await expect(importAllData(file)).rejects.toThrow();
         },
       });
     });

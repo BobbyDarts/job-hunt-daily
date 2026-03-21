@@ -2,8 +2,8 @@
 
 import { describe, expect, it } from "vitest";
 
-import { mockJobHuntData } from "@/test-utils/mocks";
-import type { JobHuntData, JobSite } from "@/types";
+import { mockSites } from "@/test-utils/mocks";
+import type { JobSite } from "@/types";
 
 import { useATSDetection } from "./use-ats-detection";
 
@@ -11,9 +11,7 @@ describe("useATSDetection", () => {
   describe("getATS", () => {
     it("returns ATSInfo for a Workday site", () => {
       const { getATS } = useATSDetection();
-      const workdaySite = mockJobHuntData.categories[0].sites[0];
-
-      const atsInfo = getATS(workdaySite);
+      const atsInfo = getATS(mockSites.workday);
       expect(atsInfo).toBeDefined();
       expect(atsInfo?.type).toBe("workday");
       expect(atsInfo?.initials).toBe("WD");
@@ -22,9 +20,7 @@ describe("useATSDetection", () => {
 
     it("returns ATSInfo for a Greenhouse site", () => {
       const { getATS } = useATSDetection();
-      const greenhouseSite = mockJobHuntData.categories[0].sites[1];
-
-      const atsInfo = getATS(greenhouseSite);
+      const atsInfo = getATS(mockSites.greenhouse);
       expect(atsInfo).toBeDefined();
       expect(atsInfo?.type).toBe("greenhouse");
       expect(atsInfo?.initials).toBe("GH");
@@ -33,9 +29,7 @@ describe("useATSDetection", () => {
 
     it("returns ATSInfo for a Lever site", () => {
       const { getATS } = useATSDetection();
-      const leverSite = mockJobHuntData.categories[1].sites[0];
-
-      const atsInfo = getATS(leverSite);
+      const atsInfo = getATS(mockSites.lever);
       expect(atsInfo).toBeDefined();
       expect(atsInfo?.type).toBe("lever");
       expect(atsInfo?.initials).toBe("LV");
@@ -44,9 +38,7 @@ describe("useATSDetection", () => {
 
     it("returns ATSInfo for a BambooHR site", () => {
       const { getATS } = useATSDetection();
-      const bambooSite = mockJobHuntData.categories[1].sites[1];
-
-      const atsInfo = getATS(bambooSite);
+      const atsInfo = getATS(mockSites.bamboohr);
       expect(atsInfo).toBeDefined();
       expect(atsInfo?.type).toBe("bamboohr");
       expect(atsInfo?.initials).toBe("BH");
@@ -55,10 +47,7 @@ describe("useATSDetection", () => {
 
     it("returns undefined for non-ATS sites", () => {
       const { getATS } = useATSDetection();
-      const regularSite = mockJobHuntData.categories[0].sites[2];
-
-      const atsInfo = getATS(regularSite);
-      expect(atsInfo).toBeUndefined();
+      expect(getATS(mockSites.regular)).toBeUndefined();
     });
 
     it("returns undefined for sites without atsType or matching URL pattern", () => {
@@ -67,77 +56,59 @@ describe("useATSDetection", () => {
         id: "unknown",
         name: "Unknown",
         url: "https://unknown.com/jobs",
+        categoryId: "test",
       };
-
-      const atsInfo = getATS(unknownSite);
-      expect(atsInfo).toBeUndefined();
+      expect(getATS(unknownSite)).toBeUndefined();
     });
 
     it("prioritizes explicit atsType over URL detection", () => {
-      const siteWithExplicitType: JobSite = {
+      const { getATS } = useATSDetection();
+      const site: JobSite = {
         id: "test-site",
         name: "Test Site",
-        url: "https://example.com/careers", // No ATS pattern in URL
-        atsType: "greenhouse", // But explicit type set
+        url: "https://example.com/careers",
+        categoryId: "test",
+        atsType: "greenhouse",
       };
-
-      const { getATS } = useATSDetection();
-      const atsInfo = getATS(siteWithExplicitType);
-
-      expect(atsInfo).toBeDefined();
-      expect(atsInfo?.type).toBe("greenhouse");
+      expect(getATS(site)?.type).toBe("greenhouse");
     });
 
     it("detects ATS from URL pattern when atsType not specified", () => {
-      const siteWithWorkdayUrl: JobSite = {
+      const { getATS } = useATSDetection();
+      const site: JobSite = {
         id: "test-workday",
         name: "Test Company",
         url: "https://test.wd5.myworkdayjobs.com/Careers",
-        // No atsType specified
+        categoryId: "test",
       };
-
-      const { getATS } = useATSDetection();
-      const atsInfo = getATS(siteWithWorkdayUrl);
-
-      expect(atsInfo).toBeDefined();
-      expect(atsInfo?.type).toBe("workday");
+      expect(getATS(site)?.type).toBe("workday");
     });
   });
 
   describe("isATS", () => {
     it("returns true for Workday sites", () => {
       const { isATS } = useATSDetection();
-      const workdaySite = mockJobHuntData.categories[0].sites[0];
-
-      expect(isATS(workdaySite)).toBe(true);
+      expect(isATS(mockSites.workday)).toBe(true);
     });
 
     it("returns true for Greenhouse sites", () => {
       const { isATS } = useATSDetection();
-      const greenhouseSite = mockJobHuntData.categories[0].sites[1];
-
-      expect(isATS(greenhouseSite)).toBe(true);
+      expect(isATS(mockSites.greenhouse)).toBe(true);
     });
 
     it("returns true for Lever sites", () => {
       const { isATS } = useATSDetection();
-      const leverSite = mockJobHuntData.categories[1].sites[0];
-
-      expect(isATS(leverSite)).toBe(true);
+      expect(isATS(mockSites.lever)).toBe(true);
     });
 
     it("returns true for BambooHR sites", () => {
       const { isATS } = useATSDetection();
-      const bambooSite = mockJobHuntData.categories[1].sites[1];
-
-      expect(isATS(bambooSite)).toBe(true);
+      expect(isATS(mockSites.bamboohr)).toBe(true);
     });
 
     it("returns false for non-ATS sites", () => {
       const { isATS } = useATSDetection();
-      const regularSite = mockJobHuntData.categories[0].sites[2];
-
-      expect(isATS(regularSite)).toBe(false);
+      expect(isATS(mockSites.regular)).toBe(false);
     });
 
     it("returns false for sites without ATS", () => {
@@ -146,110 +117,79 @@ describe("useATSDetection", () => {
         id: "unknown",
         name: "Unknown",
         url: "https://unknown.com/jobs",
+        categoryId: "test",
       };
-
       expect(isATS(unknownSite)).toBe(false);
     });
 
     it("returns true when explicit atsType is set", () => {
-      const siteWithType: JobSite = {
+      const { isATS } = useATSDetection();
+      const site: JobSite = {
         id: "test",
         name: "Test",
         url: "https://example.com",
+        categoryId: "test",
         atsType: "greenhouse",
       };
-
-      const { isATS } = useATSDetection();
-      expect(isATS(siteWithType)).toBe(true);
+      expect(isATS(site)).toBe(true);
     });
 
     it("returns true when URL pattern matches ATS", () => {
-      const siteWithPattern: JobSite = {
+      const { isATS } = useATSDetection();
+      const site: JobSite = {
         id: "test",
         name: "Test",
         url: "https://jobs.lever.co/company",
+        categoryId: "test",
       };
-
-      const { isATS } = useATSDetection();
-      expect(isATS(siteWithPattern)).toBe(true);
+      expect(isATS(site)).toBe(true);
     });
   });
 
   describe("manual atsType override", () => {
-    it("respects manual atsType in job site data", () => {
-      const dataWithOverride: JobHuntData = {
-        categories: [
-          {
-            name: "Test",
-            description: "Test category",
-            sites: [
-              {
-                id: "override-test",
-                name: "Override Test",
-                url: "https://example.com/careers",
-                atsType: "greenhouse", // Manual override
-              },
-            ],
-          },
-        ],
-      };
-
+    it("respects manual atsType on a site", () => {
       const { getATS, isATS } = useATSDetection();
-      const site = dataWithOverride.categories[0].sites[0];
-
+      const site: JobSite = {
+        id: "override-test",
+        name: "Override Test",
+        url: "https://example.com/careers",
+        categoryId: "test",
+        atsType: "greenhouse",
+      };
       expect(isATS(site)).toBe(true);
       expect(getATS(site)?.type).toBe("greenhouse");
     });
 
     it("uses atsType even if URL would suggest different ATS", () => {
-      const siteWithOverride: JobSite = {
+      const { getATS } = useATSDetection();
+      const site: JobSite = {
         id: "override",
         name: "Override",
-        url: "https://company.wd5.myworkdayjobs.com/jobs", // Workday URL
-        atsType: "greenhouse", // But marked as Greenhouse
+        url: "https://company.wd5.myworkdayjobs.com/jobs",
+        categoryId: "test",
+        atsType: "greenhouse",
       };
-
-      const { getATS } = useATSDetection();
-      const atsInfo = getATS(siteWithOverride);
-
-      expect(atsInfo?.type).toBe("greenhouse"); // Should use explicit type
+      expect(getATS(site)?.type).toBe("greenhouse");
     });
   });
 
   describe("edge cases", () => {
-    it("handles empty categories array", () => {
+    it("returns undefined for a plain site with no ATS signals", () => {
       const { getATS, isATS } = useATSDetection();
-
-      const testSite: JobSite = {
+      const site: JobSite = {
         id: "test",
         name: "Test",
         url: "https://test.com",
+        categoryId: "test",
       };
-      expect(getATS(testSite)).toBeUndefined();
-      expect(isATS(testSite)).toBe(false);
-    });
-
-    it("handles categories with no sites", () => {
-      const { getATS, isATS } = useATSDetection();
-
-      const testSite: JobSite = {
-        id: "test",
-        name: "Test",
-        url: "https://test.com",
-      };
-      expect(getATS(testSite)).toBeUndefined();
-      expect(isATS(testSite)).toBe(false);
+      expect(getATS(site)).toBeUndefined();
+      expect(isATS(site)).toBe(false);
     });
 
     it("works consistently for same site called multiple times", () => {
       const { getATS } = useATSDetection();
-      const site = mockJobHuntData.categories[0].sites[0];
-
-      const result1 = getATS(site);
-      const result2 = getATS(site);
-
-      expect(result1).toBeDefined();
-      expect(result2).toBeDefined();
+      const result1 = getATS(mockSites.workday);
+      const result2 = getATS(mockSites.workday);
       expect(result1?.type).toBe(result2?.type);
     });
   });
@@ -257,9 +197,7 @@ describe("useATSDetection", () => {
   describe("ATSInfo structure", () => {
     it("returns complete ATSInfo with all required fields", () => {
       const { getATS } = useATSDetection();
-      const workdaySite = mockJobHuntData.categories[0].sites[0];
-
-      const atsInfo = getATS(workdaySite);
+      const atsInfo = getATS(mockSites.workday);
       expect(atsInfo).toHaveProperty("type");
       expect(atsInfo).toHaveProperty("patterns");
       expect(atsInfo).toHaveProperty("initials");
@@ -268,43 +206,23 @@ describe("useATSDetection", () => {
 
     it("has correct color classes for each ATS type", () => {
       const { getATS } = useATSDetection();
-
-      const workdayInfo = getATS(mockJobHuntData.categories[0].sites[0]);
-      expect(workdayInfo?.classes).toContain("blue");
-
-      const greenhouseInfo = getATS(mockJobHuntData.categories[0].sites[1]);
-      expect(greenhouseInfo?.classes).toContain("green");
-
-      const leverInfo = getATS(mockJobHuntData.categories[1].sites[0]);
-      expect(leverInfo?.classes).toContain("purple");
-
-      const bambooInfo = getATS(mockJobHuntData.categories[1].sites[1]);
-      expect(bambooInfo?.classes).toContain("orange");
+      expect(getATS(mockSites.workday)?.classes).toContain("blue");
+      expect(getATS(mockSites.greenhouse)?.classes).toContain("green");
+      expect(getATS(mockSites.lever)?.classes).toContain("purple");
+      expect(getATS(mockSites.bamboohr)?.classes).toContain("orange");
     });
 
     it("has correct initials for each ATS type", () => {
       const { getATS } = useATSDetection();
-
-      expect(getATS(mockJobHuntData.categories[0].sites[0])?.initials).toBe(
-        "WD",
-      );
-      expect(getATS(mockJobHuntData.categories[0].sites[1])?.initials).toBe(
-        "GH",
-      );
-      expect(getATS(mockJobHuntData.categories[1].sites[0])?.initials).toBe(
-        "LV",
-      );
-      expect(getATS(mockJobHuntData.categories[1].sites[1])?.initials).toBe(
-        "BH",
-      );
+      expect(getATS(mockSites.workday)?.initials).toBe("WD");
+      expect(getATS(mockSites.greenhouse)?.initials).toBe("GH");
+      expect(getATS(mockSites.lever)?.initials).toBe("LV");
+      expect(getATS(mockSites.bamboohr)?.initials).toBe("BH");
     });
 
     it("includes URL patterns in ATSInfo", () => {
       const { getATS } = useATSDetection();
-      const workdaySite = mockJobHuntData.categories[0].sites[0];
-
-      const atsInfo = getATS(workdaySite);
-      expect(atsInfo?.patterns).toBeDefined();
+      const atsInfo = getATS(mockSites.workday);
       expect(Array.isArray(atsInfo?.patterns)).toBe(true);
       expect(atsInfo?.patterns.length).toBeGreaterThan(0);
     });
@@ -313,17 +231,19 @@ describe("useATSDetection", () => {
   describe("URL pattern detection", () => {
     it("detects Workday from various URL formats", () => {
       const { getATS } = useATSDetection();
-
       const workdayUrls = [
         "https://company.wd1.myworkdayjobs.com/Careers",
         "https://company.wd5.myworkdayjobs.com/en-US/Jobs",
         "https://company.wd10.myworkdayjobs.com/External",
       ];
-
       workdayUrls.forEach(url => {
-        const site: JobSite = { id: "test", name: "Test", url };
-        const atsInfo = getATS(site);
-        expect(atsInfo?.type).toBe("workday");
+        const site: JobSite = {
+          id: "test",
+          name: "Test",
+          url,
+          categoryId: "test",
+        };
+        expect(getATS(site)?.type).toBe("workday");
       });
     });
 
@@ -333,8 +253,8 @@ describe("useATSDetection", () => {
         id: "test",
         name: "Test",
         url: "https://boards.greenhouse.io/company",
+        categoryId: "test",
       };
-
       expect(getATS(site)?.type).toBe("greenhouse");
     });
 
@@ -344,8 +264,8 @@ describe("useATSDetection", () => {
         id: "test",
         name: "Test",
         url: "https://jobs.lever.co/company",
+        categoryId: "test",
       };
-
       expect(getATS(site)?.type).toBe("lever");
     });
 
@@ -355,8 +275,8 @@ describe("useATSDetection", () => {
         id: "test",
         name: "Test",
         url: "https://company.bamboohr.com/jobs",
+        categoryId: "test",
       };
-
       expect(getATS(site)?.type).toBe("bamboohr");
     });
   });

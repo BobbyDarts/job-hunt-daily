@@ -5,10 +5,10 @@ import { describe, expect, it } from "vitest";
 import { h } from "vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 
-import type { HeaderProps } from "@/components/app/shell/header";
-import { Header } from "@/components/app/shell/header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
+
+import { Header, type HeaderProps } from ".";
 
 const DEFAULT_PROPS: HeaderProps = {
   title: "Job Hunt Daily",

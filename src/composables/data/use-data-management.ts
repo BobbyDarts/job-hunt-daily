@@ -3,28 +3,37 @@
 import { toast } from "vue-sonner";
 
 import { getNow } from "@/lib/time";
-import type { Application, ApplicationHistory, VisitedSites } from "@/types";
+import type {
+  Application,
+  ApplicationHistory,
+  VisitedSites,
+  JobHuntData,
+} from "@/types";
 
 import {
   APPLICATIONS_STORAGE_KEY,
   APPLICATIONS_HISTORY_STORAGE_KEY,
   VISITED_SITES_STORAGE_KEY,
+  JOB_SITES_STORAGE_KEY,
 } from "./keys";
 import { useApplicationsRepository } from "./use-applications-repository";
+import { useJobSitesRepository } from "./use-job-sites-repository";
 import { useVisitedSitesRepository } from "./use-visited-sites-repository";
 
 interface ExportData {
   version: string;
   exportedAt: string;
-  dailyChecklist: VisitedSites;
-  applications: Application[];
-  applicationHistory: ApplicationHistory[];
+  dailyChecklist?: VisitedSites;
+  applications?: Application[];
+  applicationHistory?: ApplicationHistory[];
+  jobSites?: JobHuntData;
 }
 
 export type UseDataManagementParams = {
   applicationStorageKey?: string;
   applicationHistoryStorageKey?: string;
   visitedSitesStorageKey?: string;
+  jobSitesStorageKey?: string;
 };
 
 export function useDataManagement(params: UseDataManagementParams = {}) {
@@ -32,6 +41,7 @@ export function useDataManagement(params: UseDataManagementParams = {}) {
     applicationStorageKey = APPLICATIONS_STORAGE_KEY,
     applicationHistoryStorageKey = APPLICATIONS_HISTORY_STORAGE_KEY,
     visitedSitesStorageKey = VISITED_SITES_STORAGE_KEY,
+    jobSitesStorageKey = JOB_SITES_STORAGE_KEY,
   } = params;
 
   const appRepo = useApplicationsRepository({
@@ -44,13 +54,23 @@ export function useDataManagement(params: UseDataManagementParams = {}) {
     skipInitReset: true,
   });
 
+  const jobSitesRepo = useJobSitesRepository({
+    storageKey: jobSitesStorageKey,
+  });
+
   const exportAllData = async (): Promise<void> => {
+    const applications = await appRepo.getAll();
+    const applicationHistory = await appRepo.getAllHistory();
+    const dailyChecklist = await visitedRepo.serialize();
+    const jobSites = jobSitesRepo.jobHuntData.value;
+
     const data: ExportData = {
-      applications: await appRepo.getAll(),
-      applicationHistory: await appRepo.getAllHistory(),
-      dailyChecklist: await visitedRepo.serialize(),
+      version: "1.2",
       exportedAt: getNow().toString(),
-      version: "1.1",
+      ...(dailyChecklist.visited.length > 0 && { dailyChecklist }),
+      ...(applications.length > 0 && { applications }),
+      ...(applicationHistory.length > 0 && { applicationHistory }),
+      ...(jobSites.sites.length > 0 && { jobSites }),
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -69,20 +89,34 @@ export function useDataManagement(params: UseDataManagementParams = {}) {
   function parseImportData(raw: string): ExportData {
     const data: ExportData = JSON.parse(raw);
 
-    if (data.version !== "1.1") {
+    if (!["1.1", "1.2"].includes(data.version)) {
       throw new Error(`Unsupported version: ${data.version}`);
     }
 
-    if (!data.dailyChecklist) {
-      throw new Error("Missing dailyChecklist");
+    if (data.applications !== undefined && !Array.isArray(data.applications)) {
+      throw new Error("Invalid applications format");
     }
 
-    if (!data.applications || !Array.isArray(data.applications)) {
-      throw new Error("Missing or invalid applications");
+    if (
+      data.applicationHistory !== undefined &&
+      !Array.isArray(data.applicationHistory)
+    ) {
+      throw new Error("Invalid application history format");
     }
 
-    if (data.applicationHistory && !Array.isArray(data.applicationHistory)) {
-      throw new Error("Invalid application history");
+    if (
+      data.dailyChecklist !== undefined &&
+      (!data.dailyChecklist.date || !Array.isArray(data.dailyChecklist.visited))
+    ) {
+      throw new Error("Invalid dailyChecklist format");
+    }
+
+    if (
+      data.jobSites !== undefined &&
+      (!Array.isArray(data.jobSites.categories) ||
+        !Array.isArray(data.jobSites.sites))
+    ) {
+      throw new Error("Invalid jobSites format");
     }
 
     return data;
@@ -93,8 +127,17 @@ export function useDataManagement(params: UseDataManagementParams = {}) {
       const text = await file.text();
       const data = parseImportData(text);
 
-      await visitedRepo.hydrate(data.dailyChecklist);
-      await appRepo.setAll(data.applications, data.applicationHistory ?? []);
+      if (data.dailyChecklist) {
+        await visitedRepo.hydrate(data.dailyChecklist);
+      }
+
+      if (data.applications !== undefined) {
+        await appRepo.setAll(data.applications, data.applicationHistory ?? []);
+      }
+
+      if (data.jobSites !== undefined) {
+        await jobSitesRepo.setAll(data.jobSites);
+      }
 
       toast.success("Data imported successfully");
     } catch (error) {

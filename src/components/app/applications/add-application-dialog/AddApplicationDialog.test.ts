@@ -5,8 +5,6 @@ import type { render } from "@testing-library/vue";
 import { screen, waitFor } from "@testing-library/vue";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-import type { AddApplicationDialogProps } from "@/components/app/applications/add-application-dialog";
-import { AddApplicationDialog } from "@/components/app/applications/add-application-dialog";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { todayIso } from "@/lib/time";
 import { mockSite } from "@/test-utils/mocks";
@@ -14,9 +12,12 @@ import { getButtonByName, getInput } from "@/test-utils/queries";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
 import type { Application, JobSite } from "@/types";
 
+import { AddApplicationDialog, type AddApplicationDialogProps } from ".";
+
 /* ----------------------------------------
  * Test helpers
- * ------------------------------------- */
+ * ----------------------------------------
+ */
 
 async function getSubmitButton() {
   return await getButtonByName(/add application/i);
@@ -76,6 +77,7 @@ function renderAddApplicationDialog(
     overrides,
     {
       providers: [TooltipProvider],
+      events: ["submit", "update:open"],
       ...options,
     },
   );
@@ -400,6 +402,7 @@ describe("AddApplicationDialog", () => {
         id: "indeed-1",
         name: "Indeed",
         url: "https://indeed.com",
+        categoryId: "general-job-boards",
       };
 
       await rerender({ site: newSite, open: true });

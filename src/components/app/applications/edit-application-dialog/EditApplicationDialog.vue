@@ -3,8 +3,7 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 
-import { StatusSelect } from "@/components/app/applications/status-select";
-import { TagsMultiSelect } from "@/components/app/applications/tags-multi-select";
+import { StatusSelect, TagsMultiSelect } from "@/components/app/applications";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

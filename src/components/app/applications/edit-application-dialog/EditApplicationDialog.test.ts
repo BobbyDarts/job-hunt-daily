@@ -4,13 +4,13 @@ import userEvent from "@testing-library/user-event";
 import { screen, waitFor } from "@testing-library/vue";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-import { EditApplicationDialog } from "@/components/app/applications/edit-application-dialog";
-import type { EditApplicationDialogProps } from "@/components/app/applications/edit-application-dialog";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { mockApplications } from "@/test-utils/mocks";
 import { getButtonByName, getInput } from "@/test-utils/queries";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
 import type { Application } from "@/types";
+
+import { EditApplicationDialog, type EditApplicationDialogProps } from ".";
 
 const DEFAULT_PROPS: EditApplicationDialogProps = {
   open: true,
@@ -27,6 +27,7 @@ function renderEditApplicationDialog(
     overrides,
     {
       providers: [TooltipProvider],
+      events: ["submit", "update:open"],
       ...options,
     },
   );

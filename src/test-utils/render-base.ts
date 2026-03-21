@@ -27,6 +27,7 @@ interface RenderBaseWithProvidersOptions {
   providers?: Component[];
   slots?: Record<string, unknown>;
   plugins?: GlobalPlugins;
+  events?: string[];
 }
 
 export function renderBaseWithProviders<TProps extends object>(
@@ -35,7 +36,7 @@ export function renderBaseWithProviders<TProps extends object>(
   overrides: Partial<TProps> = {},
   options: RenderBaseWithProvidersOptions = {},
 ) {
-  const { providers = [], slots = {}, plugins = [] } = options;
+  const { providers = [], slots = {}, plugins = [], events = [] } = options;
 
   if (providers.length === 0) {
     return renderBase(component, defaults, overrides, plugins);
@@ -47,23 +48,10 @@ export function renderBaseWithProviders<TProps extends object>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     props: Object.keys(defaults) as any,
     setup(props, { attrs, emit }) {
-      // Create event handlers that forward all events from child to wrapper
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const eventHandlers: Record<string, (...args: any[]) => void> = {};
 
-      // Common events - add more as needed
-      const commonEvents = [
-        "submit",
-        "update:open",
-        "update:modelValue",
-        "edit",
-        "delete",
-        "click",
-        "change",
-        "input",
-      ];
-      commonEvents.forEach(eventName => {
-        // Handle event names with colons (like update:open)
+      events.forEach(eventName => {
         const handlerName = eventName.includes(":")
           ? `on${eventName.charAt(0).toUpperCase()}${eventName.slice(1)}`
           : `on${eventName.charAt(0).toUpperCase()}${eventName.slice(1)}`;

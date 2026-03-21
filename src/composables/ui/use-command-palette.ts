@@ -24,13 +24,28 @@ export function useCommandPalette() {
     if (notUsingInput.value) state.open.value = true;
   });
 
+  function openCommandPalette() {
+    state.open.value = true;
+  }
+
+  function closeCommandPalette() {
+    state.open.value = false;
+  }
+
+  function withClose<T extends unknown[], R>(
+    fn: (...args: T) => R | Promise<R>,
+  ) {
+    return async (...args: T): Promise<R> => {
+      const result = await fn(...args);
+      closeCommandPalette();
+      return result;
+    };
+  }
+
   return {
     ...state,
-    openCommandPalette: () => {
-      state.open.value = true;
-    },
-    closeCommandPalette: () => {
-      state.open.value = false;
-    },
+    openCommandPalette,
+    closeCommandPalette,
+    withClose,
   };
 }

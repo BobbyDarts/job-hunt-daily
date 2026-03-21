@@ -6,7 +6,7 @@ import { computed, ref, defineComponent, h } from "vue";
 import { createRouter, createMemoryHistory } from "vue-router";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { mockJobHuntData } from "@/test-utils/mocks";
+import { mockCategories, mockSites } from "@/test-utils/mocks";
 import { Home } from "@/views";
 
 // Mock the composables
@@ -32,11 +32,32 @@ vi.mock("@/composables/data/use-ats-detection", () => ({
 
 vi.mock("@/composables/dashboard/use-category-progress", () => ({
   useCategoryProgress: () => ({
-    sortedCategories: computed(() => mockJobHuntData.categories),
-    splitCategorySites: vi.fn(category => ({
-      unvisited: category.sites,
-      visited: [],
-    })),
+    categoryStats: computed(() => [
+      {
+        category: mockCategories.techCompanies,
+        sites: [
+          mockSites.workday,
+          mockSites.greenhouse,
+          mockSites.regular,
+          mockSites.zebra,
+          mockSites.alpha,
+        ],
+        visitedCount: 0,
+        progress: 0,
+      },
+      {
+        category: mockCategories.startups,
+        sites: [mockSites.lever, mockSites.bamboohr],
+        visitedCount: 0,
+        progress: 0,
+      },
+      {
+        category: mockCategories.smallCategory,
+        sites: [mockSites.delta],
+        visitedCount: 0,
+        progress: 0,
+      },
+    ]),
     getCategoryProgress: vi.fn(() => 0),
     getCategoryVisitedCount: vi.fn(() => 0),
     maxCategoryHeight: computed(() => 6),
@@ -81,7 +102,6 @@ describe("Home View", () => {
     renderHome();
 
     // Should render category names from mock data
-    // mockJobHuntData has "Tech Companies", "Healthcare", "Finance" categories
     expect(screen.getByText("Tech Companies")).toBeInTheDocument();
   });
 

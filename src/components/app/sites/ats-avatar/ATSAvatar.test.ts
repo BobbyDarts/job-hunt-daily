@@ -3,11 +3,11 @@
 import { screen } from "@testing-library/vue";
 import { describe, expect, it } from "vitest";
 
-import type { ATSAvatarProps } from "@/components/app/sites/ats-avatar";
-import { ATSAvatar } from "@/components/app/sites/ats-avatar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { mockATSInfo, mockSite } from "@/test-utils/mocks";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
+
+import { ATSAvatar, type ATSAvatarProps } from ".";
 
 const DEFAULT_PROPS: ATSAvatarProps = {
   site: mockSite,

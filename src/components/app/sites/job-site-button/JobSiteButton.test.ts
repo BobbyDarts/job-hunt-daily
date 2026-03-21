@@ -3,12 +3,12 @@
 import { screen } from "@testing-library/vue";
 import { describe, expect, it, vi } from "vitest";
 
-import { JobSiteButton } from "@/components/app/sites/job-site-button";
-import type { JobSiteButtonProps } from "@/components/app/sites/job-site-button";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { mockATSInfo, mockSite } from "@/test-utils/mocks";
 import { getButtonByName } from "@/test-utils/queries";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
+
+import { JobSiteButton, type JobSiteButtonProps } from ".";
 
 const DEFAULT_PROPS: JobSiteButtonProps = {
   site: mockSite,

@@ -4,11 +4,11 @@ import userEvent from "@testing-library/user-event";
 import { screen, waitFor, within } from "@testing-library/vue";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-import { StatusSelect } from "@/components/app/applications/status-select";
-import type { StatusSelectProps } from "@/components/app/applications/status-select";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
 import { getStatuses } from "@/types";
+
+import { StatusSelect, type StatusSelectProps } from ".";
 
 const statuses = getStatuses();
 
@@ -21,6 +21,7 @@ const DEFAULT_PROPS: StatusSelectProps = {
 function renderStatusSelect(overrides: Partial<StatusSelectProps> = {}) {
   return renderBaseWithProviders(StatusSelect, DEFAULT_PROPS, overrides, {
     providers: [TooltipProvider],
+    events: ["update:modelValue"],
   });
 }
 

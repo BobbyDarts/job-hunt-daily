@@ -33,6 +33,12 @@
     "src/components/ui/**",
     "src/style.css"
   ],
+  "cSpell.ignoreRegExpList": [
+    "CStyleComment",
+    "CPPStyleComment",
+    "ShellStyleComment",
+    "HtmlComment"
+  ],
   "cSpell.words": [
     "angellist",
     "bamboohr",
@@ -76,12 +82,14 @@
     "shadcn",
     "sitea",
     "siteb",
+    "slugifies",
     "Softdocs",
     "sonner",
     "spglobal",
     "stackoverflow",
     "Supabase",
     "Systemtec",
+    "tanstack",
     "techco",
     "techjobsforgood",
     "teksystems",
@@ -93,10 +101,11 @@
     "Wellfound",
     "weworkremotely",
     "whoishiring",
+    "ycombinator",
     "ziprecruiter"
   ],
   "terminal.integrated.scrollback": 25000,
-  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "js/ts.preferences.preferTypeOnlyAutoImports": true,
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "*.vue": "${capture}.test.ts, index.ts",

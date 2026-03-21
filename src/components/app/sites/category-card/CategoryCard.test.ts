@@ -3,16 +3,17 @@
 import { screen } from "@testing-library/vue";
 import { describe, expect, it, vi } from "vitest";
 
-import { CategoryCard } from "@/components/app/sites/category-card";
-import type { CategoryCardProps } from "@/components/app/sites/category-card";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { mockCategory } from "@/test-utils/mocks";
+import { mockCategory, mockSites } from "@/test-utils/mocks";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
+
+import { CategoryCard, type CategoryCardProps } from ".";
 
 const isSiteVisited = (_url: string) => false;
 
 const DEFAULT_PROPS: CategoryCardProps = {
   category: mockCategory,
+  sites: [mockSites.greenhouse, mockSites.workday],
   visitedCount: 0,
   progress: 0,
   maxHeight: 6,
@@ -39,9 +40,8 @@ describe("CategoryCard", () => {
   it("renders all JobSiteCard components", () => {
     renderCategoryCard();
 
-    expect(screen.getAllByRole("button")).toHaveLength(
-      mockCategory.sites.length,
-    );
+    expect(screen.getByText(mockSites.greenhouse.name)).toBeInTheDocument();
+    expect(screen.getByText(mockSites.workday.name)).toBeInTheDocument();
   });
 
   it("calls onVisit when a JobSiteCard is clicked", async () => {
@@ -49,10 +49,10 @@ describe("CategoryCard", () => {
 
     renderCategoryCard({ onVisit: clickSpy });
 
-    const buttons = screen.getAllByRole("button");
+    // Click the button for a specific known site
+    const button = screen.getByRole("button", { name: /greenhouse company/i });
+    button.click();
 
-    buttons[0].click();
-
-    expect(clickSpy).toHaveBeenCalledWith(mockCategory.sites[0].url);
+    expect(clickSpy).toHaveBeenCalledWith(mockSites.greenhouse.url);
   });
 });

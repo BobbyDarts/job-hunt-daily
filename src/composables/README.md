@@ -3,7 +3,6 @@
 This directory contains all Vue composables for the app. Each composable encapsulates a specific concern and is designed to be called from components or other composables.
 
 Each subdirectory has a barrel `index.ts` that re-exports its composables. Consumers should import from the subdirectory, not individual files:
-
 ```ts
 import { useApplications } from '@/composables/data'
 import { useCommandPalette } from '@/composables/ui'
@@ -25,13 +24,13 @@ Owns all persistence logic for applications and application history. Backed by `
 Thin wrapper around the ATS detection library. Given a `JobSite`, returns either an `ATSInfo` object (type, initials, color classes, URL patterns) or `undefined`. Also exposes a boolean `isATS(site)` helper.
 
 ### `use-data-management`
-Orchestrates full data export and import. On export, serializes visited sites and applications to a JSON blob and triggers a download. On import, parses and validates the JSON, then hydrates visited sites and replaces application data. Accepts optional storage key overrides for testability.
+Orchestrates full data export and import. Exports all app data (visited sites, applications, application history, job sites) as a single versioned JSON file (v1.2). On import, validates and applies each section independently — all sections are optional. Accepts optional storage key overrides for test isolation. v1.1 files (no job sites) are still accepted on import.
 
 ### `use-job-sites`
-Builds reactive lookup maps and computed arrays from job site data. Returns `categories`, `siteById`, `siteByUrl`, `getSiteById()`, `getSiteByUrl()`, `allSitesWithCategory`, and `totalSites`. Accepts an optional `DataSourceParam` for test injection.
+Reactive interface over job site data. Returns `categories`, `sites`, `sitesByCategory`, `siteById`, `siteByUrl`, `categoryById`, `allSitesWithCategory`, `totalSites`, lookup helpers (`getSiteById`, `getSiteByUrl`, `getCategoryById`, `getSitesByCategory`), and full CRUD methods for both sites and categories (`addSite`, `updateSite`, `deleteSite`, `addCategory`, `updateCategory`, `deleteCategory`, `setAll`). Accepts an optional `storageKey` override for test isolation.
 
 ### `use-job-sites-repository`
-Owns the job site data source. Currently reads from the static `job-hunt-daily.json` file. Will be extended to support localStorage CRUD in Issue [#10](https://github.com/BobbyDarts/job-hunt-daily/issues/10) and Supabase in Issue [#24](https://github.com/BobbyDarts/job-hunt-daily/issues/24). Accepts an optional `DataSourceParam` for test injection.
+Owns all persistence logic for job site data. Backed by `localStorage` via `useLocalStorage`, seeded from `job-hunt-daily.json` on first load. The data model is flat: `JobHuntData` contains a `categories` array and a `sites` array, with each site holding a `categoryId` reference rather than being nested inside a category. Exposes full CRUD for both sites and categories, plus `setAll` for bulk replacement. Accepts an optional `storageKey` override for test isolation. Supabase backend planned in Issue [#24](https://github.com/BobbyDarts/job-hunt-daily/issues/24).
 
 ### `use-visited-sites`
 Tracks which job site URLs have been visited today. Automatically resets at midnight and on window focus regain. Exposes `markVisited()`, `isSiteVisited()`, `visitedCount`, `isComplete`, and `serialize`/`hydrate` for export/import.
@@ -48,14 +47,20 @@ Singleton composables that manage the open/close state of global UI elements —
 ### `use-add-application-dialog`
 Singleton dialog state for the Add Application dialog. Holds the `open` flag and the `site` ref (which job site triggered the dialog). Exposes `openDialog(site?)` and `closeDialog()`.
 
+### `use-add-job-site-dialog`
+Singleton dialog state for the Add Job Site dialog. Holds the `open` flag and a `category` ref (the `categoryId` string of the category that triggered the dialog, if any). Exposes `openDialog(categoryId?)` and `closeDialog()`. Used by both the `/job-sites` view and `CategoryCard` action bar.
+
 ### `use-command-palette`
-Singleton open/close state for the command palette. Also registers Ctrl+K / Cmd+K (with `preventDefault`) to open the palette. Exposes `open`, `openCommandPalette()`, and `closeCommandPalette()`.
+Singleton open/close state for the command palette. Also registers `⌘K`/`Ctrl+K` (with `preventDefault`) to open the palette. Exposes `open`, `openCommandPalette()`, `closeCommandPalette()`, and `withClose(fn)` — a wrapper that calls a function then closes the palette.
 
 ### `use-shortcut-reference`
 Singleton dialog state for the keyboard shortcut reference dialog. Exposes `open`, `openDialog()`, and `closeDialog()`.
 
 ### `use-site-focus`
 Singleton registry of focusable job site card elements. Components register/unregister their DOM element and `JobSite` on mount/unmount. Exposes `focusNext()`, `focusPrev()` with wrap-around, index correction on unregister, and `focusedSite` for shortcut handlers.
+
+### `use-theme`
+Wraps VueUse's `useColorMode` to provide app-level theme toggling. Exposes `toggleTheme()`, `themeText` (e.g. `"Dark"` / `"Light"`), and `themeIcon` (a Lucide icon component reflecting the current mode). Used by `HeaderActions` and `useKeyboardShortcuts`.
 
 ---
 
@@ -67,7 +72,7 @@ Composables responsible for registering and guarding keyboard interactions. Thes
 Returns a computed `notUsingInput` boolean that is `true` when the currently active element is not an `INPUT` or `TEXTAREA`. Used by `use-command-palette` and `use-keyboard-shortcuts` to guard against shortcuts firing while the user is typing.
 
 ### `use-keyboard-shortcuts`
-Registers all vim-style keyboard shortcuts via `useMagicKeys`. Handles `j`/`k` focus navigation (Home only), `a` for add application, `v` for mark visited, `g`+`a`/`g`+`h` sequences, and `?` for the shortcut reference dialog. Clears site focus state on route change.
+Registers all vim-style keyboard shortcuts via `useMagicKeys`. Handles `j`/`k` focus navigation (Home only), `a` for add application, `v` for mark visited, `g`+`a`/`g`+`h`/`g`+`j` navigation sequences, `t` for theme toggle, and `?` for the shortcut reference dialog. Clears site focus state on route change.
 
 ---
 
@@ -88,4 +93,4 @@ Generic selection state composable for single and multi-select. Accepts a `getVa
 Composables that compute derived, view-specific data for the dashboard. These sit above the data layer and below the component layer — they transform raw data into what the dashboard views need.
 
 ### `use-category-progress`
-Computes sorted categories (by site count descending, sites alphabetically), per-category visited counts and progress percentages, and `maxCategoryHeight` for card layout. Results are cached in a `categoryStats` computed to avoid redundant recalculation. Both params are optional — if omitted, data is pulled from `useJobSites()` and `isSiteVisited` from `useVisitedSites()`. Pass them explicitly in tests to inject mock data.
+Computes sorted categories (by site count descending), per-category sites (sorted alphabetically), visited counts and progress percentages, and `maxCategoryHeight` for card layout. Results are cached in a `categoryStats` computed — each entry contains `{ category, sites, visitedCount, progress }` — to avoid redundant recalculation. `CategoryCard` consumers should prefer reading `sites` from `categoryStats` rather than calling `getSitesByCategory` separately. Both params are optional — if omitted, data is pulled from `useJobSites()` and `isSiteVisited` from `useVisitedSites()`. Pass `storageKey` and/or `isSiteVisited` explicitly in tests to inject mock data.
