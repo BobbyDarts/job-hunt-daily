@@ -28,6 +28,10 @@ vi.mock("@/components/app/sites", () => ({
 vi.mock("@/components/app/lib", () => ({
   CategorySelect: { template: `<div />`, props: ["modelValue"] },
   ATSSelect: { template: `<div />`, props: ["modelValue"] },
+  DeleteConfirmDialog: {
+    template: `<div />`,
+    props: ["open", "title", "description"],
+  },
 }));
 
 const router = createRouter({

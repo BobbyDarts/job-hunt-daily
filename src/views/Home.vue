@@ -2,9 +2,7 @@
 
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { toast } from "vue-sonner";
 
-import { AddApplicationDialog } from "@/components/app/applications";
 import { CategoryCard } from "@/components/app/sites";
 import { useCategoryProgress } from "@/composables/dashboard";
 import {
@@ -13,7 +11,7 @@ import {
   useVisitedSites,
 } from "@/composables/data";
 import { useAddApplicationDialog } from "@/composables/ui";
-import type { JobSite, Application } from "@/types";
+import type { JobSite } from "@/types";
 
 // Composables
 const router = useRouter();
@@ -25,12 +23,8 @@ const {
   maxCategoryHeight,
 } = useCategoryProgress();
 const { getATS } = useATSDetection();
-const { addApplication, applications } = useApplications();
-const {
-  open: isAddApplicationDialogOpen,
-  site: selectedSite,
-  openDialog,
-} = useAddApplicationDialog();
+const { applications } = useApplications();
+const { openDialog } = useAddApplicationDialog();
 
 const handleSiteClick = (url: string) => {
   markVisited(url);
@@ -56,13 +50,6 @@ const handleManageApplications = async (site: JobSite) => {
 const getApplicationsForSite = (siteId: string) => {
   return applications.value.filter(app => app.jobSiteId === siteId);
 };
-
-const handleApplicationSubmit = (
-  data: Omit<Application, "id" | "createdAt" | "updatedAt">,
-) => {
-  addApplication(data);
-  toast.success("Application added successfully");
-};
 </script>
 
 <template>
@@ -87,10 +74,4 @@ const handleApplicationSubmit = (
       />
     </div>
   </div>
-
-  <AddApplicationDialog
-    v-model:open="isAddApplicationDialogOpen"
-    :site="selectedSite"
-    @submit="handleApplicationSubmit"
-  />
 </template>

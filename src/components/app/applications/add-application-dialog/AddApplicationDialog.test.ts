@@ -1,18 +1,21 @@
 // /src/components/app/applications/add-application-dialog/AddApplicationDialog.test.ts
 
 import userEvent from "@testing-library/user-event";
-import type { render } from "@testing-library/vue";
 import { screen, waitFor } from "@testing-library/vue";
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { computed } from "vue";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useApplications, useJobSites } from "@/composables/data";
 import { todayIso } from "@/lib/time";
 import { mockSite } from "@/test-utils/mocks";
 import { getButtonByName, getInput } from "@/test-utils/queries";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
-import type { Application, JobSite } from "@/types";
+import type { JobSite } from "@/types";
 
 import { AddApplicationDialog, type AddApplicationDialogProps } from ".";
+
+vi.mock("@/composables/data");
 
 /* ----------------------------------------
  * Test helpers
@@ -64,7 +67,7 @@ async function fillValidForm(
 
 const DEFAULT_PROPS: AddApplicationDialogProps = {
   open: true,
-  site: mockSite, //getSiteById("greenhouse-company"),
+  site: mockSite,
 };
 
 function renderAddApplicationDialog(
@@ -77,51 +80,26 @@ function renderAddApplicationDialog(
     overrides,
     {
       providers: [TooltipProvider],
-      events: ["submit", "update:open"],
+      events: ["update:open"],
       ...options,
     },
   );
 }
 
-type Emitted = ReturnType<typeof render>["emitted"];
-
-async function submitForm(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(await getSubmitButton());
-}
-
-async function submitAndExpectSuccess(
-  user: ReturnType<typeof userEvent.setup>,
-  emitted: Emitted,
-) {
-  await submitForm(user);
-  await waitFor(() => {
-    expect(emitted().submit?.length).toBeTruthy();
-  });
-}
-
-type DialogEmits = {
-  submit: Application[][];
-  "update:open": boolean[][];
-};
-
-function getEmitted<E extends Record<string, unknown[]>>(
-  emitted: () => Record<string, unknown[]>,
-) {
-  return new Proxy({} as E, {
-    get(_target, prop) {
-      if (typeof prop === "string") {
-        return emitted()[prop];
-      }
-      return undefined;
-    },
-  });
-}
-
 describe("AddApplicationDialog", () => {
   let user: ReturnType<typeof userEvent.setup>;
+  let mockAddApplication: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAddApplication = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(useApplications).mockReturnValue({
+      addApplication: mockAddApplication,
+    } as unknown as ReturnType<typeof useApplications>);
+    vi.mocked(useJobSites).mockReturnValue({
+      allSitesWithCategory: computed(() => []),
+      getSiteById: vi.fn().mockReturnValue(undefined),
+    } as unknown as ReturnType<typeof useJobSites>);
     user = userEvent.setup();
   });
 
@@ -254,10 +232,8 @@ describe("AddApplicationDialog", () => {
   });
 
   describe("submission data", () => {
-    it("emits submit event with normalized form data", async () => {
-      const { emitted } = renderAddApplicationDialog();
-      const emits = getEmitted<DialogEmits>(emitted);
-      // const site = getSiteById("greenhouse-company");
+    it("calls addApplication with normalized form data", async () => {
+      renderAddApplicationDialog();
 
       await fillValidForm(user, {
         position: "Senior Developer",
@@ -267,24 +243,25 @@ describe("AddApplicationDialog", () => {
       const urlInput = await getInput<HTMLInputElement>(/job posting url/i);
       await user.type(urlInput, "https://example.com/job");
 
-      await submitAndExpectSuccess(user, emitted);
+      await user.click(await getSubmitButton());
 
-      const submitEvent = emits.submit[0][0];
-
-      expect(submitEvent).toMatchObject({
-        company: "Tech Corp",
-        position: "Senior Developer",
-        jobSiteUrl: "https://my.greenhouse.io",
-        atsType: "greenhouse",
-        jobPostingUrl: "https://example.com/job",
-        status: "applied",
-        notes: "Great opportunity",
+      await waitFor(() => {
+        expect(mockAddApplication).toHaveBeenCalledWith(
+          expect.objectContaining({
+            company: "Tech Corp",
+            position: "Senior Developer",
+            jobSiteUrl: "https://my.greenhouse.io",
+            atsType: "greenhouse",
+            jobPostingUrl: "https://example.com/job",
+            status: "applied",
+            notes: "Great opportunity",
+          }),
+        );
       });
     });
 
     it("trims whitespace from submitted text fields", async () => {
-      const { emitted } = renderAddApplicationDialog();
-      const emits = getEmitted<DialogEmits>(emitted);
+      renderAddApplicationDialog();
 
       await fillValidForm(user, {
         company: "  Tech Corp  ",
@@ -292,103 +269,106 @@ describe("AddApplicationDialog", () => {
         notes: "  Notes  ",
       });
 
-      await submitAndExpectSuccess(user, emitted);
+      await user.click(await getSubmitButton());
 
-      const submitEvent = emits.submit[0][0];
-
-      expect(submitEvent.company).toBe("Tech Corp");
-      expect(submitEvent.position).toBe("Developer");
-      expect(submitEvent.notes).toBe("Notes");
+      await waitFor(() => {
+        expect(mockAddApplication).toHaveBeenCalledWith(
+          expect.objectContaining({
+            company: "Tech Corp",
+            position: "Developer",
+            notes: "Notes",
+          }),
+        );
+      });
     });
 
     it("sets appliedDate to today on submit", async () => {
-      const { emitted } = renderAddApplicationDialog();
-      const emits = getEmitted<DialogEmits>(emitted);
+      renderAddApplicationDialog();
 
       await fillValidForm(user);
+      await user.click(await getSubmitButton());
 
-      await submitAndExpectSuccess(user, emitted);
-
-      const submitEvent = emits.submit[0][0];
-
-      expect(submitEvent.appliedDate).toBe(todayIso());
+      await waitFor(() => {
+        expect(mockAddApplication).toHaveBeenCalledWith(
+          expect.objectContaining({
+            appliedDate: todayIso(),
+          }),
+        );
+      });
     });
 
     it("defaults status to 'applied' on submit", async () => {
-      const { emitted } = renderAddApplicationDialog();
-      const emits = getEmitted<DialogEmits>(emitted);
+      renderAddApplicationDialog();
 
       await fillValidForm(user);
+      await user.click(await getSubmitButton());
 
-      await submitAndExpectSuccess(user, emitted);
-
-      const submitEvent = emits.submit[0][0];
-
-      expect(submitEvent.status).toBe("applied");
+      await waitFor(() => {
+        expect(mockAddApplication).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: "applied",
+          }),
+        );
+      });
     });
 
     it("omits optional fields from payload when empty", async () => {
-      const { emitted } = renderAddApplicationDialog();
-      const emits = getEmitted<DialogEmits>(emitted);
+      renderAddApplicationDialog();
 
       await fillValidForm(user);
+      await user.click(await getSubmitButton());
 
-      await submitAndExpectSuccess(user, emitted);
-
-      const submitEvent = emits.submit[0][0];
-
-      expect(submitEvent.jobPostingUrl).toBeUndefined();
-      expect(submitEvent.notes).toBeUndefined();
+      await waitFor(() => {
+        expect(mockAddApplication).toHaveBeenCalledWith(
+          expect.objectContaining({
+            jobPostingUrl: undefined,
+            notes: undefined,
+          }),
+        );
+      });
     });
   });
 
   describe("submission side effects", () => {
     it("closes dialog after successful submission", async () => {
       const { emitted } = renderAddApplicationDialog();
-      const emits = getEmitted<DialogEmits>(emitted);
 
       await fillValidForm(user);
-
-      await submitForm(user);
+      await user.click(await getSubmitButton());
 
       await waitFor(() => {
-        expect(emits["update:open"]?.some(e => e[0] === false)).toBe(true);
+        expect(emitted()["update:open"]?.some(e => e[0] === false)).toBe(true);
       });
     });
 
-    it("prevents submission when site is null", async () => {
-      const { emitted } = renderAddApplicationDialog({ site: null });
-      const emits = getEmitted<DialogEmits>(emitted);
+    it("does not call addApplication when site is null", async () => {
+      renderAddApplicationDialog({ site: null });
 
       await fillValidForm(user);
+      await user.click(await getSubmitButton());
 
-      await submitForm(user);
-
-      expect(emits.submit).toBeFalsy();
+      expect(mockAddApplication).not.toHaveBeenCalled();
     });
   });
 
   describe("cancel behavior", () => {
     it("closes dialog when cancel is clicked", async () => {
       const { emitted } = renderAddApplicationDialog();
-      const emits = getEmitted<DialogEmits>(emitted);
 
       await user.click(await getCancelButton());
 
       await waitFor(() => {
-        expect(emits["update:open"]?.some(e => e[0] === false)).toBe(true);
+        expect(emitted()["update:open"]?.some(e => e[0] === false)).toBe(true);
       });
     });
 
-    it("does not emit submit event when cancel is clicked", async () => {
-      const { emitted } = renderAddApplicationDialog();
-      const emits = getEmitted<DialogEmits>(emitted);
+    it("does not call addApplication when cancel is clicked", async () => {
+      renderAddApplicationDialog();
 
       await fillValidForm(user);
-
       await user.click(await getCancelButton());
 
-      expect(emits.submit).toBeFalsy();
+      expect(mockAddApplication).not.toHaveBeenCalled();
     });
   });
 
@@ -438,7 +418,7 @@ describe("AddApplicationDialog", () => {
 
   describe("keyboard submission", () => {
     it("submits form when Enter is pressed in company field", async () => {
-      const { emitted } = renderAddApplicationDialog();
+      renderAddApplicationDialog();
 
       await fillValidForm(user);
 
@@ -446,12 +426,12 @@ describe("AddApplicationDialog", () => {
       await user.type(companyInput, "{enter}");
 
       await waitFor(() => {
-        expect(emitted().submit?.length).toBeGreaterThan(0);
+        expect(mockAddApplication).toHaveBeenCalled();
       });
     });
 
     it("submits form when Enter is pressed in position field", async () => {
-      const { emitted } = renderAddApplicationDialog();
+      renderAddApplicationDialog();
 
       await fillValidForm(user);
 
@@ -459,7 +439,7 @@ describe("AddApplicationDialog", () => {
       await user.type(positionInput, "{Enter}");
 
       await waitFor(() => {
-        expect(emitted().submit?.length).toBeGreaterThan(0);
+        expect(mockAddApplication).toHaveBeenCalled();
       });
     });
   });

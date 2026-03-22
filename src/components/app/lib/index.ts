@@ -18,3 +18,5 @@ export {
 } from "./category-select";
 
 export { createDialogState } from "./dialog";
+
+export { DeleteConfirmDialog } from "./delete-confirm-dialog";

@@ -11,10 +11,8 @@ import {
 } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { toast } from "vue-sonner";
 
 import {
-  AddApplicationDialog,
   ApplicationCard,
   EditApplicationDialog,
   StatusSelect,
@@ -38,9 +36,6 @@ const route = useRoute();
 const { allSitesWithCategory } = useJobSites();
 const {
   applications,
-  addApplication,
-  updateApplication,
-  deleteApplication,
   totalCount,
   countByStatus,
   search: searchApplications,
@@ -136,41 +131,9 @@ const groupedApplications = computed(() => {
 });
 
 // Handlers
-const handleAddApplication = async (
-  data: Omit<Application, "id" | "createdAt" | "updatedAt">,
-) => {
-  await addApplication(data);
-  toast.success("Application added successfully");
-};
-
 const handleEditApplication = (app: Application) => {
   selectedApplication.value = app;
   isEditDialogOpen.value = true;
-};
-
-const handleUpdateApplication = async (
-  updates: Partial<Omit<Application, "id" | "createdAt">>,
-) => {
-  if (!selectedApplication.value) return;
-
-  const updated = await updateApplication(
-    selectedApplication.value.id,
-    updates,
-  );
-  if (updated) {
-    toast.success("Application updated successfully");
-  } else {
-    toast.error("Failed to update application");
-  }
-};
-
-const handleDeleteApplication = async (id: string) => {
-  const deleted = await deleteApplication(id);
-  if (deleted) {
-    toast.success("Application deleted successfully");
-  } else {
-    toast.error("Failed to delete application");
-  }
 };
 
 const clearFilters = () => {
@@ -359,7 +322,6 @@ const hasActiveFilters = computed(() => {
             :key="app.id"
             :application="app"
             @edit="handleEditApplication(app)"
-            @delete="handleDeleteApplication(app.id)"
           />
         </div>
       </div>
@@ -367,15 +329,8 @@ const hasActiveFilters = computed(() => {
   </div>
 
   <!-- Dialogs -->
-  <AddApplicationDialog
-    v-model:open="isAddDialogOpen"
-    :site="null"
-    @submit="handleAddApplication"
-  />
-
   <EditApplicationDialog
     v-model:open="isEditDialogOpen"
     :application="selectedApplication"
-    @submit="handleUpdateApplication"
   />
 </template>

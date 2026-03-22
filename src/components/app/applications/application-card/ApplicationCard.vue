@@ -2,19 +2,10 @@
 
 <script setup lang="ts">
 import { Edit, Trash2, ExternalLink, Calendar, Tag } from "lucide-vue-next";
-import { computed } from "vue";
+import { computed, ref } from "vue";
+import { toast } from "vue-sonner";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { DeleteConfirmDialog } from "@/components/app/lib";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,6 +18,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useApplications } from "@/composables/data";
 import { displayDate, getToday, toPlainDate } from "@/lib/time";
 import type { Application } from "@/types";
 import { getStatusInfo, getTagInfo } from "@/types";
@@ -39,8 +31,9 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   edit: [];
-  delete: [];
 }>();
+
+const { deleteApplication } = useApplications();
 
 const statusInfo = computed(() => getStatusInfo(props.application.status));
 
@@ -59,6 +52,22 @@ const daysSinceApplied = computed(() => {
 const openUrl = (url: string) => {
   window.open(url, "_blank", "noopener,noreferrer");
 };
+
+const isDeleteDialogOpen = ref(false);
+
+const deleteDescription = computed(
+  () =>
+    `Are you sure you want to delete your application for <strong>${props.application.position}</strong> at <strong>${props.application.company}</strong>? This action cannot be undone.`,
+);
+
+async function handleDelete() {
+  const deleted = await deleteApplication(props.application.id);
+  if (deleted) {
+    toast.success("Application deleted successfully");
+  } else {
+    toast.error("Failed to delete application");
+  }
+}
 </script>
 
 <template>
@@ -94,44 +103,28 @@ const openUrl = (url: string) => {
             <TooltipContent>Edit</TooltipContent>
           </Tooltip>
 
-          <AlertDialog>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <AlertDialogTrigger as-child>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    class="size-7"
-                    aria-label="Delete"
-                  >
-                    <Trash2 class="size-3.5 text-destructive" />
-                  </Button>
-                </AlertDialogTrigger>
-              </TooltipTrigger>
-              <TooltipContent>Delete</TooltipContent>
-            </Tooltip>
+          <!-- Replace the AlertDialog wrapping the Trash2 button -->
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="size-7"
+                aria-label="Delete"
+                @click="isDeleteDialogOpen = true"
+              >
+                <Trash2 class="size-3.5 text-destructive" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Delete</TooltipContent>
+          </Tooltip>
 
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Application</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete your application for
-                  <strong>{{ application.position }}</strong> at
-                  <strong>{{ application.company }}</strong
-                  >? This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  class="bg-destructive hover:bg-destructive/90"
-                  @click="emit('delete')"
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <DeleteConfirmDialog
+            v-model:open="isDeleteDialogOpen"
+            title="Delete Application"
+            :description="deleteDescription"
+            @confirm="handleDelete"
+          />
         </div>
       </div>
     </CardHeader>
