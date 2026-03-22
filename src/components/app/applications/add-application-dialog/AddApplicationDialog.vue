@@ -2,6 +2,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed, nextTick } from "vue";
+import { toast } from "vue-sonner";
 
 import { TagsMultiSelect } from "@/components/app/applications";
 import { SiteSelect } from "@/components/app/sites";
@@ -18,18 +19,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { useJobSites } from "@/composables/data";
+import { useApplications, useJobSites } from "@/composables/data";
 import { buildApplicationPayload } from "@/lib/application-utils";
 import { todayIso } from "@/lib/time";
-import type { JobSite, Application, ApplicationTag } from "@/types";
+import type { JobSite, ApplicationTag } from "@/types";
 
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
   "update:open": [value: boolean];
-  submit: [data: Omit<Application, "id" | "createdAt" | "updatedAt">];
 }>();
 
+const { addApplication } = useApplications();
 const { allSitesWithCategory, getSiteById } = useJobSites();
 
 export interface Props {
@@ -87,11 +88,10 @@ watch(
   },
 );
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!activeSite.value || !isValid.value) return;
 
-  emit(
-    "submit",
+  await addApplication(
     buildApplicationPayload(formData.value, {
       jobSiteId: activeSite.value.id,
       jobSiteUrl: activeSite.value.url,
@@ -100,6 +100,8 @@ const handleSubmit = () => {
       status: "applied",
     }),
   );
+
+  toast.success("Application added successfully");
 
   emit("update:open", false);
   resetForm();

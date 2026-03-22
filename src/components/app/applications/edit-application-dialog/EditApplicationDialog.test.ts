@@ -5,12 +5,15 @@ import { screen, waitFor } from "@testing-library/vue";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useApplications } from "@/composables/data";
 import { mockApplications } from "@/test-utils/mocks";
 import { getButtonByName, getInput } from "@/test-utils/queries";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
 import type { Application } from "@/types";
 
 import { EditApplicationDialog, type EditApplicationDialogProps } from ".";
+
+vi.mock("@/composables/data");
 
 const DEFAULT_PROPS: EditApplicationDialogProps = {
   open: true,
@@ -27,7 +30,7 @@ function renderEditApplicationDialog(
     overrides,
     {
       providers: [TooltipProvider],
-      events: ["submit", "update:open"],
+      events: ["update:open"],
       ...options,
     },
   );
@@ -35,9 +38,14 @@ function renderEditApplicationDialog(
 
 describe("EditApplicationDialog", () => {
   let user: ReturnType<typeof userEvent.setup>;
+  let mockUpdateApplication: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUpdateApplication = vi.fn().mockResolvedValue(mockApplications[0]);
+    vi.mocked(useApplications).mockReturnValue({
+      updateApplication: mockUpdateApplication,
+    } as unknown as ReturnType<typeof useApplications>);
     user = userEvent.setup();
   });
 
@@ -133,29 +141,27 @@ describe("EditApplicationDialog", () => {
   });
 
   describe("form submission", () => {
-    it("emits submit event with updated data", async () => {
-      const { emitted } = renderEditApplicationDialog();
+    it("calls updateApplication with updated data", async () => {
+      renderEditApplicationDialog();
 
       const companyInput = await getInput<HTMLInputElement>(/company/i);
       await user.clear(companyInput);
       await user.type(companyInput, "Updated Company");
 
-      const saveButton = await getButtonByName(/save changes/i);
-      await user.click(saveButton);
+      await user.click(await getButtonByName(/save changes/i));
 
       await waitFor(() => {
-        expect(emitted().submit).toBeTruthy();
-        expect((emitted().submit as Application[][])?.[0]?.[0]).toMatchObject({
-          company: "Updated Company",
-        });
+        expect(mockUpdateApplication).toHaveBeenCalledWith(
+          mockApplications[0].id,
+          expect.objectContaining({ company: "Updated Company" }),
+        );
       });
     });
 
     it("closes dialog after submission", async () => {
       const { emitted } = renderEditApplicationDialog();
 
-      const saveButton = await getButtonByName(/save changes/i);
-      await user.click(saveButton);
+      await user.click(await getButtonByName(/save changes/i));
 
       await waitFor(() => {
         expect(
@@ -169,8 +175,7 @@ describe("EditApplicationDialog", () => {
     it("closes dialog when cancel is clicked", async () => {
       const { emitted } = renderEditApplicationDialog();
 
-      const cancelButton = await getButtonByName(/cancel/i);
-      await user.click(cancelButton);
+      await user.click(await getButtonByName(/cancel/i));
 
       await waitFor(() => {
         expect(
@@ -179,13 +184,12 @@ describe("EditApplicationDialog", () => {
       });
     });
 
-    it("does not emit submit event when cancel is clicked", async () => {
-      const { emitted } = renderEditApplicationDialog();
+    it("does not call updateApplication when cancel is clicked", async () => {
+      renderEditApplicationDialog();
 
-      const cancelButton = await getButtonByName(/cancel/i);
-      await user.click(cancelButton);
+      await user.click(await getButtonByName(/cancel/i));
 
-      expect(emitted().submit).toBeFalsy();
+      expect(mockUpdateApplication).not.toHaveBeenCalled();
     });
   });
 
@@ -193,7 +197,6 @@ describe("EditApplicationDialog", () => {
     it("does not render when application is null", () => {
       renderEditApplicationDialog({ application: null });
 
-      // Dialog should not render without an application to edit
       expect(
         screen.queryByRole("heading", { name: "Edit Application" }),
       ).not.toBeInTheDocument();

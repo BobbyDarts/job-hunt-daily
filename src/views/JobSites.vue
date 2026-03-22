@@ -27,18 +27,12 @@ import { computed, h, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 
-import { CategorySelect, ATSSelect } from "@/components/app/lib";
-import { ATSAvatar, EditJobSiteDialog } from "@/components/app/sites";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  DeleteConfirmDialog,
+  CategorySelect,
+  ATSSelect,
+} from "@/components/app/lib";
+import { ATSAvatar, EditJobSiteDialog } from "@/components/app/sites";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -420,6 +414,11 @@ const table = useVueTable({
     );
   },
 });
+
+const deleteDescription = computed(
+  () =>
+    `Are you sure you want to delete <strong>${siteToDelete.value?.name}</strong>? This cannot be undone.`,
+);
 </script>
 
 <template>
@@ -550,27 +549,12 @@ const table = useVueTable({
   </div>
 
   <!-- Delete confirmation -->
-  <AlertDialog v-model:open="isDeleteDialogOpen">
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>Delete Site</AlertDialogTitle>
-        <AlertDialogDescription>
-          Are you sure you want to delete
-          <span class="font-medium">{{ siteToDelete?.name }}</span
-          >? This cannot be undone.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>Cancel</AlertDialogCancel>
-        <AlertDialogAction
-          class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          @click="handleDelete"
-        >
-          Delete
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
+  <DeleteConfirmDialog
+    v-model:open="isDeleteDialogOpen"
+    title="Delete Site"
+    :description="deleteDescription"
+    @confirm="handleDelete"
+  />
 
   <EditJobSiteDialog v-model:open="isEditDialogOpen" :site="selectedSite" />
 </template>

@@ -3,19 +3,10 @@
 <script setup lang="ts">
 import { Pencil, Plus, Trash2 } from "lucide-vue-next";
 import { ref, computed } from "vue";
+import { toast } from "vue-sonner";
 
-import { JobSiteCard } from "@/components/app/sites";
-import { EditCategoryDialog } from "@/components/app/sites/edit-category-dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { DeleteConfirmDialog } from "@/components/app/lib";
+import { JobSiteCard, EditCategoryDialog } from "@/components/app/sites";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -59,8 +50,18 @@ const categoryNameClass = computed(() => {
   return "text-lg sm:text-xl font-semibold tracking-tight";
 });
 
-async function handleDeleteCategory() {
-  await deleteCategory(props.category.id);
+const deleteDescription = computed(
+  () =>
+    `Are you sure you want to delete <strong>${props.category.name}</strong>? This cannot be undone.`,
+);
+
+async function handleDelete() {
+  const deleted = await deleteCategory(props.category.id);
+  if (deleted) {
+    toast.success("Category deleted successfully");
+  } else {
+    toast.error("Failed to delete category");
+  }
 }
 </script>
 
@@ -168,25 +169,10 @@ async function handleDeleteCategory() {
   <EditCategoryDialog v-model:open="isEditCategoryOpen" :category="category" />
 
   <!-- Delete confirmation -->
-  <AlertDialog v-model:open="isDeleteDialogOpen">
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>Delete Category</AlertDialogTitle>
-        <AlertDialogDescription>
-          Are you sure you want to delete
-          <span class="font-medium">{{ category.name }}</span
-          >? This cannot be undone.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>Cancel</AlertDialogCancel>
-        <AlertDialogAction
-          class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          @click="handleDeleteCategory"
-        >
-          Delete
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
+  <DeleteConfirmDialog
+    v-model:open="isDeleteDialogOpen"
+    title="Delete Category"
+    :description="deleteDescription"
+    @confirm="handleDelete"
+  />
 </template>

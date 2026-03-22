@@ -2,6 +2,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
+import { toast } from "vue-sonner";
 
 import { StatusSelect, TagsMultiSelect } from "@/components/app/applications";
 import { Button } from "@/components/ui/button";
@@ -17,19 +18,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { useApplications } from "@/composables/data";
 import type { Application, ApplicationStatus, ApplicationTag } from "@/types";
 
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
   "update:open": [value: boolean];
-  submit: [data: Partial<Omit<Application, "id" | "createdAt">>];
 }>();
 
 export interface Props {
   open: boolean;
   application: Application | null;
 }
+
+const { updateApplication } = useApplications();
 
 // Form state
 const formData = ref({
@@ -65,8 +68,10 @@ watch(
   { immediate: true },
 );
 
-const handleSubmit = () => {
-  const updates: Partial<Omit<Application, "id" | "createdAt">> = {
+const handleSubmit = async () => {
+  if (!props.application) return;
+
+  const updated = await updateApplication(props.application.id, {
     company: formData.value.company,
     position: formData.value.position,
     jobSiteUrl: formData.value.jobSiteUrl,
@@ -76,9 +81,14 @@ const handleSubmit = () => {
     tags: formData.value.tags.length > 0 ? formData.value.tags : undefined,
     notes: formData.value.notes || undefined,
     followUpDate: formData.value.followUpDate || undefined,
-  };
+  });
 
-  emit("submit", updates);
+  if (updated) {
+    toast.success("Application updated successfully");
+  } else {
+    toast.error("Failed to update application");
+  }
+
   emit("update:open", false);
 };
 </script>
