@@ -57,13 +57,23 @@ export function generateSiteId(
  * - general-job-boards
  * - tech-startup-boards
  */
-export function generateCategoryId(name: string): string {
-  return (
+export function generateCategoryId(
+  name: string,
+  existingIds: Set<string> = new Set(),
+): string {
+  const baseId =
     name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "unknown"
-  );
+      .replace(/^-+|-+$/g, "") || "unknown";
+
+  if (!existingIds.has(baseId)) return baseId;
+
+  let counter = 1;
+  while (existingIds.has(`${baseId}-${counter}`)) {
+    counter++;
+  }
+  return `${baseId}-${counter}`;
 }
 
 /**

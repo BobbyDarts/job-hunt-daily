@@ -84,7 +84,8 @@ export function useJobSitesRepository(
   async function createCategory(
     data: Omit<JobCategory, "id">,
   ): Promise<JobCategory> {
-    const id = generateCategoryId(data.name);
+    const existingIds = new Set((await getCategories()).map(c => c.id));
+    const id = generateCategoryId(data.name, existingIds);
     const category: JobCategory = { ...data, id };
     jobHuntData.value = {
       ...jobHuntData.value,

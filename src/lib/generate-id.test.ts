@@ -162,6 +162,30 @@ describe("generateCategoryId", () => {
       "nonprofit-mission-driven",
     );
   });
+
+  it("returns base slug when no existing IDs provided", () => {
+    expect(generateCategoryId("Test XX")).toBe("test-xx");
+  });
+
+  it("appends counter when slug collides with existing ID", () => {
+    const existingIds = new Set(["test-xx"]);
+    expect(generateCategoryId("Test XX", existingIds)).toBe("test-xx-1");
+  });
+
+  it("appends counter when slug collides with a similar name", () => {
+    const existingIds = new Set(["test-xx"]);
+    expect(generateCategoryId("test-xx", existingIds)).toBe("test-xx-1");
+  });
+
+  it("increments counter past existing suffixed IDs", () => {
+    const existingIds = new Set(["test-xx", "test-xx-1", "test-xx-2"]);
+    expect(generateCategoryId("Test XX", existingIds)).toBe("test-xx-3");
+  });
+
+  it("does not append counter when slug is unique", () => {
+    const existingIds = new Set(["other-category", "another-one"]);
+    expect(generateCategoryId("Test XX", existingIds)).toBe("test-xx");
+  });
 });
 
 describe("ensureUniqueSiteIds", () => {

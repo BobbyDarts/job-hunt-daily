@@ -1,5 +1,10 @@
 // /src/components/app/sites/index.ts
 
+export {
+  AddCategoryDialog,
+  type AddCategoryDialogProps,
+} from "./add-category-dialog";
+
 export { AddCategoryInline } from "./add-category-inline";
 
 export {
