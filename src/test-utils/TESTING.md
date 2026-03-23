@@ -36,10 +36,18 @@ Dialog components that call composable methods internally (e.g. `addSite()`, `up
 - `EditJobSiteDialog` — submit path covered by `use-job-sites.test.ts`
 - `EditCategoryDialog` — submit path covered by `use-job-sites.test.ts`
 - `AddCategoryInline` — submit path covered by `use-job-sites.test.ts`
+- `AddCategoryDialog` — submit path covered by `use-job-sites.test.ts`
+
+### Singleton dialog state composables
+
+Composables built on `createDialogState()` with no additional logic are not tested directly. The factory pattern is covered by `use-add-application-dialog.test.ts`.
+
+**Examples:**
+- `useAddCategoryDialog` — no custom logic beyond `createDialogState()`; pattern covered by `use-add-application-dialog.test.ts`
 
 ### View smoke tests
 
-Views like `JobSites.vue` and `Applications.vue` only have basic smoke tests (renders, shows data, shows empty state). Filtering, sorting, and dialog interactions are covered by composable and component tests.
+Views only have basic smoke tests (renders, shows data, shows empty state). Filtering, sorting, URL sync, and dialog interactions are covered by composable and component tests.
 
 ### Keyboard and theme wiring composables
 

@@ -6,8 +6,12 @@ import {
   CommandPalette,
   ShortcutReferenceDialog,
 } from "@/components/app/shell";
-import { AddJobSiteDialog } from "@/components/app/sites";
-import { useAddJobSiteDialog, useAddApplicationDialog } from "@/composables/ui";
+import { AddJobSiteDialog, AddCategoryDialog } from "@/components/app/sites";
+import {
+  useAddJobSiteDialog,
+  useAddApplicationDialog,
+  useAddCategoryDialog,
+} from "@/composables/ui";
 
 // FUTURE:
 // <EditApplicationDialog />
@@ -18,6 +22,7 @@ const { open: isAddJobSiteOpen, category: addJobSiteCategory } =
   useAddJobSiteDialog();
 const { open: isAddApplicationOpen, site: addApplicationSite } =
   useAddApplicationDialog();
+const { open: isAddCategoryOpen } = useAddCategoryDialog();
 </script>
 
 <template>
@@ -33,4 +38,6 @@ const { open: isAddApplicationOpen, site: addApplicationSite } =
     v-model:open="isAddApplicationOpen"
     :site="addApplicationSite"
   />
+
+  <AddCategoryDialog v-model:open="isAddCategoryOpen" />
 </template>

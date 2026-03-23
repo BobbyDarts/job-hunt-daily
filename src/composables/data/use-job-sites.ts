@@ -51,6 +51,12 @@ export function useJobSites(params: UseJobSitesRepositoryParams = {}) {
     return map;
   });
 
+  const categoryByName = computed(() => {
+    const map = new Map<string, JobCategory>();
+    categories.value.forEach(c => map.set(c.name.toLowerCase(), c));
+    return map;
+  });
+
   const allSitesWithCategory = computed((): JobSiteWithCategory[] =>
     sites.value.map(site => ({
       ...site,
@@ -69,6 +75,18 @@ export function useJobSites(params: UseJobSitesRepositoryParams = {}) {
 
   const getCategoryById = (id: string): JobCategory | undefined =>
     categoryById.value.get(id);
+
+  const getCategoryByName = (name: string): JobCategory | undefined =>
+    categoryByName.value.get(name.toLowerCase());
+
+  const getCategoryBySlug = (name: string): JobCategory | undefined => {
+    const slug =
+      name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "unknown";
+    return categoryById.value.get(slug);
+  };
 
   const getSitesByCategory = (categoryId: string): JobSite[] =>
     sitesByCategory.value.get(categoryId) ?? [];
@@ -103,12 +121,15 @@ export function useJobSites(params: UseJobSitesRepositoryParams = {}) {
     siteById,
     siteByUrl,
     categoryById,
+    categoryByName,
     allSitesWithCategory,
     totalSites,
     // Lookups
     getSiteById,
     getSiteByUrl,
     getCategoryById,
+    getCategoryByName,
+    getCategoryBySlug,
     getSitesByCategory,
     // CRUD — Sites
     addSite,

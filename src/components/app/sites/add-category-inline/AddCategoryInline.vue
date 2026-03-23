@@ -24,15 +24,22 @@ const { addCategory } = useJobSites();
 const isAdding = ref(false);
 const name = ref("");
 const description = ref("");
+const isSubmitting = ref(false);
 
 async function handleAdd() {
-  if (!name.value.trim()) return;
-  const category = await addCategory({
-    name: name.value.trim(),
-    description: description.value.trim() || undefined,
-  });
-  emit("added", category.id);
-  cancel();
+  if (!name.value.trim() || isSubmitting.value) return;
+
+  isSubmitting.value = true;
+  try {
+    const category = await addCategory({
+      name: name.value.trim(),
+      description: description.value.trim() || undefined,
+    });
+    emit("added", category.id);
+    cancel();
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 
 function cancel() {
@@ -89,7 +96,11 @@ function cancel() {
     </div>
     <div class="flex items-center gap-2 justify-end">
       <Button size="sm" variant="outline" @click="cancel">Cancel</Button>
-      <Button size="sm" :disabled="!name.trim()" @click="handleAdd">
+      <Button
+        size="sm"
+        :disabled="!name.trim() || isSubmitting"
+        @click="handleAdd"
+      >
         Add Category
       </Button>
     </div>

@@ -1,20 +1,30 @@
 <!-- // /src/views/Home.vue -->
 
 <script setup lang="ts">
-import { useRouter } from "vue-router";
+import { Search, X, Plus } from "lucide-vue-next";
+import { computed, ref, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
+import { CategorySelect } from "@/components/app/lib";
 import { CategoryCard } from "@/components/app/sites";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useCategoryProgress } from "@/composables/dashboard";
 import {
   useApplications,
   useATSDetection,
   useVisitedSites,
 } from "@/composables/data";
-import { useAddApplicationDialog } from "@/composables/ui";
+import {
+  useAddApplicationDialog,
+  useAddCategoryDialog,
+} from "@/composables/ui";
 import type { JobSite } from "@/types";
 
 // Composables
 const router = useRouter();
+const route = useRoute();
+
 const { markVisited, isSiteVisited } = useVisitedSites();
 const {
   categoryStats,
@@ -24,7 +34,65 @@ const {
 } = useCategoryProgress();
 const { getATS } = useATSDetection();
 const { applications } = useApplications();
-const { openDialog } = useAddApplicationDialog();
+const { openDialog: openAddApplication } = useAddApplicationDialog();
+const { openDialog: openAddCategory } = useAddCategoryDialog();
+
+// Filters — initialize from query params
+const searchQuery = ref((route.query.search as string) || "");
+const categoryFilter = ref((route.query.category as string) || "all");
+
+// Watch route query params and update filters
+watch(
+  () => route.query,
+  query => {
+    searchQuery.value = (query.search as string) || "";
+    categoryFilter.value = (query.category as string) || "all";
+  },
+  { immediate: true },
+);
+
+// Watch filters and update URL
+watch([searchQuery, categoryFilter], ([search, category]) => {
+  const query: Record<string, string> = {};
+
+  if (search) query.search = search;
+  if (category && category !== "all") query.category = category;
+
+  if (JSON.stringify(query) !== JSON.stringify(route.query)) {
+    router.replace({ name: "Home", query });
+  }
+});
+
+const hasActiveFilters = computed(
+  () => !!searchQuery.value || categoryFilter.value !== "all",
+);
+
+const filteredCategoryStats = computed(() => {
+  let stats = categoryStats.value;
+
+  // Filter by category
+  if (categoryFilter.value !== "all") {
+    stats = stats.filter(s => s.category.id === categoryFilter.value);
+  }
+
+  // Filter by site name — hide categories with no matches, pass filtered sites to card
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.trim().toLowerCase();
+    stats = stats
+      .map(s => ({
+        ...s,
+        sites: s.sites.filter(site => site.name.toLowerCase().includes(q)),
+      }))
+      .filter(s => s.sites.length > 0);
+  }
+
+  return stats;
+});
+
+function clearFilters() {
+  searchQuery.value = "";
+  categoryFilter.value = "all";
+}
 
 const handleSiteClick = (url: string) => {
   markVisited(url);
@@ -32,7 +100,7 @@ const handleSiteClick = (url: string) => {
 };
 
 const handleAddApplication = (site: JobSite) => {
-  openDialog(site);
+  openAddApplication(site);
 };
 
 const handleManageApplications = async (site: JobSite) => {
@@ -42,7 +110,6 @@ const handleManageApplications = async (site: JobSite) => {
       query: { site: site.id },
     });
   } catch (err) {
-    // Handle navigation errors (e.g., navigating to same route, navigation cancelled)
     console.error("Navigation error:", err);
   }
 };
@@ -53,12 +120,95 @@ const getApplicationsForSite = (siteId: string) => {
 </script>
 
 <template>
+  <!-- Page Header -->
+  <div class="border-b bg-card">
+    <div class="mx-auto px-4 py-3 max-w-7xl">
+      <div class="flex items-center justify-end mb-3">
+        <Button size="sm" @click="openAddCategory()">
+          <Plus class="size-4 mr-1" />
+          <span class="hidden sm:inline">Add</span>
+        </Button>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Search -->
+        <div class="relative w-64 shrink-0">
+          <Search
+            class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
+          />
+          <Input
+            v-model="searchQuery"
+            placeholder="Search sites..."
+            class="pl-8 h-9"
+          />
+        </div>
+
+        <!-- Category Filter -->
+        <div class="w-68 shrink-0">
+          <CategorySelect
+            v-model="categoryFilter"
+            placeholder="All Categories"
+            show-all-option
+          />
+        </div>
+
+        <!-- Clear -->
+        <Button
+          v-if="hasActiveFilters"
+          variant="outline"
+          size="icon"
+          class="size-9 shrink-0"
+          @click="clearFilters"
+          aria-label="Clear filters"
+        >
+          <X class="size-4" />
+        </Button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Cards -->
   <div class="px-4 pt-4 sm:px-6 sm:pt-6">
+    <!-- Empty State -->
     <div
+      v-if="filteredCategoryStats.length === 0"
+      class="flex flex-col items-center justify-center py-10 text-center"
+    >
+      <h3 class="text-base font-semibold mb-1">
+        {{
+          categoryStats.length === 0
+            ? "No categories yet"
+            : "No categories found"
+        }}
+      </h3>
+      <p class="text-sm text-muted-foreground mb-4">
+        {{
+          categoryStats.length === 0
+            ? "Add a category to get started"
+            : "Try adjusting your filters"
+        }}
+      </p>
+
+      <Button
+        v-if="categoryStats.length === 0"
+        size="sm"
+        @click="openAddCategory()"
+      >
+        <Plus class="size-4 mr-1" />
+        Add Category
+      </Button>
+
+      <Button v-else size="sm" variant="outline" @click="clearFilters">
+        Clear Filters
+      </Button>
+    </div>
+
+    <div
+      v-else
       class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"
     >
       <CategoryCard
-        v-for="stat in categoryStats"
+        v-for="stat in filteredCategoryStats"
         :key="stat.category.id"
         :category="stat.category"
         :sites="stat.sites"

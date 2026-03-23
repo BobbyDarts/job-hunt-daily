@@ -2,6 +2,8 @@
 
 export { useAddApplicationDialog } from "./use-add-application-dialog";
 
+export { useAddCategoryDialog } from "./use-add-category-dialog";
+
 export { useAddJobSiteDialog } from "./use-add-job-site-dialog";
 
 export { useCommandPalette } from "./use-command-palette";

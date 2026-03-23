@@ -64,6 +64,22 @@ vi.mock("@/composables/dashboard/use-category-progress", () => ({
   }),
 }));
 
+vi.mock("@/composables/ui/use-add-application-dialog", () => ({
+  useAddApplicationDialog: () => ({
+    open: ref(false),
+    openDialog: vi.fn(),
+    closeDialog: vi.fn(),
+  }),
+}));
+
+vi.mock("@/composables/ui/use-add-category-dialog", () => ({
+  useAddCategoryDialog: () => ({
+    open: ref(false),
+    openDialog: vi.fn(),
+    closeDialog: vi.fn(),
+  }),
+}));
+
 const router = createRouter({
   history: createMemoryHistory(),
   routes: [
@@ -110,5 +126,15 @@ describe("Home View", () => {
 
     // Should render site names from the first category
     expect(screen.getByText("Workday Company")).toBeInTheDocument();
+  });
+
+  it("renders search input", () => {
+    renderHome();
+    expect(screen.getByPlaceholderText(/search sites/i)).toBeInTheDocument();
+  });
+
+  it("renders add category button", () => {
+    renderHome();
+    expect(screen.getByRole("button", { name: /add/i })).toBeInTheDocument();
   });
 });
