@@ -1,7 +1,7 @@
 <!-- // /src/components/app/applications/application-card/ApplicationCard.vue -->
 
 <script setup lang="ts">
-import { Edit, Trash2, ExternalLink, Calendar, Tag } from "lucide-vue-next";
+import { Edit, Trash2, ExternalLink, Calendar, Tag } from "@lucide/vue";
 import { computed, ref } from "vue";
 import { toast } from "vue-sonner";
 

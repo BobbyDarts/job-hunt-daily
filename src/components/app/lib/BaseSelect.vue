@@ -1,7 +1,7 @@
 <!-- // /src/components/app/lib/BaseSelect.vue -->
 
 <script setup lang="ts">
-import { Check, ChevronsUpDown } from "lucide-vue-next";
+import { Check, ChevronsUpDown } from "@lucide/vue";
 import type { AcceptableValue } from "reka-ui";
 import { computed, ref, toRef } from "vue";
 
@@ -213,7 +213,7 @@ const handleSelectChange = (val: AcceptableValue) => {
                   <span>{{ opt.label }}</span>
                   <span
                     v-if="opt.description"
-                    class="text-xs text-muted-foreground"
+                    class="w-full text-xs text-muted-foreground truncate max-w-lg"
                   >
                     {{ opt.description }}
                   </span>
@@ -292,7 +292,7 @@ const handleSelectChange = (val: AcceptableValue) => {
                         <span>{{ opt.label }}</span>
                         <span
                           v-if="opt.description"
-                          class="w-full text-xs text-muted-foreground"
+                          class="w-full text-xs text-muted-foreground truncate max-w-lg"
                         >
                           {{ opt.description }}
                         </span>

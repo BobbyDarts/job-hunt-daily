@@ -1,7 +1,7 @@
 <!-- // /src/components/app/sites/job-site-card/JobSiteCard.vue -->
 
 <script setup lang="ts">
-import { Plus, FolderOpen } from "lucide-vue-next";
+import { Plus, FolderOpen } from "@lucide/vue";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import { JobSiteButton } from "@/components/app/sites";

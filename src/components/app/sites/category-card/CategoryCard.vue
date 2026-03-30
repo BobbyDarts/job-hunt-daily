@@ -1,7 +1,7 @@
 <!-- // /src/components/app/sites/category-card/CategoryCard.vue -->
 
 <script setup lang="ts">
-import { Pencil, Plus, Trash2 } from "lucide-vue-next";
+import { Pencil, Plus, Trash2 } from "@lucide/vue";
 import { ref, computed } from "vue";
 import { toast } from "vue-sonner";
 

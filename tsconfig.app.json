@@ -9,7 +9,9 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["vitest/globals", "node", "@testing-library/jest-dom"]
+    "types": ["vitest/globals", "node", "@testing-library/jest-dom"],
+    "jsx": "preserve",
+    "jsxImportSource": "vue"
   },
   "vueCompilerOptions": {
     "strictTemplates": false

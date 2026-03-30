@@ -1,7 +1,7 @@
 <!-- // /src/components/app/shell/menu-toggle/MenuToggle.vue -->
 
 <script setup lang="ts">
-import { Menu, X } from "lucide-vue-next";
+import { Menu, X } from "@lucide/vue";
 
 import { Button } from "@/components/ui/button";
 

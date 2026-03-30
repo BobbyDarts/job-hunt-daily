@@ -1,11 +1,11 @@
 <!-- // /src/views/Home.vue -->
 
 <script setup lang="ts">
-import { Search, X, Plus } from "lucide-vue-next";
-import { computed, ref, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { Search, Plus } from "@lucide/vue";
+import { computed, reactive } from "vue";
+import { useRouter } from "vue-router";
 
-import { CategorySelect } from "@/components/app/lib";
+import { DataToolbar, CategorySelect } from "@/components/app/lib";
 import { CategoryCard } from "@/components/app/sites";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,15 +15,20 @@ import {
   useATSDetection,
   useVisitedSites,
 } from "@/composables/data";
+import { useQuerySync, useToolbarState } from "@/composables/lib";
 import {
   useAddApplicationDialog,
   useAddCategoryDialog,
 } from "@/composables/ui";
 import type { JobSite } from "@/types";
 
-// Composables
+type HomeFilters = {
+  search: string;
+  category: string | "all";
+};
+
+// composables
 const router = useRouter();
-const route = useRoute();
 
 const { markVisited, isSiteVisited } = useVisitedSites();
 const {
@@ -37,47 +42,23 @@ const { applications } = useApplications();
 const { openDialog: openAddApplication } = useAddApplicationDialog();
 const { openDialog: openAddCategory } = useAddCategoryDialog();
 
-// Filters — initialize from query params
-const searchQuery = ref((route.query.search as string) || "");
-const categoryFilter = ref((route.query.category as string) || "all");
-
-// Watch route query params and update filters
-watch(
-  () => route.query,
-  query => {
-    searchQuery.value = (query.search as string) || "";
-    categoryFilter.value = (query.category as string) || "all";
-  },
-  { immediate: true },
-);
-
-// Watch filters and update URL
-watch([searchQuery, categoryFilter], ([search, category]) => {
-  const query: Record<string, string> = {};
-
-  if (search) query.search = search;
-  if (category && category !== "all") query.category = category;
-
-  if (JSON.stringify(query) !== JSON.stringify(route.query)) {
-    router.replace({ name: "Home", query });
-  }
+// reactive filters
+const filters = reactive<HomeFilters>({
+  search: "",
+  category: "all",
 });
-
-const hasActiveFilters = computed(
-  () => !!searchQuery.value || categoryFilter.value !== "all",
-);
 
 const filteredCategoryStats = computed(() => {
   let stats = categoryStats.value;
 
   // Filter by category
-  if (categoryFilter.value !== "all") {
-    stats = stats.filter(s => s.category.id === categoryFilter.value);
+  if (filters.category !== "all") {
+    stats = stats.filter(s => s.category.id === filters.category);
   }
 
   // Filter by site name — hide categories with no matches, pass filtered sites to card
-  if (searchQuery.value.trim()) {
-    const q = searchQuery.value.trim().toLowerCase();
+  if (filters.search.trim()) {
+    const q = filters.search.trim().toLowerCase();
     stats = stats
       .map(s => ({
         ...s,
@@ -89,11 +70,7 @@ const filteredCategoryStats = computed(() => {
   return stats;
 });
 
-function clearFilters() {
-  searchQuery.value = "";
-  categoryFilter.value = "all";
-}
-
+// handlers
 const handleSiteClick = (url: string) => {
   markVisited(url);
   window.open(url, "_blank", "noopener,noreferrer");
@@ -117,53 +94,60 @@ const handleManageApplications = async (site: JobSite) => {
 const getApplicationsForSite = (siteId: string) => {
   return applications.value.filter(app => app.jobSiteId === siteId);
 };
+
+useQuerySync({
+  state: filters,
+  toQuery: f => {
+    const q: Record<string, string> = {};
+    if (f.search) q.search = f.search;
+    if (f.category && f.category !== "all") q.category = f.category;
+    return q;
+  },
+  fromQuery: q => ({
+    search: Array.isArray(q.search) ? (q.search[0] ?? "") : (q.search ?? ""),
+    category: (Array.isArray(q.category) ? q.category[0] : q.category) ?? "all",
+  }),
+});
+
+const { hasActiveFilters, clear } = useToolbarState(filters);
 </script>
 
 <template>
   <!-- Page Header -->
   <div class="border-b bg-card">
     <div class="mx-auto px-4 py-3 max-w-7xl">
-      <div class="flex items-center justify-end mb-3">
-        <Button size="sm" @click="openAddCategory()">
-          <Plus class="size-4 mr-1" />
-          <span class="hidden sm:inline">Add</span>
-        </Button>
-      </div>
+      <!-- Top Row -->
+      <DataToolbar :has-active-filters="hasActiveFilters" @clear="clear">
+        <template #actions>
+          <Button size="sm" @click="openAddCategory()">
+            <Plus class="size-4 mr-1" />
+            <span class="hidden sm:inline">Add</span>
+          </Button>
+        </template>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <!-- Search -->
-        <div class="relative w-64 shrink-0">
-          <Search
-            class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
-          />
-          <Input
-            v-model="searchQuery"
-            placeholder="Search sites..."
-            class="pl-8 h-9"
-          />
-        </div>
+        <template #filters>
+          <!-- Search -->
+          <div class="relative w-64 shrink-0">
+            <Search
+              class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
+            />
+            <Input
+              v-model="filters.search"
+              placeholder="Search sites..."
+              class="pl-8 h-9"
+            />
+          </div>
 
-        <!-- Category Filter -->
-        <div class="w-68 shrink-0">
-          <CategorySelect
-            v-model="categoryFilter"
-            placeholder="All Categories"
-            show-all-option
-          />
-        </div>
-
-        <!-- Clear -->
-        <Button
-          v-if="hasActiveFilters"
-          variant="outline"
-          size="icon"
-          class="size-9 shrink-0"
-          @click="clearFilters"
-          aria-label="Clear filters"
-        >
-          <X class="size-4" />
-        </Button>
-      </div>
+          <!-- Category Filter -->
+          <div class="w-68 shrink-0">
+            <CategorySelect
+              v-model="filters.category"
+              placeholder="All Categories"
+              show-all-option
+            />
+          </div>
+        </template>
+      </DataToolbar>
     </div>
   </div>
 
@@ -198,7 +182,7 @@ const getApplicationsForSite = (siteId: string) => {
         Add Category
       </Button>
 
-      <Button v-else size="sm" variant="outline" @click="clearFilters">
+      <Button v-else size="sm" variant="outline" @click="clear">
         Clear Filters
       </Button>
     </div>

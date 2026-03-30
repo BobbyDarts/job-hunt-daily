@@ -26,6 +26,8 @@ Components with no logic — only mounting and connecting other tested component
 - `ShortcutReferenceDialog` — static content wired to `useShortcutReference`
 - `CommandPalette`, `CommandPaletteSites` — connect composable actions to UI items
 - `HeaderActions` — navigation links, composable calls, dropdown items
+- `DataTable` — renders a TanStack Table instance via `FlexRender`; no independent logic
+- `DataToolbar` — slot-based toolbar layout with a conditional clear button; behavior covered by view tests
 
 ### Submission/persistence paths in dialog components
 
@@ -45,9 +47,29 @@ Composables built on `createDialogState()` with no additional logic are not test
 **Examples:**
 - `useAddCategoryDialog` — no custom logic beyond `createDialogState()`; pattern covered by `use-add-application-dialog.test.ts`
 
+### Table wiring composables
+
+Composables in `composables/tables/` combine already-tested primitives (`useDataTable`, `useToolbarState`, `useQuerySync`) with straightforward dialog ref toggling. The filter→table adapter logic and URL sync are covered by their respective primitive tests. Not tested directly.
+
+**Examples:**
+- `useCategoryTable` — wires `useDataTable`, `useToolbarState`, `useQuerySync`, and delete/edit dialog refs
+- `useJobSiteTable` — same pattern
+
+### Column factory functions
+
+`createTextColumn`, `createSortableHeader`, `createActionsColumn`, and the column definition factories (`createCategoryColumns`, `createJobSiteColumns`) produce TanStack Table column configurations. Their rendering output is covered implicitly by view smoke tests. Not tested directly.
+
+### URL sync composable
+
+`useQuerySync` depends on `useRoute` and `useRouter` and is tested implicitly through view smoke tests. The state sync behavior is straightforward `watch` wiring with no independent logic worth isolating.
+
 ### View smoke tests
 
 Views only have basic smoke tests (renders, shows data, shows empty state). Filtering, sorting, URL sync, and dialog interactions are covered by composable and component tests.
+
+### Router configuration
+
+Route names, paths, and navigation behavior are covered implicitly by view smoke tests which push to named routes and assert on rendered content. A dedicated router test is not maintained — lazy-loaded route components cause reliable timeout issues in the test environment.
 
 ### Keyboard and theme wiring composables
 
