@@ -37,7 +37,9 @@ export function useDataTable<T extends { id: string }>({
   const globalFilter = ref("");
 
   const table = useVueTable({
-    data,
+    get data() {
+      return data.value;
+    },
     columns,
     getRowId: getRowId ?? (row => row.id),
 
