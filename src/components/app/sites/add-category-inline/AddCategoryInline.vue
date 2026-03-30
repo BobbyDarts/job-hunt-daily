@@ -1,7 +1,7 @@
 <!-- // /src/components/app/sites/add-category-inline/AddCategoryInline.vue -->
 
 <script setup lang="ts">
-import { Plus } from "lucide-vue-next";
+import { Plus } from "@lucide/vue";
 import { ref } from "vue";
 
 import { Button } from "@/components/ui/button";

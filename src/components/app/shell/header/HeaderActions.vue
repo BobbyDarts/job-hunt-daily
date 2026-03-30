@@ -8,7 +8,8 @@ import {
   Search,
   CircleHelp,
   Globe,
-} from "lucide-vue-next";
+  ListTree,
+} from "@lucide/vue";
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
 
@@ -93,6 +94,13 @@ const isMac = computed(
           <RouterLink to="/applications" class="flex items-center">
             <FolderOpen class="mr-2 size-4" />
             My Applications
+          </RouterLink>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem as-child>
+          <RouterLink to="/categories" class="flex items-center">
+            <ListTree class="mr-2 size-4" />
+            My Categories
           </RouterLink>
         </DropdownMenuItem>
 

@@ -21,8 +21,9 @@ import { useInputGuard } from "./use-input-guard";
  * | `j` / `k` | Move focus down / up through sites
  * | `a`       | Log application for focused site
  * | `v`       | Mark focused site as visited
- * | `g a`     | Go to Applications view
  * | `g h`     | Go to Home
+ * | `g a`     | Go to Applications
+ * | `g c`     | Go to Categories
  * | `g j`     | Go to Job Sites
  * | `t`       | Toggle theme
  * | `?`       | Show shortcut reference
@@ -42,14 +43,16 @@ export function useKeyboardShortcuts() {
   const { markVisited } = useVisitedSites();
   const { toggleTheme } = useTheme();
 
-  const { j, k, a, v, g, h, t, shift_slash } = useMagicKeys({ passive: false });
+  const { j, k, a, v, g, h, t, c, shift_slash } = useMagicKeys({
+    passive: false,
+  });
 
   watch(
     () => route.name,
     () => clear(),
   );
 
-  // g sequence
+  // g sequence(Go to...)
   let gPressed = false;
   let gTimer: ReturnType<typeof setTimeout>;
 
@@ -78,6 +81,13 @@ export function useKeyboardShortcuts() {
       return;
     }
     if (focusedSite.value) openDialog(focusedSite.value);
+  });
+
+  whenever(logicAnd(c, notUsingInput), () => {
+    if (gPressed) {
+      gPressed = false;
+      void router.push("/categories");
+    }
   });
 
   whenever(logicAnd(h, notUsingInput), () => {

@@ -1,5 +1,7 @@
 <!-- /src/components/shortcut-reference-dialog/ShortcutReferenceDialog.vue -->
 <script setup lang="ts">
+import { computed } from "vue";
+
 import {
   Dialog,
   DialogContent,
@@ -10,6 +12,13 @@ import {
 import { useShortcutReference } from "@/composables/ui";
 
 const { open, closeDialog } = useShortcutReference();
+
+// TODO: Could be a utility since it's also used in HeaderActions, but...
+const isMac = computed(
+  () =>
+    navigator.platform.toUpperCase().includes("MAC") ||
+    navigator.userAgent.toUpperCase().includes("MAC"),
+);
 </script>
 
 <template>
@@ -35,7 +44,7 @@ const { open, closeDialog } = useShortcutReference();
               <div class="flex gap-1">
                 <kbd
                   class="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono"
-                  >⌘</kbd
+                  >{{ isMac ? "⌘" : "Ctrl " }}</kbd
                 >
                 <kbd
                   class="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono"
@@ -66,6 +75,19 @@ const { open, closeDialog } = useShortcutReference();
                 <kbd
                   class="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono"
                   >a</kbd
+                >
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span>Go to Categories</span>
+              <div class="flex gap-1">
+                <kbd
+                  class="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono"
+                  >g</kbd
+                >
+                <kbd
+                  class="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono"
+                  >c</kbd
                 >
               </div>
             </div>

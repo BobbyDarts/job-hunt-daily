@@ -1,4 +1,4 @@
-import { Sun, Moon } from "lucide-vue-next";
+import { Sun, Moon } from "@lucide/vue";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ref } from "vue";
 

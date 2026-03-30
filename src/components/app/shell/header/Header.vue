@@ -1,8 +1,8 @@
 <!-- // /src/components/app/shell/header/Header.vue -->
 
 <script setup lang="ts">
+import { WifiOff } from "@lucide/vue"; // or your existing icon
 import { useTitle } from "@vueuse/core";
-import { WifiOff } from "lucide-vue-next"; // or your existing icon
 import { computed, watchEffect } from "vue";
 import { useRoute, RouterLink } from "vue-router";
 

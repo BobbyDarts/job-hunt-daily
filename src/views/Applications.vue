@@ -1,22 +1,16 @@
 <!-- // /src/views/Applications.vue -->
 
 <script setup lang="ts">
-import {
-  ArrowLeft,
-  Plus,
-  Search,
-  X,
-  Calendar,
-  Building2,
-} from "lucide-vue-next";
-import { computed, ref, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { ArrowLeft, Plus, Search, Calendar, Building2 } from "@lucide/vue";
+import { computed, reactive, ref } from "vue";
+import { useRouter } from "vue-router";
 
 import {
   ApplicationCard,
   EditApplicationDialog,
   StatusSelect,
 } from "@/components/app/applications";
+import { DataToolbar } from "@/components/app/lib";
 import { SiteSelect } from "@/components/app/sites";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,13 +20,20 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { useApplications, useJobSites } from "@/composables/data";
+import { useQuerySync, useToolbarState } from "@/composables/lib";
 import { useAddApplicationDialog } from "@/composables/ui";
 import { comparePlainDate } from "@/lib/time";
 import type { Application, ApplicationStatus } from "@/types";
-import { getStatusInfo } from "@/types";
+import { getStatuses, getStatusInfo } from "@/types";
 
+type ApplicationFilters = {
+  search: string;
+  status: ApplicationStatus | "all";
+  site: string | "all";
+};
+
+// composables
 const router = useRouter();
-const route = useRoute();
 const { allSitesWithCategory } = useJobSites();
 const {
   applications,
@@ -41,39 +42,11 @@ const {
   search: searchApplications,
 } = useApplications();
 
-// Filters - initialize from query params
-const searchQuery = ref((route.query.search as string) || "");
-const statusFilter = ref<ApplicationStatus | "all">(
-  (route.query.status as ApplicationStatus) || "all",
-);
-const siteFilter = ref<string>((route.query.site as string) || "all");
-
-// Watch route query params and update filters
-watch(
-  () => route.query,
-  query => {
-    searchQuery.value = (query.search as string) || "";
-    statusFilter.value = (query.status as ApplicationStatus) || "all";
-    siteFilter.value = (query.site as string) || "all";
-  },
-  { immediate: true },
-);
-
-// Watch filters and update URL (without navigation)
-watch([searchQuery, statusFilter, siteFilter], ([search, status, site]) => {
-  const query: Record<string, string> = {};
-
-  if (search) query.search = search;
-  if (status !== "all") query.status = status;
-  if (site && site !== "all") query.site = site;
-
-  // Use replace to update URL without adding to history
-  if (JSON.stringify(query) !== JSON.stringify(route.query)) {
-    router.replace({
-      name: "Applications",
-      query,
-    });
-  }
+// reactive filters
+const filters = reactive<ApplicationFilters>({
+  search: "",
+  status: "all",
+  site: "all",
 });
 
 // Dialog states
@@ -92,18 +65,18 @@ const filteredApplications = computed(() => {
   let results = [...applications.value];
 
   // Filter by search query
-  if (searchQuery.value) {
-    results = searchApplications(searchQuery.value);
+  if (filters.search) {
+    results = searchApplications(filters.search);
   }
 
   // Filter by status
-  if (statusFilter.value !== "all") {
-    results = results.filter(app => app.status === statusFilter.value);
+  if (filters.status !== "all") {
+    results = results.filter(app => app.status === filters.status);
   }
 
   // Filter by site (using jobSiteId)
-  if (siteFilter.value !== "all") {
-    results = results.filter(app => app.jobSiteId === siteFilter.value);
+  if (filters.site !== "all") {
+    results = results.filter(app => app.jobSiteId === filters.site);
   }
 
   // Sort by most recent first
@@ -136,20 +109,34 @@ const handleEditApplication = (app: Application) => {
   isEditDialogOpen.value = true;
 };
 
-const clearFilters = () => {
-  searchQuery.value = "";
-  statusFilter.value = "all";
-  siteFilter.value = "all";
-  // URL will be updated automatically by the watch
-};
+// -----------------------------
+// Sync filters with URL
+// -----------------------------
+const APPLICATION_STATUSES = new Set(getStatuses().map(s => s.status));
 
-const hasActiveFilters = computed(() => {
-  return (
-    !!searchQuery.value ||
-    statusFilter.value !== "all" ||
-    siteFilter.value !== "all"
-  );
+useQuerySync({
+  state: filters,
+  toQuery: f => {
+    const q: Record<string, string> = {};
+    if (f.search) q.search = f.search;
+    if (f.status && f.status !== "all") q.status = f.status;
+    if (f.site && f.site !== "all") q.site = f.site;
+    return q;
+  },
+  fromQuery: q => {
+    const rawStatus = (
+      Array.isArray(q.status) ? q.status[0] : q.status
+    ) as ApplicationStatus;
+
+    return {
+      search: Array.isArray(q.search) ? (q.search[0] ?? "") : (q.search ?? ""),
+      status: APPLICATION_STATUSES.has(rawStatus) ? rawStatus : "all",
+      site: (Array.isArray(q.site) ? q.site[0] : q.site) ?? "all",
+    };
+  },
 });
+
+const { hasActiveFilters, clear } = useToolbarState(filters);
 </script>
 
 <template>
@@ -157,79 +144,61 @@ const hasActiveFilters = computed(() => {
   <div class="border-b bg-card">
     <div class="mx-auto px-4 py-3 max-w-7xl">
       <!-- Top Row -->
-      <div class="flex items-center justify-between mb-3">
-        <div class="flex items-center gap-2">
+      <DataToolbar :has-active-filters="hasActiveFilters" @clear="clear">
+        <template #back>
           <Button
             variant="ghost"
             size="icon"
-            @click="router.push('/')"
             aria-label="Back to home"
+            @click="router.push('/')"
           >
             <ArrowLeft class="size-4" />
           </Button>
+        </template>
 
+        <template #title>
           <h1 class="text-xl font-semibold">Applications</h1>
-        </div>
+        </template>
 
-        <Button size="sm" @click="isAddDialogOpen = true">
-          <Plus class="size-4 mr-1" />
-          <span class="hidden sm:inline">Add</span>
-        </Button>
-      </div>
+        <template #filters>
+          <div class="relative w-64 shrink-0">
+            <Search
+              class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
+            />
+            <Input
+              v-model="filters.search"
+              placeholder="Search..."
+              class="pl-8 h-9"
+            />
+          </div>
 
-      <!-- Filters + Stats (Merged Row) -->
-      <div class="flex flex-wrap items-center gap-2">
-        <!-- Search -->
-        <div class="relative w-64 shrink-0">
-          <Search
-            class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
-          />
-          <Input
-            v-model="searchQuery"
-            placeholder="Search..."
-            class="pl-8 h-9"
-          />
-        </div>
+          <div class="w-36 shrink-0">
+            <StatusSelect
+              v-model="filters.status"
+              placeholder="All Statuses"
+              show-all-option
+            />
+          </div>
 
-        <!-- Status Filter -->
-        <div class="w-36 shrink-0">
-          <StatusSelect
-            v-model="statusFilter"
-            placeholder="All Statuses"
-            show-all-option
-          />
-        </div>
-
-        <!-- Site Filter + Clear -->
-        <div class="flex items-center gap-1">
-          <div class="w-40">
+          <div class="w-40 shrink-0">
             <SiteSelect
-              v-model="siteFilter"
+              v-model="filters.site"
               :sites="sitesWithApplications"
               placeholder="All Sites"
               :group-by-category="false"
               show-all-option
             />
           </div>
+        </template>
 
-          <Button
-            v-if="hasActiveFilters"
-            variant="outline"
-            size="icon"
-            class="size-9 shrink-0"
-            @click="clearFilters"
-            aria-label="Clear filters"
-          >
-            <X class="size-4" />
+        <template #actions>
+          <Button size="sm" @click="isAddDialogOpen = true">
+            <Plus class="size-4 mr-1" />
+            <span class="hidden sm:inline">Add</span>
           </Button>
-        </div>
+        </template>
 
-        <!-- Spacer -->
-        <div class="flex-1 hidden md:block" />
-
-        <!-- Stats Badges -->
-        <div class="flex items-center gap-2 text-xs">
-          <!-- Total Applications Badge -->
+        <template #stats>
           <Tooltip>
             <TooltipTrigger as-child>
               <div
@@ -247,7 +216,6 @@ const hasActiveFilters = computed(() => {
             </TooltipContent>
           </Tooltip>
 
-          <!-- Status Badges -->
           <Tooltip v-for="(count, status) in countByStatus" :key="status">
             <TooltipTrigger as-child>
               <div
@@ -268,8 +236,8 @@ const hasActiveFilters = computed(() => {
               </p>
             </TooltipContent>
           </Tooltip>
-        </div>
-      </div>
+        </template>
+      </DataToolbar>
     </div>
   </div>
 
@@ -297,7 +265,7 @@ const hasActiveFilters = computed(() => {
         Add Application
       </Button>
 
-      <Button v-else size="sm" variant="outline" @click="clearFilters">
+      <Button v-else size="sm" variant="outline" @click="clear">
         Clear Filters
       </Button>
     </div>

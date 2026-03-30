@@ -1,7 +1,7 @@
 // /src/composables/ui/use-theme.ts
 
+import { Moon, Sun } from "@lucide/vue";
 import { useColorMode, usePreferredDark } from "@vueuse/core";
-import { Moon, Sun } from "lucide-vue-next";
 import { computed } from "vue";
 
 export function useTheme() {

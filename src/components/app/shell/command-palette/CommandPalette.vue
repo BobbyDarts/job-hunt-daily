@@ -8,7 +8,8 @@ import {
   FolderOpen,
   Plus,
   Globe,
-} from "lucide-vue-next";
+  ListTree,
+} from "@lucide/vue";
 import { useRouter } from "vue-router";
 
 import { CommandPaletteSites } from "@/components/app/shell";
@@ -26,24 +27,28 @@ import {
   useCommandPalette,
   useAddJobSiteDialog,
   useTheme,
+  useAddCategoryDialog,
 } from "@/composables/ui";
 
 // composables
 const router = useRouter();
-const { openDialog: openAddJobSite } = useAddJobSiteDialog();
 
 const { triggerImport, exportAllData } = useDataManagement();
 const { open, closeCommandPalette, withClose } = useCommandPalette();
 const { openDialog: openAddApplication } = useAddApplicationDialog();
+const { openDialog: openAddCategory } = useAddCategoryDialog();
+const { openDialog: openAddJobSite } = useAddJobSiteDialog();
 const { toggleTheme, themeText, themeIcon } = useTheme();
 
 // actions
 const actions = {
   home: withClose(() => void router.push("/")),
   applications: withClose(() => void router.push("/applications")),
+  categories: withClose(() => void router.push("/categories")),
   jobSites: withClose(() => void router.push("/job-sites")),
 
   addApplication: withClose(() => openAddApplication()),
+  addCategory: withClose(() => openAddCategory()),
   addJobSite: withClose(() => openAddJobSite()),
 
   export: withClose(() => exportAllData()),
@@ -71,6 +76,10 @@ const actions = {
           <FolderOpen class="mr-2 size-4" />
           <span>Go to Applications</span>
         </CommandItem>
+        <CommandItem value="categories" @select="actions.categories">
+          <ListTree class="mr-2 size-4" />
+          <span>Go to Categories</span>
+        </CommandItem>
         <CommandItem value="job-sites" @select="actions.jobSites">
           <Globe class="mr-2 size-4" />
           <span>Go to Job Sites</span>
@@ -81,6 +90,10 @@ const actions = {
         <CommandItem value="application" @select="actions.addApplication">
           <Plus class="mr-2 size-4" />
           <span>Add Application</span>
+        </CommandItem>
+        <CommandItem value="add-category" @select="actions.addCategory">
+          <Plus class="mr-2 size-4" />
+          <span>Add Category</span>
         </CommandItem>
         <CommandItem value="add-job-site" @select="actions.addJobSite">
           <Plus class="mr-2 size-4" />

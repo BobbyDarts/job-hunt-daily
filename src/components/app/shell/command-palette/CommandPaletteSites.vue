@@ -1,7 +1,7 @@
 <!-- // /src/components/app/shell/command-palette/CommandPaletteSites.vue -->
 
 <script setup lang="ts">
-import { Globe } from "lucide-vue-next";
+import { Globe } from "@lucide/vue";
 import { computed } from "vue";
 
 import {
