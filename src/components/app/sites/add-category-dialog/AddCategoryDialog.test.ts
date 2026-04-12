@@ -110,7 +110,11 @@ describe("AddCategoryDialog", () => {
       await user.click(await getButtonByName(/cancel/i));
 
       await waitFor(() => {
-        expect(emitted()["update:open"]?.some(e => e[0] === false)).toBe(true);
+        expect(
+          emitted()["update:open"]?.some(
+            (e: unknown) => (e as unknown[])[0] === false,
+          ),
+        ).toBe(true);
       });
     });
 

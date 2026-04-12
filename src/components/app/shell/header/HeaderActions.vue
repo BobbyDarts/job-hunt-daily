@@ -9,6 +9,7 @@ import {
   CircleHelp,
   Globe,
   ListTree,
+  BarChart2,
 } from "@lucide/vue";
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
@@ -101,6 +102,13 @@ const isMac = computed(
           <RouterLink to="/categories" class="flex items-center">
             <ListTree class="mr-2 size-4" />
             My Categories
+          </RouterLink>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem as-child>
+          <RouterLink to="/reports" class="flex items-center">
+            <BarChart2 class="mr-2 size-4" />
+            My Reports
           </RouterLink>
         </DropdownMenuItem>
 

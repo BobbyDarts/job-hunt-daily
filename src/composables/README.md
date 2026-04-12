@@ -72,7 +72,7 @@ Composables responsible for registering and guarding keyboard interactions. Thes
 Returns a computed `notUsingInput` boolean that is `true` when the currently active element is not an `INPUT` or `TEXTAREA`. Used by `use-command-palette` and `use-keyboard-shortcuts` to guard against shortcuts firing while the user is typing.
 
 ### `use-keyboard-shortcuts`
-Registers all vim-style keyboard shortcuts via `useMagicKeys`. Handles `j`/`k` focus navigation (Home only), `a` for add application, `v` for mark visited, `g`+`a`/`g`+`h`/`g`+`j` navigation sequences, `t` for theme toggle, and `?` for the shortcut reference dialog. Clears site focus state on route change.
+Registers all vim-style keyboard shortcuts via `useMagicKeys`. Handles `j`/`k` focus navigation (Home only), `a` for add application, `v` for mark visited, `g`+`a`/`g`+`h`/`g`+`c`/`g`+`r`/`g`+`j` navigation sequences, `t` for theme toggle, and `?` for the shortcut reference dialog. Clears site focus state on route change.
 
 ---
 
@@ -90,7 +90,23 @@ Generic selection state composable for single and multi-select. Accepts a `getVa
 
 ## `dashboard/`
 
-Composables that compute derived, view-specific data for the dashboard. These sit above the data layer and below the component layer — they transform raw data into what the dashboard views need.
+Composables that compute derived, view-specific data for the dashboard and reports views. These sit above the data layer and below the component layer — they transform raw data into what the views need.
 
 ### `use-category-progress`
 Computes sorted categories (by site count descending), per-category sites (sorted alphabetically), visited counts and progress percentages, and `maxCategoryHeight` for card layout. Results are cached in a `categoryStats` computed — each entry contains `{ category, sites, visitedCount, progress }` — to avoid redundant recalculation. `CategoryCard` consumers should prefer reading `sites` from `categoryStats` rather than calling `getSitesByCategory` separately. Both params are optional — if omitted, data is pulled from `useJobSites()` and `isSiteVisited` from `useVisitedSites()`. Pass `storageKey` and/or `isSiteVisited` explicitly in tests to inject mock data.
+
+### `use-applications-reports`
+Provides derived analytics data for the `/reports` view. Reads from `useApplications` — no storage keys or persistence logic live here. All computeds include deleted applications (reconstructed from history records) to avoid skewing report data.
+
+Exposes:
+- `deletedApplications` — last known snapshot of each deleted application, reconstructed from history records
+- `statusCounts` — current count of applications grouped by status (passthrough of `countByStatus`)
+- `volumeByPeriod` — applications grouped and counted by creation date, bucketed by `periodUnit` from `usePeriodUnit()`; returns `{ label, count }[]` sorted chronologically
+- `statusReach` — count of applications that reached each status at any point in their history, derived from history snapshots
+- `timeInStatus` — average and per-application duration (in days) spent in each status, derived from history snapshots; terminal statuses (`accepted`, `rejected`, `withdrew`) are capped at `updatedAt` rather than growing indefinitely
+
+### `use-period-unit`
+Module-level singleton. Controls the active period unit for `volumeByPeriod` charting. Exposes `state.periodUnit` (`"day" | "week" | "month"`, defaults to `"day"`). Syncs to the URL via `?period=` query param. All callers share the same state instance.
+
+### `use-report-time-range`
+Module-level singleton. Controls the active time range filter for the Volume by Period report. Exposes `state.timeRange` (`"7d" | "30d" | "90d" | "all"`, defaults to `"30d"`) and `TIME_RANGES` (the full list of options for rendering the selector). Syncs to the URL via `?range=` query param. All callers share the same state instance.

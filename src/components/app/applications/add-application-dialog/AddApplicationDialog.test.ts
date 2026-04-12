@@ -337,7 +337,11 @@ describe("AddApplicationDialog", () => {
       await user.click(await getSubmitButton());
 
       await waitFor(() => {
-        expect(emitted()["update:open"]?.some(e => e[0] === false)).toBe(true);
+        expect(
+          emitted()["update:open"]?.some(
+            (e: unknown) => (e as unknown[])[0] === false,
+          ),
+        ).toBe(true);
       });
     });
 
@@ -358,7 +362,11 @@ describe("AddApplicationDialog", () => {
       await user.click(await getCancelButton());
 
       await waitFor(() => {
-        expect(emitted()["update:open"]?.some(e => e[0] === false)).toBe(true);
+        expect(
+          emitted()["update:open"]?.some(
+            (e: unknown) => (e as unknown[])[0] === false,
+          ),
+        ).toBe(true);
       });
     });
 
