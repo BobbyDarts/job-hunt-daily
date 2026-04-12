@@ -23,6 +23,8 @@ import {
   isEqual,
   maxInstant,
   minInstant,
+  toPeriodKey,
+  instantToPlainDate,
 } from "@/lib/time";
 import { withFrozenTime } from "@/test-utils/with-frozen-time";
 
@@ -453,6 +455,84 @@ describe("time utilities", () => {
 
       const min = minInstant(instants);
       expect(min?.toString()).toBe("2026-02-19T14:00:00Z");
+    });
+  });
+
+  describe("instantToPlainDate", () => {
+    beforeEach(() => {
+      setTimeZoneId("America/New_York");
+      return () => resetTimeSource();
+    });
+
+    it("converts an ISO instant string to a PlainDate in local time zone", () => {
+      const date = instantToPlainDate("2026-04-07T14:23:00Z");
+      expect(date).toBeInstanceOf(Temporal.PlainDate);
+      expect(date.toString()).toBe("2026-04-07");
+    });
+
+    it("converts a Temporal.Instant to a PlainDate in local time zone", () => {
+      const instant = Temporal.Instant.from("2026-04-07T14:23:00Z");
+      const date = instantToPlainDate(instant);
+      expect(date.toString()).toBe("2026-04-07");
+    });
+
+    it("accounts for time zone when converting — UTC midnight may be previous day", () => {
+      // 2026-04-07T03:00:00Z = 2026-04-06T23:00:00 in America/New_York (UTC-4)
+      const date = instantToPlainDate("2026-04-07T03:00:00Z");
+      expect(date.toString()).toBe("2026-04-06");
+    });
+  });
+
+  describe("toPeriodKey", () => {
+    beforeEach(() => {
+      setTimeZoneId("America/New_York");
+      return () => resetTimeSource();
+    });
+
+    it("returns ISO date string for 'day' unit", () => {
+      expect(toPeriodKey("2026-04-07T14:23:00Z", "day")).toBe("2026-04-07");
+    });
+
+    it("returns year-month string for 'month' unit", () => {
+      expect(toPeriodKey("2026-04-07T14:23:00Z", "month")).toBe("2026-04");
+    });
+
+    it("zero-pads single-digit months", () => {
+      expect(toPeriodKey("2026-03-07T14:23:00Z", "month")).toBe("2026-03");
+    });
+
+    it("returns the Monday of the week for 'week' unit", () => {
+      // 2026-04-07 is a Tuesday — Monday of that week is 2026-04-06
+      expect(toPeriodKey("2026-04-07T14:23:00Z", "week")).toBe("2026-04-06");
+    });
+
+    it("returns the same day for 'week' when the day is Monday", () => {
+      // 2026-04-06 is a Monday
+      expect(toPeriodKey("2026-04-06T14:23:00Z", "week")).toBe("2026-04-06");
+    });
+
+    it("returns Monday of the week for 'week' when the day is Sunday", () => {
+      // 2026-04-05 is a Sunday — Monday of that week is 2026-03-30
+      expect(toPeriodKey("2026-04-05T14:23:00Z", "week")).toBe("2026-03-30");
+    });
+
+    it("week keys sort chronologically as strings", () => {
+      const keys = [
+        toPeriodKey("2026-04-14T14:23:00Z", "week"),
+        toPeriodKey("2026-03-30T14:23:00Z", "week"),
+        toPeriodKey("2026-04-07T14:23:00Z", "week"),
+      ];
+      expect([...keys].sort()).toEqual([keys[1], keys[2], keys[0]]);
+    });
+
+    it("accepts a Temporal.Instant directly", () => {
+      const instant = Temporal.Instant.from("2026-04-07T14:23:00Z");
+      expect(toPeriodKey(instant, "day")).toBe("2026-04-07");
+    });
+
+    it("accounts for time zone when determining the period", () => {
+      // 2026-04-07T03:00:00Z = 2026-04-06 in America/New_York
+      expect(toPeriodKey("2026-04-07T03:00:00Z", "day")).toBe("2026-04-06");
     });
   });
 

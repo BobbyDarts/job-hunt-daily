@@ -24,6 +24,7 @@ import { useInputGuard } from "./use-input-guard";
  * | `g h`     | Go to Home
  * | `g a`     | Go to Applications
  * | `g c`     | Go to Categories
+ * | `g r`     | Go to Reports
  * | `g j`     | Go to Job Sites
  * | `t`       | Toggle theme
  * | `?`       | Show shortcut reference
@@ -43,7 +44,7 @@ export function useKeyboardShortcuts() {
   const { markVisited } = useVisitedSites();
   const { toggleTheme } = useTheme();
 
-  const { j, k, a, v, g, h, t, c, shift_slash } = useMagicKeys({
+  const { j, k, a, v, g, h, t, c, r, shift_slash } = useMagicKeys({
     passive: false,
   });
 
@@ -81,6 +82,13 @@ export function useKeyboardShortcuts() {
       return;
     }
     if (focusedSite.value) openDialog(focusedSite.value);
+  });
+
+  whenever(logicAnd(r, notUsingInput), () => {
+    if (gPressed) {
+      gPressed = false;
+      void router.push("/reports");
+    }
   });
 
   whenever(logicAnd(c, notUsingInput), () => {

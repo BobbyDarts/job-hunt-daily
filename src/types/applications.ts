@@ -15,6 +15,7 @@ export interface ApplicationStatusInfo {
   color: string;
   description?: string;
   icon?: string; // lucide icon name
+  terminal?: boolean;
 }
 
 const APPLICATION_STATUS_INFO: Record<
@@ -44,18 +45,21 @@ const APPLICATION_STATUS_INFO: Record<
     description: "You accepted their offer",
     color:
       "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300",
+    terminal: true,
   },
   rejected: {
     label: "Rejected",
     description: "Application or interview rejected by the employer",
     color:
       "bg-red-100 text-red-700 border-red-300 dark:bg-red-950/30 dark:text-red-300",
+    terminal: true,
   },
   withdrew: {
     label: "Withdrew",
     description: "You withdrew from the process",
     color:
       "bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-950/30 dark:text-gray-300",
+    terminal: true,
   },
 };
 

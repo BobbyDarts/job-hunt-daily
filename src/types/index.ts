@@ -27,3 +27,6 @@ export {
 
 // Storage types
 export type { VisitedSites } from "./storage";
+
+// Report types
+export type { PeriodUnit } from "./reports";

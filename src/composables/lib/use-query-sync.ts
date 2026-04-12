@@ -18,7 +18,7 @@ export function useQuerySync<
   const router = useRouter();
 
   watch(
-    () => route.query,
+    () => route?.query ?? {},
     query => {
       const next = fromQuery(query);
       Object.assign(state, next);
@@ -31,8 +31,10 @@ export function useQuerySync<
     stateVal => {
       const nextQuery = toQuery(stateVal);
 
-      // Always fully replace, prevent sticking old keys
-      void router.replace({ name: route.name, query: nextQuery });
+      void router.replace({
+        name: route.name,
+        query: { ...(route?.query ?? {}), ...nextQuery },
+      });
     },
     { deep: true },
   );

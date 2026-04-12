@@ -29,22 +29,17 @@ vi.mock("@/components/app/lib", async () => {
     ...actual,
     CategorySelect: {
       template: `
-    <select
-      data-testid="category-select"
-      :value="modelValue"
-      @change="onChange"
-    >
-      <option value="">Select</option>
-      <option value="general-job-boards">General</option>
-    </select>
++    <select
++      data-testid="category-select"
++      :value="modelValue"
++      @change="$emit('update:modelValue', $event.target.value)"
++    >
++      <option value="">Select</option>
++      <option value="general-job-boards">General</option>
++    </select>
   `,
       props: ["modelValue"],
       emits: ["update:modelValue"],
-      methods: {
-        onChange(e) {
-          this.$emit("update:modelValue", e.target.value);
-        },
-      },
     },
     ATSSelect: {
       template: `
@@ -211,6 +206,10 @@ describe("AddJobSiteDialog", () => {
 
     await user.click(await screen.findByRole("button", { name: /cancel/i }));
 
-    expect(emitted()["update:open"]?.some(e => e[0] === false)).toBe(true);
+    expect(
+      emitted()["update:open"]?.some(
+        (e: unknown) => (e as unknown[])[0] === false,
+      ),
+    ).toBe(true);
   });
 });

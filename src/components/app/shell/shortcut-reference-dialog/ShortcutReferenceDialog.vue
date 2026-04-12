@@ -92,6 +92,19 @@ const isMac = computed(
               </div>
             </div>
             <div class="flex items-center justify-between text-sm">
+              <span>Go to Reports</span>
+              <div class="flex gap-1">
+                <kbd
+                  class="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono"
+                  >g</kbd
+                >
+                <kbd
+                  class="px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-mono"
+                  >r</kbd
+                >
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-sm">
               <span>Go to Job Sites</span>
               <div class="flex gap-1">
                 <kbd

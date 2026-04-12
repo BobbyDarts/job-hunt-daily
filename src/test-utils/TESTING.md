@@ -29,6 +29,20 @@ Components with no logic — only mounting and connecting other tested component
 - `DataTable` — renders a TanStack Table instance via `FlexRender`; no independent logic
 - `DataToolbar` — slot-based toolbar layout with a conditional clear button; behavior covered by view tests
 
+### Report chart components
+
+Report components in `src/views/reports/` wrap Chart.js charts. Chart rendering itself is not tested — Chart.js is mocked out entirely. Tests cover only:
+- The title and description render correctly
+- The empty state renders when the composable returns no data
+
+The chart data shape and options logic are covered implicitly by the `useApplicationsReports` composable tests.
+
+**Examples:**
+- `ApplicationStatusCounts` — chart rendering mocked; title and empty state tested
+- `ApplicationVolumeByPeriod` — chart rendering mocked; title and empty state tested
+- `ApplicationStatusReach` — chart rendering mocked; title and empty state tested
+- `ApplicationTimeInStatus` — chart rendering mocked; title and empty state tested
+
 ### Submission/persistence paths in dialog components
 
 Dialog components that call composable methods internally (e.g. `addSite()`, `updateSite()`) do not have submission tests. The persistence logic is covered by the composable test suite. Dialog tests focus on rendering, field population, validation feedback, and open/close behavior only.
@@ -85,3 +99,11 @@ Route names, paths, and navigation behavior are covered implicitly by view smoke
 - If it's already tested in a composable or utility, don't re-test it in a component
 - Prefer testing what the user sees and does over internal state
 - Mocks should be minimal — only mock what the component directly depends on
+- Composables that call `useQuerySync` (e.g. `usePeriodUnit`, `useReportTimeRange`) require a `vue-router` mock in their test files since `useRoute` and `useRouter` are called internally. Mock pattern:
+
+```ts
+vi.mock("vue-router", () => ({
+  useRoute: () => ({ name: "test", query: {} }),
+  useRouter: () => ({ replace: vi.fn() }),
+}));
+```

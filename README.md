@@ -24,6 +24,9 @@ Your daily dashboard. Shows all job site categories with progress bars. Click a 
 ### Applications (`/applications`)
 Full application tracker. Add, edit, and delete applications. Filter by status, site, or search query. Grouped by company.
 
+### Reports (`/reports`)
+Analytics dashboard for your job hunt pipeline. Four reports: Status Counts (donut chart), Volume by Period (bar chart with day/week/month bucketing and time range filtering), Status Reach (how many applications reached each status), and Time in Status (average days per status). All reports include deleted applications to avoid skewing the data.
+
 ### Job Sites (`/job-sites`)
 Manage your job site list. Add, edit, and delete sites and categories directly in the app — no JSON editing required.
 
@@ -37,6 +40,8 @@ Manage your job site list. Add, edit, and delete sites and categories directly i
 | `v` | Mark focused site as visited |
 | `g h` | Go to Home |
 | `g a` | Go to Applications |
+| `g c` | Go to Categories |
+| `g r` | Go to Reports |
 | `g j` | Go to Job Sites |
 | `t` | Toggle theme |
 | `?` | Show shortcut reference |
@@ -110,15 +115,22 @@ npm run typecheck    # TypeScript type check only
 - shadcn-vue / reka-ui
 - TanStack Table
 - VueUse
+- Chart.js + vue-chartjs
 - Vitest + Testing Library
 
 ## Development
 
 ### Code Quality
 
-- **ESLint** — Vue, TypeScript, and import sorting rules
-- **Prettier** — consistent formatting
-- **TypeScript** — strict type checking via `vue-tsc`
+### Pre-commit Hooks
+
+Husky and lint-staged run automatically on every commit:
+
+- ESLint with auto-fix on staged `.js`, `.ts`, `.tsx`, `.vue` files
+- Prettier formatting on all staged files
+- Commits with unfixable lint errors are blocked
+
+To bypass in an emergency: `git commit --no-verify`
 
 ### Recommended VSCode Extensions
 
