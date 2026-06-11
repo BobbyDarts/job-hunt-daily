@@ -5,8 +5,8 @@ import { screen, waitFor, within } from "@testing-library/vue";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { getStatuses } from "@/config/applications-metadata";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
-import { getStatuses } from "@/types";
 
 import { StatusSelect, type StatusSelectProps } from ".";
 

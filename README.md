@@ -13,6 +13,7 @@ A daily job hunting tracker to help you stay consistent with checking job sites,
 - 🔍 Command palette (`⌘K`) for quick navigation and actions
 - ⌨️ Vim-style keyboard shortcuts
 - 💾 All data persists in localStorage
+- ☁️ Optional Supabase backend for cross-device sync
 - 🌙 Light/dark theme support
 - 📦 Export/import all data as JSON
 
@@ -20,6 +21,15 @@ A daily job hunting tracker to help you stay consistent with checking job sites,
 
 ### Home (`/`)
 Your daily dashboard. Shows all job site categories with progress bars. Click a site to open it and mark it visited. Use action buttons on each card to add applications or manage existing ones.
+
+### Welcome (`/welcome`)
+First-visit landing page. Choose between local-only mode (data stays in
+the browser) or Supabase mode (cloud sync, requires account). Only shown
+once — mode preference is persisted.
+
+### Login (`/login`)
+Supabase authentication. Email/password sign-in and sign-up. Switch back
+to local mode at any time.
 
 ### Applications (`/applications`)
 Full application tracker. Add, edit, and delete applications. Filter by status, site, or search query. Grouped by company.
@@ -71,19 +81,20 @@ Header menu → Export... — downloads a full backup including visited sites, a
 ### Import
 Header menu → Import... — restores from a previously exported file. All sections are optional; only present sections are applied.
 
-### Export format (v1.2)
+### Export format (v1.3)
 ```json
 {
-  "version": "1.2",
+  "version": "1.3",
   "exportedAt": "...",
   "dailyChecklist": { "date": "...", "visited": ["..."] },
+  "dailyChecklistHistory": [{ "date": "...", "visitedUrls": ["..."], "totalSites": 0 }],
   "applications": [],
   "applicationHistory": [],
   "jobSites": { "categories": [], "sites": [] }
 }
 ```
 
-Files exported from v1.1 (applications and visited sites only) are still supported on import.
+Files exported from v1.1 and v1.2 are still supported on import.
 
 ## Setup
 ```bash

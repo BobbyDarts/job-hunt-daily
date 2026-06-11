@@ -28,6 +28,7 @@ Components with no logic — only mounting and connecting other tested component
 - `HeaderActions` — navigation links, composable calls, dropdown items
 - `DataTable` — renders a TanStack Table instance via `FlexRender`; no independent logic
 - `DataToolbar` — slot-based toolbar layout with a conditional clear button; behavior covered by view tests
+- `SwitchModeDialog` — warns before mode switch; wired to `useAppMode` and `useDataManagement`; no independent logic
 
 ### Report chart components
 
@@ -79,7 +80,7 @@ Composables in `composables/tables/` combine already-tested primitives (`useData
 
 ### View smoke tests
 
-Views only have basic smoke tests (renders, shows data, shows empty state). Filtering, sorting, URL sync, and dialog interactions are covered by composable and component tests.
+Views only have basic smoke tests (renders, shows data, shows empty state). `Welcome` and `Login` are smoke-tested (renders, key UI elements present) with all composables, repositories, auth, and router mocked. Filtering, sorting, URL sync, and dialog interactions are covered by composable and component tests.
 
 ### Router configuration
 

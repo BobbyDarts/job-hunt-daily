@@ -7,5 +7,6 @@ export type UseApplicationsParams = {
 
 export type UseVisitedSitesParams = {
   storageKey?: string;
+  historyStorageKey?: string;
   skipInitReset?: boolean;
 };

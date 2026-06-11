@@ -28,7 +28,7 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 }>();
 
-const { addCategory, getCategoryBySlug } = useJobSites();
+const { createCategory, getCategoryBySlug } = useJobSites();
 
 // form state
 const formData = ref({
@@ -75,7 +75,7 @@ async function handleSubmit() {
 
   isSubmitting.value = true;
   try {
-    await addCategory({
+    await createCategory({
       name: formData.value.name.trim(),
       description: formData.value.description.trim() || undefined,
     });

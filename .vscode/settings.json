@@ -71,11 +71,13 @@
     "levelsfyi",
     "lucide",
     "myworkdayjobs",
+    "newco",
     "noopener",
     "noreferrer",
     "nums",
     "oklch",
     "oldco",
+    "PGRST",
     "reka",
     "remoteco",
     "remoteok",
@@ -97,6 +99,8 @@
     "techjobsforgood",
     "teksystems",
     "Toptal",
+    "unstub",
+    "upserts",
     "Upwork",
     "usajobs",
     "vaul",
@@ -113,5 +117,6 @@
   "explorer.fileNesting.patterns": {
     "*.vue": "${capture}.test.ts, index.ts",
     "*.ts": "${capture}.test.ts"
-  }
+  },
+  "editor.rulers": [80, 100, 120]
 }

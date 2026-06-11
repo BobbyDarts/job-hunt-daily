@@ -4,29 +4,32 @@
 export type { ATSType } from "./ats";
 
 // Job site types
-export type { JobSite, JobCategory, JobHuntData } from "./job-sites";
+export type {
+  JobSite,
+  JobSiteCreateData,
+  JobSiteUpdateData,
+  JobSiteDb,
+  JobCategory,
+  JobCategoryCreateData,
+  JobCategoryUpdateData,
+  JobCategoryDb,
+  JobHuntData,
+} from "./job-sites";
 
 // Application types
 export type {
   ApplicationStatus,
-  ApplicationStatusInfo,
   ApplicationTag,
-  ApplicationTagCategory,
-  ApplicationTagInfo,
   Application,
+  ApplicationCreateData,
+  ApplicationUpdateData,
+  ApplicationDb,
   ApplicationHistory,
-} from "./applications";
-
-export {
-  getStatusInfo,
-  getStatuses,
-  getTagInfo,
-  getTags,
-  getTagsGroupedByCategory,
+  ApplicationHistoryDb,
 } from "./applications";
 
 // Storage types
-export type { VisitedSites } from "./storage";
+export type { VisitedSites, VisitedSiteHistory } from "./storage";
 
 // Report types
 export type { PeriodUnit } from "./reports";

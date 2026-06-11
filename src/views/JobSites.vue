@@ -46,6 +46,7 @@ const deleteDescription = computed(() =>
   <!-- Page Header -->
   <div class="border-b bg-card">
     <div class="mx-auto px-4 py-3 max-w-7xl">
+      <!-- Top Row -->
       <DataToolbar
         :total="table.getCoreRowModel().rows.length"
         :filtered="table.getFilteredRowModel().rows.length"
@@ -69,10 +70,18 @@ const deleteDescription = computed(() =>
           <h1 class="text-xl font-semibold">Job Sites</h1>
         </template>
 
+        <!-- Actions -->
+        <template #actions>
+          <Button size="sm" @click="openAddJobSite()">
+            <Plus class="size-4 mr-1" />
+            <span class="hidden sm:inline">Add</span>
+          </Button>
+        </template>
+
         <!-- Filters -->
         <template #filters>
-          <!-- Global search -->
-          <div class="relative w-64 shrink-0">
+          <!-- Search -->
+          <div class="relative w-68 shrink-0 whitespace-nowrap">
             <Search
               class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
             />
@@ -83,8 +92,8 @@ const deleteDescription = computed(() =>
             />
           </div>
 
-          <!-- Category filter -->
-          <div class="w-68 shrink-0 whitespace-nowrap">
+          <!-- Category -->
+          <div class="w-68 shrink-0">
             <CategorySelect
               v-model="filters.category"
               placeholder="All Categories"
@@ -92,22 +101,13 @@ const deleteDescription = computed(() =>
             />
           </div>
 
-          <!-- ATS filter -->
-          <div class="w-36 shrink-0">
+          <div class="w-40 shrink-0">
             <ATSSelect
               v-model="filters.ats"
               placeholder="All ATS Types"
               show-all-option
             />
           </div>
-        </template>
-
-        <!-- Actions -->
-        <template #actions>
-          <Button size="sm" @click="openAddJobSite()">
-            <Plus class="size-4 mr-1" />
-            <span class="hidden sm:inline">Add</span>
-          </Button>
         </template>
       </DataToolbar>
     </div>

@@ -9,10 +9,16 @@ import { useTheme } from ".";
 const mockColorMode = ref<"light" | "dark" | "auto">("light");
 const mockSystemDark = ref(false);
 
-vi.mock("@vueuse/core", () => ({
-  useColorMode: () => mockColorMode,
-  usePreferredDark: () => mockSystemDark,
-}));
+vi.mock("@vueuse/core", async importOriginal => {
+  const actual = (await importOriginal()) as Record<string, unknown>;
+
+  return {
+    ...actual,
+    useColorMode: () => mockColorMode,
+    usePreferredDark: () => mockSystemDark,
+    useLocalStorage: vi.fn(),
+  };
+});
 
 // Reset state before each test
 beforeEach(() => {

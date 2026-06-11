@@ -44,6 +44,7 @@ const deleteDescription = computed(() =>
   <!-- Page Header -->
   <div class="border-b bg-card">
     <div class="mx-auto px-4 py-3 max-w-7xl">
+      <!-- Top Row -->
       <DataToolbar
         :total="table.getCoreRowModel().rows.length"
         :filtered="table.getFilteredRowModel().rows.length"
@@ -67,9 +68,16 @@ const deleteDescription = computed(() =>
           <h1 class="text-xl font-semibold">Categories</h1>
         </template>
 
+        <!-- Actions -->
+        <template #actions>
+          <Button size="sm" @click="openAddCategory()">
+            <Plus class="size-4 mr-1" />
+            <span class="hidden sm:inline">Add</span>
+          </Button>
+        </template>
+
         <!-- Filters -->
         <template #filters>
-          <!-- Category filter -->
           <div class="w-68 shrink-0 whitespace-nowrap">
             <CategorySelect
               v-model="filters.category"
@@ -77,14 +85,6 @@ const deleteDescription = computed(() =>
               show-all-option
             />
           </div>
-        </template>
-
-        <!-- Actions -->
-        <template #actions>
-          <Button size="sm" @click="openAddCategory()">
-            <Plus class="size-4 mr-1" />
-            <span class="hidden sm:inline">Add</span>
-          </Button>
         </template>
       </DataToolbar>
     </div>

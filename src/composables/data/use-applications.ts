@@ -1,62 +1,88 @@
 // /src/composables/data/use-applications.ts
 
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import { compareInstants } from "@/lib/time";
+import { getApplicationsRepository } from "@/services/repositories/applications";
 import type {
   Application,
   ApplicationHistory,
+  ApplicationCreateData,
+  ApplicationUpdateData,
   ApplicationStatus,
   ApplicationTag,
 } from "@/types";
 
-import type { UseApplicationsParams } from "./types";
-import { useApplicationsRepository } from "./use-applications-repository";
+// singleton state
+const applications = ref<Application[]>([]);
+const applicationHistory = ref<ApplicationHistory[]>([]);
+const initialized = ref(false);
 
-export function useApplications(params: UseApplicationsParams = {}) {
-  const repo = useApplicationsRepository(params);
-  const applications = repo.applications;
-  const applicationHistory = repo.applicationHistory;
+export function useApplications() {
+  async function refresh(): Promise<void> {
+    const repo = getApplicationsRepository();
+    const [apps, history] = await Promise.all([
+      repo.getAll(),
+      repo.getHistoryAll(),
+    ]);
+    applications.value = apps;
+    applicationHistory.value = history;
+  }
 
-  const addApplication = async (
-    data: Omit<Application, "id" | "createdAt" | "updatedAt">,
-  ): Promise<Application> => {
-    if (!data.company?.trim()) throw new Error("Company name is required");
-    if (!data.position?.trim()) throw new Error("Position is required");
-    if (!data.jobSiteUrl?.trim()) throw new Error("Job site URL is required");
+  async function init(): Promise<void> {
+    await refresh();
+    initialized.value = true;
+  }
 
-    const application = await repo.create(data);
-    return application;
-  };
+  function assertInitialized() {
+    if (!initialized.value) {
+      throw new Error("useApplications not initialized. Call init() first.");
+    }
+  }
 
-  const updateApplication = async (
+  async function createApplication(
+    data: ApplicationCreateData,
+  ): Promise<Application> {
+    const repo = getApplicationsRepository();
+    const created = await repo.create(data);
+    await refresh();
+    return getApplication(created.id)!;
+  }
+
+  async function updateApplication(
     id: string,
-    updates: Partial<Omit<Application, "id" | "createdAt">>,
-  ): Promise<Application | undefined> => {
+    updates: ApplicationUpdateData,
+  ): Promise<Application | undefined> {
     try {
+      const repo = getApplicationsRepository();
       const updated = await repo.update(id, updates);
-      return updated;
+      await refresh();
+      return getApplication(updated.id);
     } catch {
       return undefined;
     }
-  };
+  }
 
-  const deleteApplication = async (id: string): Promise<boolean> => {
+  async function removeApplication(id: string): Promise<boolean> {
     try {
+      const repo = getApplicationsRepository();
       await repo.remove(id);
-      return true;
+      await refresh();
+      return !applications.value.some(a => a.id === id);
     } catch {
       return false;
     }
-  };
+  }
 
-  const getApplication = (id: string): Application | undefined => {
+  function getApplication(id: string): Application | undefined {
+    assertInitialized();
     return applications.value.find(app => app.id === id);
-  };
+  }
 
-  const getApplicationTimeline = (
+  function getApplicationTimeline(
     appId: string,
-  ): (Application | ApplicationHistory)[] => {
+  ): (Application | ApplicationHistory)[] {
+    assertInitialized();
     const history = applicationHistory.value
       .filter(h => h.applicationId === appId)
       .sort((a, b) =>
@@ -65,70 +91,71 @@ export function useApplications(params: UseApplicationsParams = {}) {
           b.historyTimestamp ?? b.updatedAt,
         ),
       );
-
     const current = applications.value.find(a => a.id === appId);
     return current ? [...history, current] : history;
-  };
+  }
 
-  const getStatusChanges = (appId: string) => {
+  function getStatusChanges(appId: string) {
+    assertInitialized();
     const timeline = getApplicationTimeline(appId);
-    const changes: {
+    const changes: Array<{
       from: ApplicationStatus;
       to: ApplicationStatus;
       timestamp: string;
-    }[] = [];
+    }> = [];
 
     for (let i = 1; i < timeline.length; i++) {
-      if (timeline[i].status !== timeline[i - 1].status) {
-        const current = timeline[i];
+      const prev = timeline[i - 1];
+      const curr = timeline[i];
+      if (curr.status !== prev.status) {
         changes.push({
-          from: timeline[i - 1].status,
-          to: timeline[i].status,
+          from: prev.status,
+          to: curr.status,
           timestamp:
-            "historyTimestamp" in current
-              ? current.historyTimestamp
-              : current.updatedAt,
+            "historyTimestamp" in curr ? curr.historyTimestamp : curr.updatedAt,
         });
       }
     }
 
     return changes;
-  };
+  }
 
   const totalCount = computed(() => applications.value.length);
 
   const countByStatus = computed(() => {
     const counts: Partial<Record<ApplicationStatus, number>> = {};
-    applications.value.forEach(app => {
-      counts[app.status] = (counts[app.status] || 0) + 1;
-    });
+    for (const app of applications.value) {
+      counts[app.status] = (counts[app.status] ?? 0) + 1;
+    }
     return counts;
   });
 
-  const filterByStatus = (status: ApplicationStatus): Application[] => {
-    return applications.value.filter(app => app.status === status);
-  };
+  function filterByStatus(status: ApplicationStatus): Application[] {
+    return applications.value.filter(a => a.status === status);
+  }
 
-  const filterByTag = (tag: ApplicationTag): Application[] => {
-    return applications.value.filter(app => app.tags?.includes(tag));
-  };
+  function filterByTag(tag: ApplicationTag): Application[] {
+    return applications.value.filter(a => a.tags?.includes(tag));
+  }
 
-  // Search by company or position
-  const search = (query: string): Application[] => {
-    const lowerQuery = query.toLowerCase();
+  function search(query: string): Application[] {
+    const q = query.toLowerCase();
     return applications.value.filter(
-      app =>
-        app.company.toLowerCase().includes(lowerQuery) ||
-        app.position.toLowerCase().includes(lowerQuery),
+      a =>
+        a.company.toLowerCase().includes(q) ||
+        a.position.toLowerCase().includes(q),
     );
-  };
+  }
 
   return {
+    refresh,
     applications,
     applicationHistory,
-    addApplication,
+    initialized,
+    init,
+    createApplication,
     updateApplication,
-    deleteApplication,
+    removeApplication,
     getApplication,
     getApplicationTimeline,
     getStatusChanges,

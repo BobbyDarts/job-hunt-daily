@@ -15,8 +15,8 @@ import { computed } from "vue";
 import { Bar } from "vue-chartjs";
 
 import { useApplicationsReports } from "@/composables/dashboard";
+import { getStatuses, getStatusInfo } from "@/config/applications-metadata";
 import { getStatusChartColor, resolveChartColor } from "@/lib/chart-utils";
-import { getStatuses, getStatusInfo } from "@/types";
 
 ChartJS.register(
   Title,

@@ -32,7 +32,7 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 }>();
 
-const { addSite, getSiteByUrl } = useJobSites();
+const { createSite, getSiteByUrl } = useJobSites();
 
 // -------------------------
 // Form state
@@ -141,7 +141,7 @@ async function handleSubmit() {
   validateUrl();
   if (!isValid.value) return;
 
-  await addSite({
+  await createSite({
     name: formData.value.name.trim(),
     url: formData.value.url.trim(),
     categoryId: formData.value.categoryId,

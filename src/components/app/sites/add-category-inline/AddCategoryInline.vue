@@ -19,7 +19,7 @@ const emit = defineEmits<{
   added: [categoryId: string];
 }>();
 
-const { addCategory } = useJobSites();
+const { createCategory } = useJobSites();
 
 const isAdding = ref(false);
 const name = ref("");
@@ -31,7 +31,7 @@ async function handleAdd() {
 
   isSubmitting.value = true;
   try {
-    const category = await addCategory({
+    const category = await createCategory({
       name: name.value.trim(),
       description: description.value.trim() || undefined,
     });

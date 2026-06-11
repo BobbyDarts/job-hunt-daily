@@ -19,9 +19,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useApplications } from "@/composables/data";
+import { getStatusInfo, getTagInfo } from "@/config/applications-metadata";
 import { displayDate, getToday, toPlainDate } from "@/lib/time";
 import type { Application } from "@/types";
-import { getStatusInfo, getTagInfo } from "@/types";
 
 export interface Props {
   application: Application;
@@ -33,7 +33,7 @@ const emit = defineEmits<{
   edit: [];
 }>();
 
-const { deleteApplication } = useApplications();
+const { removeApplication } = useApplications();
 
 const statusInfo = computed(() => getStatusInfo(props.application.status));
 
@@ -61,7 +61,7 @@ const deleteDescription = computed(
 );
 
 async function handleDelete() {
-  const deleted = await deleteApplication(props.application.id);
+  const deleted = await removeApplication(props.application.id);
   if (deleted) {
     toast.success("Application deleted successfully");
   } else {

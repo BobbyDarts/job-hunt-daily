@@ -22,9 +22,9 @@ import {
 import { useApplications, useJobSites } from "@/composables/data";
 import { useQuerySync, useToolbarState } from "@/composables/lib";
 import { useAddApplicationDialog } from "@/composables/ui";
+import { getStatuses, getStatusInfo } from "@/config/applications-metadata";
 import { comparePlainDate } from "@/lib/time";
 import type { Application, ApplicationStatus } from "@/types";
-import { getStatuses, getStatusInfo } from "@/types";
 
 type ApplicationFilters = {
   search: string;
@@ -145,6 +145,7 @@ const { hasActiveFilters, clear } = useToolbarState(filters);
     <div class="mx-auto px-4 py-3 max-w-7xl">
       <!-- Top Row -->
       <DataToolbar :has-active-filters="hasActiveFilters" @clear="clear">
+        <!-- Back -->
         <template #back>
           <Button
             variant="ghost"
@@ -156,22 +157,34 @@ const { hasActiveFilters, clear } = useToolbarState(filters);
           </Button>
         </template>
 
+        <!-- Title -->
         <template #title>
           <h1 class="text-xl font-semibold">Applications</h1>
         </template>
 
+        <!-- Actions -->
+        <template #actions>
+          <Button size="sm" @click="isAddDialogOpen = true">
+            <Plus class="size-4 mr-1" />
+            <span class="hidden sm:inline">Add</span>
+          </Button>
+        </template>
+
+        <!-- Filters -->
         <template #filters>
-          <div class="relative w-64 shrink-0">
+          <!-- Search -->
+          <div class="relative w-68 shrink-0 whitespace-nowrap">
             <Search
               class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
             />
             <Input
               v-model="filters.search"
-              placeholder="Search..."
+              placeholder="Search company or position..."
               class="pl-8 h-9"
             />
           </div>
 
+          <!-- Status -->
           <div class="w-36 shrink-0">
             <StatusSelect
               v-model="filters.status"
@@ -180,6 +193,7 @@ const { hasActiveFilters, clear } = useToolbarState(filters);
             />
           </div>
 
+          <!-- Site -->
           <div class="w-40 shrink-0">
             <SiteSelect
               v-model="filters.site"
@@ -191,13 +205,7 @@ const { hasActiveFilters, clear } = useToolbarState(filters);
           </div>
         </template>
 
-        <template #actions>
-          <Button size="sm" @click="isAddDialogOpen = true">
-            <Plus class="size-4 mr-1" />
-            <span class="hidden sm:inline">Add</span>
-          </Button>
-        </template>
-
+        <!-- Stats -->
         <template #stats>
           <Tooltip>
             <TooltipTrigger as-child>

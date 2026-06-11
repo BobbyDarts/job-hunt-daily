@@ -16,7 +16,7 @@ export function useJobSiteTable() {
   };
 
   // composables
-  const { allSitesWithCategory, deleteSite } = useJobSites();
+  const { allSitesWithCategory, removeSite } = useJobSites();
 
   // reactive filters
   const filters = reactive<JobSiteFilters>({
@@ -53,7 +53,7 @@ export function useJobSiteTable() {
 
   async function handleDelete() {
     if (!siteToDelete.value) return;
-    const deleted = await deleteSite(siteToDelete.value.id);
+    const deleted = await removeSite(siteToDelete.value.id);
     if (deleted) toast.success("Site deleted successfully");
     else toast.error("Failed to delete site");
     siteToDelete.value = null;

@@ -8,8 +8,8 @@ import {
   type BaseSelectOption,
   type BaseSelectProps,
 } from "@/components/app/lib";
+import { getTags } from "@/config/applications-metadata";
 import type { ApplicationTag } from "@/types";
-import { getTags } from "@/types";
 
 export interface Props extends Partial<BaseSelectProps> {
   modelValue: ApplicationTag[];

@@ -5,9 +5,9 @@ import { screen } from "@testing-library/vue";
 import { describe, it, expect } from "vitest";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { getTags } from "@/config/applications-metadata";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
 import type { ApplicationTag } from "@/types";
-import { getTags } from "@/types";
 
 import { TagsMultiSelect, type TagsMultiSelectProps } from ".";
 

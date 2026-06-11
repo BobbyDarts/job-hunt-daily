@@ -25,5 +25,5 @@ export function usePeriodUnit() {
     },
   });
 
-  return { state };
+  return { state, VALID_PERIOD_UNITS };
 }

@@ -5,9 +5,9 @@ import { screen, waitFor } from "@testing-library/vue";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { getStatuses } from "@/config/applications-metadata";
 import { createMockApplication, mockApplications } from "@/test-utils/mocks";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
-import { getStatuses } from "@/types";
 
 import { ApplicationCard, type ApplicationCardProps } from ".";
 

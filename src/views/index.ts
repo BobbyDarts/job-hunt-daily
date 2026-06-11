@@ -5,4 +5,5 @@ export { default as Applications } from "./Applications.vue";
 export { default as Categories } from "./Categories.vue";
 export { default as Reports } from "./Reports.vue";
 export { default as JobSites } from "./JobSites.vue";
+export { default as Login } from "./Login.vue";
 export { default as NotFound } from "./NotFound.vue";
