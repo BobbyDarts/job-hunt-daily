@@ -1,134 +1,133 @@
 // /src/composables/data/use-data-management.test.ts
 
-import { Temporal } from "@js-temporal/polyfill";
+import { flushPromises } from "@vue/test-utils";
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { nextTick } from "vue";
 
-import { getNow, toInstant, toPlainDate } from "@/lib/time";
+import { getNow } from "@/lib/time";
 import { withFrozenTime } from "@/test-utils/with-frozen-time";
-import type { Application, VisitedSites } from "@/types";
+import type { Application, VisitedSiteHistory, VisitedSites } from "@/types";
 
-import {
-  TEST_APPLICATIONS_HISTORY_STORAGE_KEY,
-  TEST_APPLICATIONS_STORAGE_KEY,
-  TEST_JOB_SITES_STORAGE_KEY,
-  TEST_VISITED_SITES_STORAGE_KEY,
-} from "./keys";
-import type { UseDataManagementParams } from "./use-data-management";
 import { useDataManagement } from "./use-data-management";
 
-describe("useDataManagement", () => {
-  const useDataManagementParams: Partial<UseDataManagementParams> = {
-    applicationStorageKey: TEST_APPLICATIONS_STORAGE_KEY,
-    applicationHistoryStorageKey: TEST_APPLICATIONS_HISTORY_STORAGE_KEY,
-    visitedSitesStorageKey: TEST_VISITED_SITES_STORAGE_KEY,
-    jobSitesStorageKey: TEST_JOB_SITES_STORAGE_KEY,
-  };
+const mockAppRepo = vi.hoisted(() => ({
+  getAll: vi.fn(),
+  getHistoryAll: vi.fn(),
+  setState: vi.fn(),
+}));
 
+const mockJobSitesRepo = vi.hoisted(() => ({
+  getSites: vi.fn(),
+  getCategories: vi.fn(),
+  setState: vi.fn(),
+}));
+
+const mockVisitedRepo = vi.hoisted(() => ({
+  serialize: vi.fn(),
+  hydrate: vi.fn(),
+}));
+
+vi.mock(
+  "@/services/repositories/applications/create-applications-repository",
+  () => ({
+    getApplicationsRepository: vi.fn(() => mockAppRepo),
+  }),
+);
+
+vi.mock(
+  "@/services/repositories/job-sites/create-job-sites-repository",
+  () => ({
+    getJobSitesRepository: vi.fn(() => mockJobSitesRepo),
+  }),
+);
+
+vi.mock(
+  "@/services/repositories/visited-sites/create-visited-sites-repository",
+  () => ({
+    getVisitedSitesRepository: vi.fn(() => mockVisitedRepo),
+  }),
+);
+
+const mockRefreshApplications = vi.hoisted(() =>
+  vi.fn().mockResolvedValue(undefined),
+);
+const mockRefreshJobSites = vi.hoisted(() =>
+  vi.fn().mockResolvedValue(undefined),
+);
+const mockRefreshVisitedSites = vi.hoisted(() =>
+  vi.fn().mockResolvedValue(undefined),
+);
+
+vi.mock("@/composables/data/use-applications", () => ({
+  useApplications: () => ({ refresh: mockRefreshApplications }),
+}));
+
+vi.mock("@/composables/data/use-job-sites", () => ({
+  useJobSites: () => ({ refresh: mockRefreshJobSites }),
+}));
+
+vi.mock("@/composables/data/use-visited-sites", () => ({
+  useVisitedSites: () => ({ refresh: mockRefreshVisitedSites }),
+}));
+
+function makeApp(overrides: Partial<Application> = {}): Application {
+  return {
+    id: "app_1",
+    company: "Tech Co",
+    position: "Developer",
+    jobSiteId: "techco",
+    jobSiteUrl: "https://techco.com",
+    status: "applied",
+    appliedDate: "2026-02-03",
+    createdAt: "2026-02-03T10:00:00Z",
+    updatedAt: "2026-02-03T10:00:00Z",
+    ...overrides,
+  };
+}
+
+function makeToday(visited: string[] = []): VisitedSites {
+  return { date: "2026-02-03", visited };
+}
+
+function makeHistory(entries: Partial<VisitedSiteHistory>[] = []) {
+  return entries.map(e => ({
+    date: e.date ?? "2026-02-02",
+    visitedUrls: e.visitedUrls ?? [],
+    totalSites: e.totalSites ?? 5,
+  }));
+}
+
+describe("useDataManagement", () => {
   beforeEach(() => {
-    localStorage.clear();
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
+    mockAppRepo.getAll.mockResolvedValue([]);
+    mockAppRepo.getHistoryAll.mockResolvedValue([]);
+    mockAppRepo.setState.mockResolvedValue(undefined);
+    mockJobSitesRepo.getSites.mockResolvedValue([]);
+    mockJobSitesRepo.getCategories.mockResolvedValue([]);
+    mockJobSitesRepo.setState.mockResolvedValue(undefined);
+    mockVisitedRepo.serialize.mockResolvedValue({
+      today: makeToday(),
+      history: [],
+    });
+    mockVisitedRepo.hydrate.mockResolvedValue(undefined);
+    mockRefreshApplications.mockResolvedValue(undefined);
+    mockRefreshJobSites.mockResolvedValue(undefined);
+    mockRefreshVisitedSites.mockResolvedValue(undefined);
   });
 
   describe("exportAllData", () => {
-    it("exports both visited sites and applications as JSON", async () => {
+    it("exports correct data structure with version 1.3", async () => {
       await withFrozenTime({
         now: "2026-02-03T15:00:00Z",
         fn: async () => {
-          const visitedData: VisitedSites = {
-            date: "2026-02-03",
-            visited: ["https://example.com", "https://test.com"],
-          };
+          const apps = [makeApp()];
+          const today = makeToday(["https://example.com"]);
+          const history = makeHistory([{ date: "2026-02-02" }]);
 
-          const applicationsData: Application[] = [
-            {
-              id: "app_1",
-              company: "Tech Co",
-              position: "Developer",
-              jobSiteId: "techco",
-              jobSiteUrl: "https://techco.com",
-              status: "applied",
-              appliedDate: toPlainDate("2026-02-03").toString(),
-              createdAt: toInstant("2026-02-03T10:00:00Z").toString(),
-              updatedAt: toInstant("2026-02-03T10:00:00Z").toString(),
-            },
-          ];
+          mockAppRepo.getAll.mockResolvedValue(apps);
+          mockVisitedRepo.serialize.mockResolvedValue({ today, history });
 
-          localStorage.setItem(
-            TEST_VISITED_SITES_STORAGE_KEY,
-            JSON.stringify(visitedData),
-          );
-          localStorage.setItem(
-            TEST_APPLICATIONS_STORAGE_KEY,
-            JSON.stringify(applicationsData),
-          );
-
-          const { exportAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
-
-          const mockClick = vi.fn();
-          const mockAnchor = document.createElement("a");
-          mockAnchor.click = mockClick;
-
-          vi.spyOn(document, "createElement").mockReturnValue(mockAnchor);
-          const createObjectURLSpy = vi
-            .spyOn(URL, "createObjectURL")
-            .mockReturnValue("blob:mock-url");
-          const revokeObjectURLSpy = vi.spyOn(URL, "revokeObjectURL");
-
-          await exportAllData();
-          await nextTick();
-
-          expect(createObjectURLSpy).toHaveBeenCalled();
-          const blobCall = createObjectURLSpy.mock.calls[0][0] as Blob;
-          expect(blobCall.type).toBe("application/json");
-
-          expect(mockAnchor.href).toBe("blob:mock-url");
-          expect(mockAnchor.download).toMatch(/^job-hunt-backup-\d+\.json$/);
-          expect(mockClick).toHaveBeenCalled();
-          expect(revokeObjectURLSpy).toHaveBeenCalledWith("blob:mock-url");
-        },
-      });
-    });
-
-    it("exports correct data structure", async () => {
-      await withFrozenTime({
-        now: "2026-02-03T15:00:00Z",
-        fn: async () => {
-          const visitedData: VisitedSites = {
-            date: "2026-02-03",
-            visited: ["https://example.com"],
-          };
-
-          const applicationsData: Application[] = [
-            {
-              id: "app_1",
-              company: "Tech Co",
-              position: "Developer",
-              jobSiteId: "techco",
-              jobSiteUrl: "https://techco.com",
-              status: "interviewing",
-              appliedDate: toPlainDate("2026-02-03").toString(),
-              createdAt: toInstant("2026-02-03T10:00:00Z").toString(),
-              updatedAt: toInstant("2026-02-03T10:00:00Z").toString(),
-              tags: ["virtual"],
-              notes: "Test notes",
-            },
-          ];
-
-          localStorage.setItem(
-            TEST_VISITED_SITES_STORAGE_KEY,
-            JSON.stringify(visitedData),
-          );
-          localStorage.setItem(
-            TEST_APPLICATIONS_STORAGE_KEY,
-            JSON.stringify(applicationsData),
-          );
-
-          const { exportAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
+          const { exportAllData } = useDataManagement();
 
           let capturedBlob: Blob | null = null;
           vi.spyOn(URL, "createObjectURL").mockImplementation(
@@ -142,28 +141,28 @@ describe("useDataManagement", () => {
             href: "",
             download: "",
           } as unknown as HTMLAnchorElement);
+          vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
           await exportAllData();
-          await nextTick();
+          await flushPromises();
 
           const text = await capturedBlob!.text();
-          const exportedData = JSON.parse(text);
+          const exported = JSON.parse(text);
 
-          expect(exportedData).toHaveProperty("version", "1.2");
-          expect(exportedData).toHaveProperty("exportedAt");
-          expect(exportedData.dailyChecklist).toEqual(visitedData);
-          expect(exportedData.applications).toEqual(applicationsData);
+          expect(exported.version).toBe("1.3");
+          expect(exported.exportedAt).toBeDefined();
+          expect(exported.dailyChecklist).toEqual(today);
+          expect(exported.dailyChecklistHistory).toEqual(history);
+          expect(exported.applications).toEqual(apps);
         },
       });
     });
 
-    it("exports empty data when no data exists", async () => {
+    it("omits empty sections from export", async () => {
       await withFrozenTime({
         now: "2026-02-03T15:00:00Z",
         fn: async () => {
-          const { exportAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
+          const { exportAllData } = useDataManagement();
 
           let capturedBlob: Blob | null = null;
           vi.spyOn(URL, "createObjectURL").mockImplementation(
@@ -177,26 +176,29 @@ describe("useDataManagement", () => {
             href: "",
             download: "",
           } as unknown as HTMLAnchorElement);
+          vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
           await exportAllData();
-          await nextTick();
+          await flushPromises();
 
           const text = await capturedBlob!.text();
-          const exportedData = JSON.parse(text);
+          const exported = JSON.parse(text);
 
-          expect(exportedData.applications).toBeUndefined();
-          expect(exportedData.dailyChecklist).toBeUndefined();
+          expect(exported.dailyChecklist).toBeUndefined();
+          expect(exported.dailyChecklistHistory).toBeUndefined();
+          expect(exported.applications).toBeUndefined();
+          expect(exported.applicationHistory).toBeUndefined();
+          expect(exported.jobSites).toBeUndefined();
         },
       });
     });
 
-    it("includes timestamp in exported data", async () => {
+    it("includes timestamp in export", async () => {
       await withFrozenTime({
         now: "2026-02-03T15:00:00Z",
         fn: async () => {
-          const { exportAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
+          const { exportAllData } = useDataManagement();
+          const expectedTime = getNow().toString();
 
           let capturedBlob: Blob | null = null;
           vi.spyOn(URL, "createObjectURL").mockImplementation(
@@ -210,418 +212,216 @@ describe("useDataManagement", () => {
             href: "",
             download: "",
           } as unknown as HTMLAnchorElement);
+          vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
-          const beforeExport = getNow().toString();
           await exportAllData();
-          await nextTick();
-          const afterExport = getNow().toString();
+          await flushPromises();
 
-          const text = await capturedBlob!.text();
-          const exportedData = JSON.parse(text);
-
-          expect(exportedData.exportedAt).toBeDefined();
-          expect(exportedData.exportedAt).toMatch(
-            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
-          );
-
-          expect(exportedData.exportedAt >= beforeExport).toBe(true);
-          expect(exportedData.exportedAt <= afterExport).toBe(true);
+          const exported = JSON.parse(await capturedBlob!.text());
+          expect(exported.exportedAt).toBe(expectedTime);
         },
       });
     });
   });
 
   describe("importAllData", () => {
-    it("imports both visited sites and applications from JSON file", async () => {
-      await withFrozenTime({
-        now: "2026-02-03T15:00:00Z",
-        fn: async () => {
-          const { importAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
+    function makeFile(data: object): File {
+      return new File([JSON.stringify(data)], "backup.json", {
+        type: "application/json",
+      });
+    }
 
-          const mockData = {
-            version: "1.1",
-            exportedAt: "2026-02-03T10:00:00Z",
-            dailyChecklist: {
-              date: "2026-02-03",
-              visited: ["https://imported.com"],
-            },
-            applications: [
-              {
-                id: "app_1",
-                company: "Imported Co",
-                position: "Developer",
-                jobSiteUrl: "https://imported.com",
-                status: "applied" as const,
-                appliedDate: toPlainDate("2026-02-03").toString(),
-                createdAt: toInstant("2026-02-03T10:00:00Z").toString(),
-                updatedAt: toInstant("2026-02-03T10:00:00Z").toString(),
-              },
-            ],
-          };
+    it("imports v1.3 file with dailyChecklistHistory", async () => {
+      const today = makeToday(["https://example.com"]);
+      const history = makeHistory([{ date: "2026-02-02" }]);
 
-          const file = new File([JSON.stringify(mockData)], "backup.json", {
-            type: "application/json",
-          });
+      const { importAllData } = useDataManagement();
+      await importAllData(
+        makeFile({
+          version: "1.3",
+          exportedAt: "2026-02-03T10:00:00Z",
+          dailyChecklist: today,
+          dailyChecklistHistory: history,
+        }),
+      );
 
-          await importAllData(file);
-          await nextTick();
+      expect(mockVisitedRepo.hydrate).toHaveBeenCalledWith({ today, history });
+    });
 
-          const visitedSites = JSON.parse(
-            localStorage.getItem(TEST_VISITED_SITES_STORAGE_KEY)!,
-          );
-          const applications = JSON.parse(
-            localStorage.getItem(TEST_APPLICATIONS_STORAGE_KEY)!,
-          );
+    it("imports v1.2 file without dailyChecklistHistory", async () => {
+      const today = makeToday(["https://example.com"]);
 
-          expect(visitedSites).toEqual(mockData.dailyChecklist);
-          expect(applications).toEqual(mockData.applications);
-        },
+      const { importAllData } = useDataManagement();
+      await importAllData(
+        makeFile({
+          version: "1.2",
+          exportedAt: "2026-02-03T10:00:00Z",
+          dailyChecklist: today,
+        }),
+      );
+
+      expect(mockVisitedRepo.hydrate).toHaveBeenCalledWith({
+        today,
+        history: [],
       });
     });
 
-    it("overwrites existing data when importing", async () => {
-      await withFrozenTime({
-        now: "2026-02-03T15:00:00Z",
-        fn: async () => {
-          const existingVisited: VisitedSites = {
-            date: "2026-02-03",
-            visited: ["https://old.com"],
-          };
-          const existingApps: Application[] = [
-            {
-              id: "old_app",
-              company: "Old Co",
-              position: "Dev",
-              jobSiteId: "oldco",
-              jobSiteUrl: "https://old.com",
-              status: "rejected",
-              appliedDate: toPlainDate("2026-02-02").toString(),
-              createdAt: toInstant("2026-02-02T10:00:00Z").toString(),
-              updatedAt: toInstant("2026-02-02T10:00:00Z").toString(),
-            },
-          ];
+    it("imports v1.1 file", async () => {
+      const today = makeToday(["https://example.com"]);
 
-          localStorage.setItem(
-            TEST_VISITED_SITES_STORAGE_KEY,
-            JSON.stringify(existingVisited),
-          );
-          localStorage.setItem(
-            TEST_APPLICATIONS_STORAGE_KEY,
-            JSON.stringify(existingApps),
-          );
+      const { importAllData } = useDataManagement();
+      await importAllData(
+        makeFile({
+          version: "1.1",
+          exportedAt: "2026-02-03T10:00:00Z",
+          dailyChecklist: today,
+          applications: [],
+        }),
+      );
 
-          const { importAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
-
-          const newData = {
-            version: "1.1",
-            exportedAt: "2026-02-03T10:00:00Z",
-            dailyChecklist: {
-              date: "2026-02-03",
-              visited: ["https://new.com"],
-            },
-            applications: [
-              {
-                id: "new_app",
-                company: "New Co",
-                position: "Engineer",
-                jobSiteUrl: "https://new.com",
-                status: "interviewing" as const,
-                appliedDate: toPlainDate("2026-02-03").toString(),
-                createdAt: toInstant("2026-02-03T10:00:00Z").toString(),
-                updatedAt: toInstant("2026-02-03T10:00:00Z").toString(),
-              },
-            ],
-          };
-
-          const file = new File([JSON.stringify(newData)], "backup.json", {
-            type: "application/json",
-          });
-
-          await importAllData(file);
-          await nextTick();
-
-          const visitedSites = JSON.parse(
-            localStorage.getItem(TEST_VISITED_SITES_STORAGE_KEY)!,
-          );
-          const applications = JSON.parse(
-            localStorage.getItem(TEST_APPLICATIONS_STORAGE_KEY)!,
-          );
-
-          expect(visitedSites).toEqual(newData.dailyChecklist);
-          expect(applications).toEqual(newData.applications);
-          expect(visitedSites).not.toEqual(existingVisited);
-          expect(applications).not.toEqual(existingApps);
-        },
+      expect(mockVisitedRepo.hydrate).toHaveBeenCalledWith({
+        today,
+        history: [],
       });
     });
 
-    it("rejects invalid JSON", async () => {
-      await withFrozenTime({
-        now: "2026-02-03T15:00:00Z",
-        fn: async () => {
-          const { importAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
+    it("imports applications and history", async () => {
+      const apps = [makeApp()];
 
-          const file = new File(["invalid json {{{"], "backup.json", {
-            type: "application/json",
-          });
+      const { importAllData } = useDataManagement();
+      await importAllData(
+        makeFile({
+          version: "1.3",
+          exportedAt: "2026-02-03T10:00:00Z",
+          applications: apps,
+          applicationHistory: [],
+        }),
+      );
 
-          await expect(importAllData(file)).rejects.toThrow();
-        },
-      });
-    });
-
-    it("imports successfully without dailyChecklist", async () => {
-      await withFrozenTime({
-        now: "2026-02-03T15:00:00Z",
-        fn: async () => {
-          const { importAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
-
-          const data = {
-            version: "1.2",
-            exportedAt: "2026-02-03T10:00:00Z",
-            applications: [],
-          };
-
-          const file = new File([JSON.stringify(data)], "backup.json", {
-            type: "application/json",
-          });
-
-          await expect(importAllData(file)).resolves.not.toThrow();
-        },
-      });
-    });
-
-    it("imports successfully without applications", async () => {
-      await withFrozenTime({
-        now: "2026-02-03T15:00:00Z",
-        fn: async () => {
-          const { importAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
-
-          const data = {
-            version: "1.2",
-            exportedAt: "2026-02-03T10:00:00Z",
-            dailyChecklist: { date: "2026-02-03", visited: [] },
-          };
-
-          const file = new File([JSON.stringify(data)], "backup.json", {
-            type: "application/json",
-          });
-
-          await expect(importAllData(file)).resolves.not.toThrow();
-        },
-      });
-    });
-
-    it("imports data with all optional application fields", async () => {
-      await withFrozenTime({
-        now: "2026-02-03T15:00:00Z",
-        fn: async () => {
-          const { importAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
-
-          const mockData = {
-            version: "1.1",
-            exportedAt: "2026-02-03T10:00:00Z",
-            dailyChecklist: {
-              date: "2026-02-03",
-              visited: ["https://example.com"],
-            },
-            applications: [
-              {
-                id: "app_1",
-                company: "Tech Co",
-                position: "Developer",
-                jobSiteUrl: "https://techco.com",
-                status: "interviewing" as const,
-                appliedDate: toPlainDate("2026-02-03").toString(),
-                createdAt: toInstant("2026-02-03T10:00:00Z").toString(),
-                updatedAt: toInstant("2026-02-03T10:00:00Z").toString(),
-                atsType: "greenhouse" as const,
-                tags: ["phone_screen", "technical"] as const,
-                notes: "Great conversation",
-                followUpDate: Temporal.PlainDate.from("2026-02-10").toString(),
-              },
-            ],
-          };
-
-          const file = new File([JSON.stringify(mockData)], "backup.json", {
-            type: "application/json",
-          });
-
-          await importAllData(file);
-          await nextTick();
-
-          const applications = JSON.parse(
-            localStorage.getItem(TEST_APPLICATIONS_STORAGE_KEY)!,
-          );
-          expect(applications[0]).toEqual(mockData.applications[0]);
-          expect(applications[0].atsType).toBe("greenhouse");
-          expect(applications[0].tags).toEqual(["phone_screen", "technical"]);
-          expect(applications[0].notes).toBe("Great conversation");
-          expect(applications[0].followUpDate).toBe("2026-02-10");
-        },
+      expect(mockAppRepo.setState).toHaveBeenCalledWith({
+        applications: apps,
+        history: [],
       });
     });
 
     it("imports jobSites when present", async () => {
-      await withFrozenTime({
-        now: "2026-02-03T15:00:00Z",
-        fn: async () => {
-          const { importAllData } = useDataManagement({
-            ...useDataManagementParams,
-            jobSitesStorageKey: TEST_JOB_SITES_STORAGE_KEY,
-          });
+      const jobSites = {
+        categories: [
+          {
+            id: "general",
+            name: "General",
+            createdAt: "2026-02-03T10:00:00Z",
+            updatedAt: "2026-02-03T10:00:00Z",
+          },
+        ],
+        sites: [
+          {
+            id: "linkedin",
+            name: "LinkedIn",
+            url: "https://linkedin.com",
+            categoryId: "general",
+            createdAt: "2026-02-03T10:00:00Z",
+            updatedAt: "2026-02-03T10:00:00Z",
+          },
+        ],
+      };
 
-          const data = {
-            version: "1.2",
-            exportedAt: "2026-02-03T10:00:00Z",
-            jobSites: {
-              categories: [{ id: "general", name: "General" }],
-              sites: [
-                {
-                  id: "linkedin",
-                  name: "LinkedIn",
-                  url: "https://linkedin.com",
-                  categoryId: "general",
-                },
-              ],
-            },
-          };
+      const { importAllData } = useDataManagement();
+      await importAllData(
+        makeFile({
+          version: "1.3",
+          exportedAt: "2026-02-03T10:00:00Z",
+          jobSites,
+        }),
+      );
 
-          const file = new File([JSON.stringify(data)], "backup.json", {
-            type: "application/json",
-          });
-
-          await importAllData(file);
-          await nextTick();
-
-          const jobSites = JSON.parse(
-            localStorage.getItem(TEST_JOB_SITES_STORAGE_KEY)!,
-          );
-          expect(jobSites.categories).toHaveLength(1);
-          expect(jobSites.sites).toHaveLength(1);
-          expect(jobSites.sites[0].name).toBe("LinkedIn");
-        },
-      });
+      expect(mockJobSitesRepo.setState).toHaveBeenCalledWith(jobSites);
     });
 
-    it("accepts v1.1 files without jobSites", async () => {
-      await withFrozenTime({
-        now: "2026-02-03T15:00:00Z",
-        fn: async () => {
-          const { importAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
+    it("does not call hydrate when dailyChecklist absent", async () => {
+      const { importAllData } = useDataManagement();
+      await importAllData(
+        makeFile({
+          version: "1.3",
+          exportedAt: "2026-02-03T10:00:00Z",
+          applications: [],
+        }),
+      );
 
-          const data = {
-            version: "1.1",
-            exportedAt: "2026-02-03T10:00:00Z",
-            dailyChecklist: {
-              date: "2026-02-03",
-              visited: ["https://example.com"],
-            },
-            applications: [],
-          };
+      expect(mockVisitedRepo.hydrate).not.toHaveBeenCalled();
+    });
 
-          const file = new File([JSON.stringify(data)], "backup.json", {
-            type: "application/json",
-          });
+    it("rejects unsupported version", async () => {
+      const { importAllData } = useDataManagement();
+      await expect(
+        importAllData(
+          makeFile({ version: "9.9", exportedAt: "2026-02-03T10:00:00Z" }),
+        ),
+      ).rejects.toThrow("Unsupported version");
+    });
 
-          await expect(importAllData(file)).resolves.not.toThrow();
-
-          const visitedSites = JSON.parse(
-            localStorage.getItem(TEST_VISITED_SITES_STORAGE_KEY)!,
-          );
-          expect(visitedSites).toEqual(data.dailyChecklist);
-        },
+    it("rejects invalid JSON", async () => {
+      const { importAllData } = useDataManagement();
+      const file = new File(["invalid {{{"], "backup.json", {
+        type: "application/json",
       });
+      await expect(importAllData(file)).rejects.toThrow();
+    });
+
+    it("rejects malformed applications", async () => {
+      const { importAllData } = useDataManagement();
+      await expect(
+        importAllData(
+          makeFile({
+            version: "1.3",
+            exportedAt: "2026-02-03T10:00:00Z",
+            applications: "not-an-array",
+          }),
+        ),
+      ).rejects.toThrow("Invalid applications format");
+    });
+
+    it("rejects malformed dailyChecklist", async () => {
+      const { importAllData } = useDataManagement();
+      await expect(
+        importAllData(
+          makeFile({
+            version: "1.3",
+            exportedAt: "2026-02-03T10:00:00Z",
+            dailyChecklist: { visited: "not-an-array" },
+          }),
+        ),
+      ).rejects.toThrow("Invalid dailyChecklist format");
     });
 
     it("rejects malformed jobSites", async () => {
-      await withFrozenTime({
-        now: "2026-02-03T15:00:00Z",
-        fn: async () => {
-          const { importAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
-
-          const data = {
-            version: "1.2",
+      const { importAllData } = useDataManagement();
+      await expect(
+        importAllData(
+          makeFile({
+            version: "1.3",
             exportedAt: "2026-02-03T10:00:00Z",
             jobSites: { categories: "not-an-array" },
-          };
-
-          const file = new File([JSON.stringify(data)], "backup.json", {
-            type: "application/json",
-          });
-
-          await expect(importAllData(file)).rejects.toThrow();
-        },
-      });
+          }),
+        ),
+      ).rejects.toThrow("Invalid jobSites format");
     });
   });
 
-  describe("integration", () => {
-    it("can export and then re-import the same data", async () => {
+  describe("can export and re-import", () => {
+    it("round-trips data correctly", async () => {
       await withFrozenTime({
         now: "2026-02-03T15:00:00Z",
         fn: async () => {
-          const visitedData: VisitedSites = {
-            date: "2026-02-03",
-            visited: ["https://site1.com", "https://site2.com"],
-          };
+          const apps = [makeApp()];
+          const today = makeToday(["https://example.com"]);
+          const history = makeHistory([{ date: "2026-02-02" }]);
 
-          const applicationsData: Application[] = [
-            {
-              id: "app_1",
-              company: "Company A",
-              position: "Dev",
-              jobSiteId: "a",
-              jobSiteUrl: "https://a.com",
-              status: "applied",
-              appliedDate: toPlainDate("2026-02-03").toString(),
-              createdAt: toInstant("2026-02-03T10:00:00Z").toString(),
-              updatedAt: toInstant("2026-02-03T10:00:00Z").toString(),
-            },
-            {
-              id: "app_2",
-              company: "Company B",
-              position: "Engineer",
-              jobSiteId: "b",
-              jobSiteUrl: "https://b.com",
-              status: "interviewing",
-              appliedDate: toPlainDate("2026-02-02").toString(),
-              createdAt: toInstant("2026-02-02T10:00:00Z").toString(),
-              updatedAt: toInstant("2026-02-02T10:00:00Z").toString(),
-              tags: ["technical"],
-            },
-          ];
+          mockAppRepo.getAll.mockResolvedValue(apps);
+          mockVisitedRepo.serialize.mockResolvedValue({ today, history });
 
-          localStorage.setItem(
-            TEST_VISITED_SITES_STORAGE_KEY,
-            JSON.stringify(visitedData),
-          );
-          localStorage.setItem(
-            TEST_APPLICATIONS_STORAGE_KEY,
-            JSON.stringify(applicationsData),
-          );
+          const { exportAllData, importAllData } = useDataManagement();
 
-          const { exportAllData, importAllData } = useDataManagement({
-            ...useDataManagementParams,
-          });
-
-          // Export
           let capturedBlob: Blob | null = null;
           vi.spyOn(URL, "createObjectURL").mockImplementation(
             (blob: Blob | MediaSource) => {
@@ -634,31 +434,25 @@ describe("useDataManagement", () => {
             href: "",
             download: "",
           } as unknown as HTMLAnchorElement);
+          vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
           await exportAllData();
-          await nextTick();
+          await flushPromises();
 
-          // Clear localStorage
-          localStorage.clear();
-
-          // Re-import
-          const exportedText = await capturedBlob!.text();
-          const file = new File([exportedText], "backup.json", {
+          const file = new File([await capturedBlob!.text()], "backup.json", {
             type: "application/json",
           });
 
           await importAllData(file);
-          await nextTick();
 
-          const reimportedVisited = JSON.parse(
-            localStorage.getItem(TEST_VISITED_SITES_STORAGE_KEY)!,
-          );
-          const reimportedApps = JSON.parse(
-            localStorage.getItem(TEST_APPLICATIONS_STORAGE_KEY)!,
-          );
-
-          expect(reimportedVisited).toEqual(visitedData);
-          expect(reimportedApps).toEqual(applicationsData);
+          expect(mockVisitedRepo.hydrate).toHaveBeenCalledWith({
+            today,
+            history,
+          });
+          expect(mockAppRepo.setState).toHaveBeenCalledWith({
+            applications: apps,
+            history: [],
+          });
         },
       });
     });

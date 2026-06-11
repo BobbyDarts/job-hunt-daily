@@ -57,6 +57,8 @@ describe("useATSDetection", () => {
         name: "Unknown",
         url: "https://unknown.com/jobs",
         categoryId: "test",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
       };
       expect(getATS(unknownSite)).toBeUndefined();
     });
@@ -69,6 +71,8 @@ describe("useATSDetection", () => {
         url: "https://example.com/careers",
         categoryId: "test",
         atsType: "greenhouse",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
       };
       expect(getATS(site)?.type).toBe("greenhouse");
     });
@@ -80,6 +84,8 @@ describe("useATSDetection", () => {
         name: "Test Company",
         url: "https://test.wd5.myworkdayjobs.com/Careers",
         categoryId: "test",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
       };
       expect(getATS(site)?.type).toBe("workday");
     });
@@ -118,6 +124,8 @@ describe("useATSDetection", () => {
         name: "Unknown",
         url: "https://unknown.com/jobs",
         categoryId: "test",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
       };
       expect(isATS(unknownSite)).toBe(false);
     });
@@ -130,6 +138,8 @@ describe("useATSDetection", () => {
         url: "https://example.com",
         categoryId: "test",
         atsType: "greenhouse",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
       };
       expect(isATS(site)).toBe(true);
     });
@@ -141,6 +151,8 @@ describe("useATSDetection", () => {
         name: "Test",
         url: "https://jobs.lever.co/company",
         categoryId: "test",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
       };
       expect(isATS(site)).toBe(true);
     });
@@ -155,6 +167,8 @@ describe("useATSDetection", () => {
         url: "https://example.com/careers",
         categoryId: "test",
         atsType: "greenhouse",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
       };
       expect(isATS(site)).toBe(true);
       expect(getATS(site)?.type).toBe("greenhouse");
@@ -168,6 +182,8 @@ describe("useATSDetection", () => {
         url: "https://company.wd5.myworkdayjobs.com/jobs",
         categoryId: "test",
         atsType: "greenhouse",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
       };
       expect(getATS(site)?.type).toBe("greenhouse");
     });
@@ -181,6 +197,8 @@ describe("useATSDetection", () => {
         name: "Test",
         url: "https://test.com",
         categoryId: "test",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
       };
       expect(getATS(site)).toBeUndefined();
       expect(isATS(site)).toBe(false);
@@ -242,6 +260,8 @@ describe("useATSDetection", () => {
           name: "Test",
           url,
           categoryId: "test",
+          createdAt: "2024-01-15T12:00:00Z",
+          updatedAt: "2024-01-15T12:00:00Z",
         };
         expect(getATS(site)?.type).toBe("workday");
       });
@@ -254,6 +274,8 @@ describe("useATSDetection", () => {
         name: "Test",
         url: "https://boards.greenhouse.io/company",
         categoryId: "test",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
       };
       expect(getATS(site)?.type).toBe("greenhouse");
     });
@@ -265,6 +287,8 @@ describe("useATSDetection", () => {
         name: "Test",
         url: "https://jobs.lever.co/company",
         categoryId: "test",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
       };
       expect(getATS(site)?.type).toBe("lever");
     });
@@ -276,6 +300,8 @@ describe("useATSDetection", () => {
         name: "Test",
         url: "https://company.bamboohr.com/jobs",
         categoryId: "test",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
       };
       expect(getATS(site)?.type).toBe("bamboohr");
     });

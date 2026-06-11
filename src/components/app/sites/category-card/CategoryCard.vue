@@ -36,7 +36,7 @@ export interface Props {
 
 const props = defineProps<Props>();
 
-const { deleteCategory } = useJobSites();
+const { removeCategory } = useJobSites();
 const { openDialog: openAddJobSite } = useAddJobSiteDialog();
 
 const isHovered = ref(false);
@@ -56,7 +56,7 @@ const deleteDescription = computed(
 );
 
 async function handleDelete() {
-  const deleted = await deleteCategory(props.category.id);
+  const deleted = await removeCategory(props.category.id);
   if (deleted) {
     toast.success("Category deleted successfully");
   } else {

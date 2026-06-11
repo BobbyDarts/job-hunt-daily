@@ -1,43 +1,131 @@
 // /src/composables/data/use-visited-sites.ts
 
-import { computed } from "vue";
+import { useWindowFocus, watchDebounced } from "@vueuse/core";
+import { computed, ref } from "vue";
 
-import type { VisitedSites } from "@/types";
+import { isSameDayIso, todayIso } from "@/lib/time";
+import { getVisitedSitesRepository } from "@/services/repositories/visited-sites";
+import type { VisitedSiteHistory, VisitedSites } from "@/types";
 
-import type { UseVisitedSitesParams } from "./types";
 import { useJobSites } from "./use-job-sites";
-import { useVisitedSitesRepository } from "./use-visited-sites-repository";
 
-export function useVisitedSites(params: UseVisitedSitesParams = {}) {
-  const repo = useVisitedSitesRepository(params);
+// singleton state
+const today = ref<VisitedSites>({ date: todayIso(), visited: [] });
+const history = ref<VisitedSiteHistory[]>([]);
+const initialized = ref(false);
+
+export function useVisitedSites() {
   const { totalSites } = useJobSites();
 
-  const visitedSites = computed(() => new Set(repo.visitedData.value.visited));
+  async function refresh(): Promise<void> {
+    const repo = getVisitedSitesRepository();
+    const [todayData, historyData] = await Promise.all([
+      repo.getByDate(todayIso()),
+      repo.getHistoryAll(),
+    ]);
+    today.value = todayData ?? { date: todayIso(), visited: [] };
+    history.value = historyData;
+  }
+
+  async function init(): Promise<void> {
+    await refresh();
+
+    if (!isSameDayIso(today.value.date)) {
+      await snapshotAndReset();
+    }
+
+    const needsReset = computed(() => !isSameDayIso(today.value.date));
+
+    watchDebounced(
+      needsReset,
+      async shouldReset => {
+        if (shouldReset) await snapshotAndReset();
+      },
+      { debounce: 100, immediate: true },
+    );
+
+    const focused = useWindowFocus();
+
+    watchDebounced(
+      focused,
+      async isFocused => {
+        if (isFocused && !isSameDayIso(today.value.date)) {
+          await snapshotAndReset();
+        }
+      },
+      { debounce: 100 },
+    );
+
+    initialized.value = true;
+  }
+
+  function assertInitialized(): void {
+    if (!initialized.value) {
+      throw new Error("useVisitedSites not initialized. Call init() first.");
+    }
+  }
+
+  async function snapshotAndReset(): Promise<void> {
+    const repo = getVisitedSitesRepository();
+    if (today.value.visited.length > 0) {
+      await repo.createHistory({
+        date: today.value.date,
+        visitedUrls: [...today.value.visited],
+        totalSites: totalSites.value,
+      });
+    }
+    await repo.reset();
+    await refresh();
+  }
+
+  async function markVisited(url: string): Promise<void> {
+    assertInitialized();
+    const repo = getVisitedSitesRepository();
+    await repo.markVisited(url);
+    await refresh();
+  }
+
+  function isSiteVisited(url: string): boolean {
+    assertInitialized();
+    return visitedSites.value.has(url);
+  }
+
+  const visitedSites = computed(() => new Set(today.value.visited));
   const visitedCount = computed(() => visitedSites.value.size);
   const isComplete = computed(
     () => totalSites.value > 0 && visitedCount.value === totalSites.value,
   );
 
-  const isSiteVisited = (url: string) => visitedSites.value.has(url);
-
-  const markVisited = async (url: string): Promise<void> => {
-    await repo.markVisited(url);
-  };
-
-  const serialize = async (): Promise<VisitedSites> => {
+  async function serialize(): Promise<{
+    today: VisitedSites;
+    history: VisitedSiteHistory[];
+  }> {
+    assertInitialized();
+    const repo = getVisitedSitesRepository();
     return repo.serialize();
-  };
+  }
 
-  const hydrate = async (data: VisitedSites): Promise<void> => {
+  async function hydrate(data: {
+    today: VisitedSites;
+    history: VisitedSiteHistory[];
+  }): Promise<void> {
+    assertInitialized();
+    const repo = getVisitedSitesRepository();
     await repo.hydrate(data);
-  };
+    await refresh();
+  }
 
   return {
+    refresh,
+    today,
+    history,
+    initialized,
+    init,
+    markVisited,
+    isSiteVisited,
     visitedSites,
     visitedCount,
     isComplete,
-    markVisited,
-    isSiteVisited,
     serialize,
     hydrate,
   };

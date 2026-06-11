@@ -8,8 +8,8 @@ import {
   type BaseSelectOption,
   type BaseSelectProps,
 } from "@/components/app/lib";
+import { getStatuses } from "@/config/applications-metadata";
 import type { ApplicationStatus } from "@/types";
-import { getStatuses } from "@/types";
 
 export interface Props extends Partial<BaseSelectProps> {
   modelValue: ApplicationStatus[] | "all";

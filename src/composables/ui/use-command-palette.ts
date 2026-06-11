@@ -2,7 +2,7 @@
 
 import { useMagicKeys, whenever } from "@vueuse/core";
 
-import { createDialogState } from "@/components/app/lib/dialog";
+import { createDialogState } from "@/components/app/lib";
 import { useInputGuard } from "@/composables/keyboard";
 
 const state = createDialogState();

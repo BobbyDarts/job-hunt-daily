@@ -11,9 +11,9 @@ interface UseCategoryProgressParams {
 }
 
 export function useCategoryProgress(params: UseCategoryProgressParams = {}) {
-  const { isSiteVisited: isSiteVisitedOverride, storageKey } = params;
+  const { isSiteVisited: isSiteVisitedOverride } = params;
 
-  const { categories, getSitesByCategory } = useJobSites({ storageKey });
+  const { categories, getSitesByCategory } = useJobSites();
   const resolvedIsSiteVisited =
     isSiteVisitedOverride ?? useVisitedSites().isSiteVisited;
 

@@ -3,6 +3,7 @@
 import { computed } from "vue";
 
 import { useApplications } from "@/composables/data";
+import { getStatusInfo } from "@/config/applications-metadata";
 import {
   compareInstants,
   getNow,
@@ -10,11 +11,7 @@ import {
   toInstant,
   toPeriodKey,
 } from "@/lib/time";
-import {
-  getStatusInfo,
-  type ApplicationHistory,
-  type ApplicationStatus,
-} from "@/types";
+import { type ApplicationHistory, type ApplicationStatus } from "@/types";
 
 import { usePeriodUnit } from ".";
 

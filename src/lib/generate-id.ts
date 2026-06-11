@@ -76,6 +76,10 @@ export function generateCategoryId(
   return `${baseId}-${counter}`;
 }
 
+export const generateAppId = (): string => {
+  return crypto.randomUUID();
+};
+
 /**
  * Ensures unique site IDs across a collection, appending numbers on collision.
  */

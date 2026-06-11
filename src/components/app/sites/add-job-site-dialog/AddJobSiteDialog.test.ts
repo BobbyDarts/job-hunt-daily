@@ -29,14 +29,14 @@ vi.mock("@/components/app/lib", async () => {
     ...actual,
     CategorySelect: {
       template: `
-+    <select
-+      data-testid="category-select"
-+      :value="modelValue"
-+      @change="$emit('update:modelValue', $event.target.value)"
-+    >
-+      <option value="">Select</option>
-+      <option value="general-job-boards">General</option>
-+    </select>
+    <select
+      data-testid="category-select"
+      :value="modelValue"
+      @change="$emit('update:modelValue', $event.target.value)"
+    >
+      <option value="">Select</option>
+      <option value="general-job-boards">General</option>
+    </select>
   `,
       props: ["modelValue"],
       emits: ["update:modelValue"],

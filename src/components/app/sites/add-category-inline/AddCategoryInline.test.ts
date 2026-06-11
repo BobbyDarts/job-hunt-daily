@@ -11,7 +11,7 @@ import { AddCategoryInline } from ".";
 
 vi.mock("@/composables/data", () => ({
   useJobSites: () => ({
-    addCategory: vi
+    createCategory: vi
       .fn()
       .mockResolvedValue({ id: "new-category", name: "New Category" }),
   }),

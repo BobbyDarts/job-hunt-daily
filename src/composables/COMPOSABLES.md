@@ -12,31 +12,23 @@ import { useCommandPalette } from '@/composables/ui'
 
 ## `data/`
 
-Composables that own or interact with the app's data layer — reading from and writing to localStorage, the static job data file, or (in the future) a remote backend. Repository composables abstract the persistence layer; their consumers are thin reactive wrappers that expose the public API to the rest of the app.
+Composables that own or interact with the app's data layer. Each composable is a module-level singleton initialized once in `main.ts` before the app mounts. Repository implementations live in `src/services/repositories/` and follow
+a lazy init/get pattern: `init*Repository()` is called once at startup (from `main.ts`, `Welcome.vue`, or `Login.vue`) and `get*Repository()` is called by composables on each operation. The active implementation is selected by `src/services/repositories/factory/resolve-mode.ts` based on the stored mode preference, falling back to the `VITE_USE_SUPABASE` environment variable.
 
 ### `use-applications`
-Full CRUD interface for job applications. Handles create, update, delete, and retrieval, as well as application history snapshots on every update. Also exposes computed stats (`totalCount`, `countByStatus`) and filter/search helpers.
-
-### `use-applications-repository`
-Owns all persistence logic for applications and application history. Backed by `localStorage` via `useLocalStorage`. Handles the snapshot-before-update behavior that powers application history. Accepts optional `storageKey` and `historyStorageKey` overrides for test isolation.
+Singleton CRUD interface for job applications. Initialized via `init()` in `main.ts`. Exposes `createApplication`, `updateApplication`, `removeApplication`, `getApplication`, `getApplicationTimeline`, `getStatusChanges`, computed stats (`totalCount`, `countByStatus`), and filter/search helpers (`filterByStatus`, `filterByTag`, `search`). Also exposes `applicationHistory` for timeline and reporting use.
 
 ### `use-ats-detection`
 Thin wrapper around the ATS detection library. Given a `JobSite`, returns either an `ATSInfo` object (type, initials, color classes, URL patterns) or `undefined`. Also exposes a boolean `isATS(site)` helper.
 
 ### `use-data-management`
-Orchestrates full data export and import. Exports all app data (visited sites, applications, application history, job sites) as a single versioned JSON file (v1.2). On import, validates and applies each section independently — all sections are optional. Accepts optional storage key overrides for test isolation. v1.1 files (no job sites) are still accepted on import.
+Orchestrates full data export and import. Exports all app data (visited sites, visited site history, applications, application history, job sites) as a single versioned JSON file (v1.3). On import, validates and applies each section independently — all sections are optional. v1.1 and v1.2 files are still accepted on import.
 
 ### `use-job-sites`
-Reactive interface over job site data. Returns `categories`, `sites`, `sitesByCategory`, `siteById`, `siteByUrl`, `categoryById`, `allSitesWithCategory`, `totalSites`, lookup helpers (`getSiteById`, `getSiteByUrl`, `getCategoryById`, `getSitesByCategory`), and full CRUD methods for both sites and categories (`addSite`, `updateSite`, `deleteSite`, `addCategory`, `updateCategory`, `deleteCategory`, `setAll`). Accepts an optional `storageKey` override for test isolation.
-
-### `use-job-sites-repository`
-Owns all persistence logic for job site data. Backed by `localStorage` via `useLocalStorage`, seeded from `job-hunt-daily.json` on first load. The data model is flat: `JobHuntData` contains a `categories` array and a `sites` array, with each site holding a `categoryId` reference rather than being nested inside a category. Exposes full CRUD for both sites and categories, plus `setAll` for bulk replacement. Accepts an optional `storageKey` override for test isolation. Supabase backend planned in Issue [#24](https://github.com/BobbyDarts/job-hunt-daily/issues/24).
+Singleton reactive interface over job site data. Initialized via `init()` in `main.ts`. Returns `categories`, `sites`, computed maps (`sitesByCategory`, `siteById`, `siteByUrl`, `categoryById`, `categoryByName`, `allSitesWithCategory`, `totalSites`), lookup helpers (`getSiteById`, `getSiteByUrl`, `getCategoryById`, `getCategoryByName`, `getCategoryBySlug`, `getSitesByCategory`), and full CRUD methods for both sites and categories (`createSite`, `updateSite`, `removeSite`, `createCategory`, `updateCategory`, `removeCategory`).
 
 ### `use-visited-sites`
-Tracks which job site URLs have been visited today. Automatically resets at midnight and on window focus regain. Exposes `markVisited()`, `isSiteVisited()`, `visitedCount`, `isComplete`, and `serialize`/`hydrate` for export/import.
-
-### `use-visited-sites-repository`
-Owns all persistence logic for visited sites. Backed by `localStorage` via `useLocalStorage`. Handles day-change detection, auto-reset via `watchDebounced`, and overnight tab detection via `useWindowFocus`. Accepts optional `storageKey` and `skipInitReset` overrides for test isolation.
+Singleton that tracks which job site URLs have been visited today. Initialized via `init()` in `main.ts` — initialization handles midnight reset detection and registers window focus and day-change watchers. Exposes `markVisited()`, `isSiteVisited()`, `visitedCount`, `isComplete`, `today`, `history`, and `serialize`/`hydrate` for export/import. Must be initialized after `useJobSites` since it reads `totalSites` when snapshotting history.
 
 ---
 
@@ -49,6 +41,14 @@ Singleton dialog state for the Add Application dialog. Holds the `open` flag and
 
 ### `use-add-job-site-dialog`
 Singleton dialog state for the Add Job Site dialog. Holds the `open` flag and a `category` ref (the `categoryId` string of the category that triggered the dialog, if any). Exposes `openDialog(categoryId?)` and `closeDialog()`. Used by both the `/job-sites` view and `CategoryCard` action bar.
+
+### `use-app-mode`
+Singleton that tracks whether the app is running in `"local"` or
+`"supabase"` mode. Persists the preference to localStorage via VueUse
+`useLocalStorage`. Exposes `mode`, `isLocal`, `isSupabase`, `isSet`,
+`setMode(mode)`, and `clearMode()`. Read at boot time by
+`resolve-mode.ts` (via direct `localStorage.getItem` to avoid circular
+imports) and by `HeaderActions` for the mode indicator badge.
 
 ### `use-command-palette`
 Singleton open/close state for the command palette. Also registers `⌘K`/`Ctrl+K` (with `preventDefault`) to open the palette. Exposes `open`, `openCommandPalette()`, `closeCommandPalette()`, and `withClose(fn)` — a wrapper that calls a function then closes the palette.
@@ -93,7 +93,7 @@ Generic selection state composable for single and multi-select. Accepts a `getVa
 Composables that compute derived, view-specific data for the dashboard and reports views. These sit above the data layer and below the component layer — they transform raw data into what the views need.
 
 ### `use-category-progress`
-Computes sorted categories (by site count descending), per-category sites (sorted alphabetically), visited counts and progress percentages, and `maxCategoryHeight` for card layout. Results are cached in a `categoryStats` computed — each entry contains `{ category, sites, visitedCount, progress }` — to avoid redundant recalculation. `CategoryCard` consumers should prefer reading `sites` from `categoryStats` rather than calling `getSitesByCategory` separately. Both params are optional — if omitted, data is pulled from `useJobSites()` and `isSiteVisited` from `useVisitedSites()`. Pass `storageKey` and/or `isSiteVisited` explicitly in tests to inject mock data.
+Computes sorted categories (by site count descending), per-category sites (sorted alphabetically), visited counts and progress percentages, and `maxCategoryHeight` for card layout. Results are cached in a `categoryStats` computed — each entry contains `{ category, sites, visitedCount, progress }` — to avoid redundant recalculation. Both params are optional — if omitted, data is pulled from `useJobSites()` and `isSiteVisited` from `useVisitedSites()`. Pass `isSiteVisited` explicitly in tests via `vi.mock`.
 
 ### `use-applications-reports`
 Provides derived analytics data for the `/reports` view. Reads from `useApplications` — no storage keys or persistence logic live here. All computeds include deleted applications (reconstructed from history records) to avoid skewing report data.
@@ -106,7 +106,7 @@ Exposes:
 - `timeInStatus` — average and per-application duration (in days) spent in each status, derived from history snapshots; terminal statuses (`accepted`, `rejected`, `withdrew`) are capped at `updatedAt` rather than growing indefinitely
 
 ### `use-period-unit`
-Module-level singleton. Controls the active period unit for `volumeByPeriod` charting. Exposes `state.periodUnit` (`"day" | "week" | "month"`, defaults to `"day"`). Syncs to the URL via `?period=` query param. All callers share the same state instance.
+Module-level singleton. Controls the active period unit for `volumeByPeriod` charting. Exposes `state.periodUnit` (`"day" | "week" | "month"`, defaults to `"day"`), `VALID_PERIOD_UNITS`, and syncs to the URL via `?period=` query param.
 
 ### `use-report-time-range`
-Module-level singleton. Controls the active time range filter for the Volume by Period report. Exposes `state.timeRange` (`"7d" | "30d" | "90d" | "all"`, defaults to `"30d"`) and `TIME_RANGES` (the full list of options for rendering the selector). Syncs to the URL via `?range=` query param. All callers share the same state instance.
+Module-level singleton. Controls the active time range filter for the Volume by Period report. Exposes `state.timeRange` (`"7d" | "30d" | "90d" | "all"`, defaults to `"30d"`) and `TIME_RANGES` (the full list of options for rendering the selector). Syncs to the URL via `?range=` query param.

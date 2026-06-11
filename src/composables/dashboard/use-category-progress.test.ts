@@ -1,25 +1,47 @@
 // /src/composables/dashboard/use-category-progress.test.ts
 
-import { useLocalStorage } from "@vueuse/core";
-import { describe, expect, it } from "vitest";
+import { vi, describe, it, expect, beforeEach } from "vitest";
+import { ref } from "vue";
 
-import { TEST_JOB_SITES_STORAGE_KEY } from "@/composables/data/keys";
+import { useJobSites } from "@/composables/data/use-job-sites";
+import { useVisitedSites } from "@/composables/data/use-visited-sites";
 import { mockJobHuntData, mockCategories, mockSites } from "@/test-utils/mocks";
 import type { JobCategory, JobHuntData } from "@/types";
 
 import { useCategoryProgress } from "./use-category-progress";
 
+vi.mock("@/composables/data/use-job-sites");
+vi.mock("@/composables/data/use-visited-sites");
+
+const mockUseJobSites = vi.mocked(useJobSites);
+const mockUseVisitedSites = vi.mocked(useVisitedSites);
+
 function setupWithData(
-  data: JobHuntData = mockJobHuntData,
-  key = TEST_JOB_SITES_STORAGE_KEY,
+  data = mockJobHuntData,
   isSiteVisited: (url: string) => boolean = () => false,
 ) {
-  const storage = useLocalStorage<JobHuntData>(key, data);
-  storage.value = data;
-  return useCategoryProgress({ storageKey: key, isSiteVisited });
+  const categories = ref(data.categories);
+  const sites = ref(data.sites);
+
+  mockUseJobSites.mockReturnValue({
+    categories,
+    sites,
+    getSitesByCategory: (categoryId: string) =>
+      sites.value.filter(s => s.categoryId === categoryId),
+  } as ReturnType<typeof useJobSites>);
+
+  mockUseVisitedSites.mockReturnValue({
+    isSiteVisited,
+  } as ReturnType<typeof useVisitedSites>);
+
+  return useCategoryProgress({ isSiteVisited });
 }
 
 describe("useCategoryProgress", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("sorts categories by site count descending", () => {
     const { sortedCategories } = setupWithData();
 
@@ -49,11 +71,7 @@ describe("useCategoryProgress", () => {
     const isVisited = (url: string) =>
       url === mockSites.workday.url || url === mockSites.greenhouse.url;
 
-    const { getCategoryProgress } = setupWithData(
-      mockJobHuntData,
-      "test-progress-calc",
-      isVisited,
-    );
+    const { getCategoryProgress } = setupWithData(mockJobHuntData, isVisited);
 
     // 2 of 5 visited → 40%
     expect(getCategoryProgress(mockCategories.techCompanies)).toBe(40);
@@ -61,17 +79,27 @@ describe("useCategoryProgress", () => {
 
   it("returns 0 progress for category with no sites", () => {
     const data: JobHuntData = {
-      categories: [{ id: "empty", name: "Empty" }],
+      categories: [
+        {
+          id: "empty",
+          name: "Empty",
+          createdAt: "2024-01-15T12:00:00Z",
+          updatedAt: "2024-01-15T12:00:00Z",
+        },
+      ],
       sites: [],
     };
 
-    const { getCategoryProgress } = setupWithData(
-      data,
-      "test-progress-empty",
-      () => true,
-    );
+    const { getCategoryProgress } = setupWithData(data, () => true);
 
-    expect(getCategoryProgress({ id: "empty", name: "Empty" })).toBe(0);
+    expect(
+      getCategoryProgress({
+        id: "empty",
+        name: "Empty",
+        createdAt: "2024-01-15T12:00:00Z",
+        updatedAt: "2024-01-15T12:00:00Z",
+      }),
+    ).toBe(0);
   });
 
   it("returns the correct visited site count for a category", () => {
@@ -79,7 +107,6 @@ describe("useCategoryProgress", () => {
 
     const { getCategoryVisitedCount } = setupWithData(
       mockJobHuntData,
-      "test-visited-count",
       isVisited,
     );
 
@@ -89,8 +116,18 @@ describe("useCategoryProgress", () => {
   it("calculates maxCategoryHeight capped at 6", () => {
     const data: JobHuntData = {
       categories: [
-        { id: "huge", name: "Huge" },
-        { id: "small", name: "Small" },
+        {
+          id: "huge",
+          name: "Huge",
+          createdAt: "2024-01-15T12:00:00Z",
+          updatedAt: "2024-01-15T12:00:00Z",
+        },
+        {
+          id: "small",
+          name: "Small",
+          createdAt: "2024-01-15T12:00:00Z",
+          updatedAt: "2024-01-15T12:00:00Z",
+        },
       ],
       sites: [
         ...Array.from({ length: 10 }, (_, i) => ({
@@ -98,17 +135,21 @@ describe("useCategoryProgress", () => {
           name: `Site ${i}`,
           url: `https://huge${i}.com`,
           categoryId: "huge",
+          createdAt: "2024-01-15T12:00:00Z",
+          updatedAt: "2024-01-15T12:00:00Z",
         })),
         {
           id: "small-1",
           name: "One",
           url: "https://one.com",
           categoryId: "small",
+          createdAt: "2024-01-15T12:00:00Z",
+          updatedAt: "2024-01-15T12:00:00Z",
         },
       ],
     };
 
-    const { maxCategoryHeight } = setupWithData(data, "test-max-height");
+    const { maxCategoryHeight } = setupWithData(data);
 
     expect(maxCategoryHeight.value).toBe(6);
   });
@@ -117,11 +158,7 @@ describe("useCategoryProgress", () => {
     const isVisited = (url: string) =>
       url === mockSites.workday.url || url === mockSites.greenhouse.url;
 
-    const { categoryStats } = setupWithData(
-      mockJobHuntData,
-      "test-category-stats",
-      isVisited,
-    );
+    const { categoryStats } = setupWithData(mockJobHuntData, isVisited);
 
     const techStats = categoryStats.value.find(
       s => s.category.id === mockCategories.techCompanies.id,
@@ -135,11 +172,7 @@ describe("useCategoryProgress", () => {
   it("getCategoryStats returns stats for existing category", () => {
     const isVisited = (url: string) => url === mockSites.workday.url;
 
-    const { getCategoryStats } = setupWithData(
-      mockJobHuntData,
-      "test-get-stats",
-      isVisited,
-    );
+    const { getCategoryStats } = setupWithData(mockJobHuntData, isVisited);
 
     const stats = getCategoryStats(mockCategories.techCompanies);
 
@@ -154,6 +187,8 @@ describe("useCategoryProgress", () => {
     const fakeCategory: JobCategory = {
       id: "nonexistent",
       name: "Non-existent",
+      createdAt: "2024-01-15T12:00:00Z",
+      updatedAt: "2024-01-15T12:00:00Z",
     };
     expect(getCategoryStats(fakeCategory)).toBeUndefined();
   });
@@ -164,6 +199,8 @@ describe("useCategoryProgress", () => {
     const fakeCategory: JobCategory = {
       id: "nonexistent",
       name: "Non-existent",
+      createdAt: "2024-01-15T12:00:00Z",
+      updatedAt: "2024-01-15T12:00:00Z",
     };
     expect(getCategoryProgress(fakeCategory)).toBe(0);
   });
@@ -174,6 +211,8 @@ describe("useCategoryProgress", () => {
     const fakeCategory: JobCategory = {
       id: "nonexistent",
       name: "Non-existent",
+      createdAt: "2024-01-15T12:00:00Z",
+      updatedAt: "2024-01-15T12:00:00Z",
     };
     expect(getCategoryVisitedCount(fakeCategory)).toBe(0);
   });
@@ -182,7 +221,7 @@ describe("useCategoryProgress", () => {
     const data: JobHuntData = { categories: [], sites: [] };
 
     const { sortedCategories, categoryStats, maxCategoryHeight } =
-      setupWithData(data, "test-empty-categories");
+      setupWithData(data);
 
     expect(sortedCategories.value).toEqual([]);
     expect(categoryStats.value).toEqual([]);
@@ -192,13 +231,23 @@ describe("useCategoryProgress", () => {
   it("handles categories with no sites", () => {
     const data: JobHuntData = {
       categories: [
-        { id: "empty-1", name: "Empty 1" },
-        { id: "empty-2", name: "Empty 2" },
+        {
+          id: "empty-1",
+          name: "Empty 1",
+          createdAt: "2024-01-15T12:00:00Z",
+          updatedAt: "2024-01-15T12:00:00Z",
+        },
+        {
+          id: "empty-2",
+          name: "Empty 2",
+          createdAt: "2024-01-15T12:00:00Z",
+          updatedAt: "2024-01-15T12:00:00Z",
+        },
       ],
       sites: [],
     };
 
-    const { maxCategoryHeight } = setupWithData(data, "test-empty-sites");
+    const { maxCategoryHeight } = setupWithData(data);
 
     expect(maxCategoryHeight.value).toBe(0);
   });

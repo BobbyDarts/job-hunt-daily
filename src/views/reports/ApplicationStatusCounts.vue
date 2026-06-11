@@ -13,8 +13,8 @@ import { computed } from "vue";
 import { Doughnut } from "vue-chartjs";
 
 import { useApplicationsReports } from "@/composables/dashboard";
+import { getStatuses } from "@/config/applications-metadata";
 import { getStatusChartColor, resolveChartColor } from "@/lib/chart-utils";
-import { getStatuses } from "@/types";
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 

@@ -7,6 +7,10 @@ import { useRouter } from "vue-router";
 
 import { DataToolbar } from "@/components/app/lib";
 import { Button } from "@/components/ui/button";
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from "@/components/ui/button-group";
 import { usePeriodUnit, useReportTimeRange } from "@/composables/dashboard";
 import { useQuerySync } from "@/composables/lib";
 
@@ -45,7 +49,7 @@ const filters = reactive<{ report: ReportId }>({
   report: "status-counts",
 });
 
-const { state: periodUnitState } = usePeriodUnit();
+const { state: periodUnitState, VALID_PERIOD_UNITS } = usePeriodUnit();
 const { state: timeRangeState, TIME_RANGES } = useReportTimeRange();
 
 useQuerySync({
@@ -74,6 +78,7 @@ const activeComponent = computed(() => REPORT_COMPONENTS[filters.report]);
   <div class="border-b bg-card">
     <div class="mx-auto px-4 py-3 max-w-7xl">
       <DataToolbar>
+        <!-- Back -->
         <template #back>
           <Button
             variant="ghost"
@@ -85,78 +90,90 @@ const activeComponent = computed(() => REPORT_COMPONENTS[filters.report]);
           </Button>
         </template>
 
+        <!-- Title -->
         <template #title>
           <h1 class="text-xl font-semibold">Reports</h1>
         </template>
 
+        <!-- Actions -->
         <template #actions>
-          <div
+          <ButtonGroup
             class="flex items-center gap-1 rounded-lg border bg-background p-1"
           >
-            <Button
-              v-for="report in REPORTS"
-              :key="report.id"
-              variant="ghost"
-              size="sm"
-              class="h-7 px-3 text-sm"
-              :class="{
-                'bg-muted text-foreground': filters.report === report.id,
-                'text-muted-foreground': filters.report !== report.id,
-              }"
-              @click="filters.report = report.id"
-            >
-              {{ report.label }}
-            </Button>
-          </div>
+            <template v-for="(report, index) in REPORTS" :key="report.id">
+              <Button
+                variant="ghost"
+                size="sm"
+                class="h-6 px-2 text-sm"
+                :class="{
+                  'bg-muted text-foreground': filters.report === report.id,
+                  'text-muted-foreground': filters.report !== report.id,
+                }"
+                @click="filters.report = report.id"
+              >
+                {{ report.label }}
+              </Button>
+              <ButtonGroupSeparator v-if="index < REPORTS.length - 1" />
+            </template>
+          </ButtonGroup>
         </template>
 
+        <!-- Filters -->
         <template #filters>
           <div
             v-if="filters.report === 'volume-by-period'"
-            class="flex items-center gap-2 h-9"
+            class="flex items-center h-9 gap-2"
           >
             <!-- Period unit selector -->
-            <div
+            <ButtonGroup
               class="flex items-center gap-1 rounded-lg border bg-background p-1"
             >
-              <Button
-                v-for="unit in ['day', 'week', 'month'] as const"
-                :key="unit"
-                variant="ghost"
-                size="sm"
-                class="h-7 px-3 text-sm capitalize"
-                :class="{
-                  'bg-muted text-foreground':
-                    periodUnitState.periodUnit === unit,
-                  'text-muted-foreground': periodUnitState.periodUnit !== unit,
-                }"
-                @click="periodUnitState.periodUnit = unit"
-              >
-                {{ unit }}
-              </Button>
-            </div>
+              <template v-for="(unit, index) in VALID_PERIOD_UNITS" :key="unit">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="h-6 px-2 text-sm capitalize"
+                  :class="{
+                    'bg-muted text-foreground':
+                      periodUnitState.periodUnit === unit,
+                    'text-muted-foreground':
+                      periodUnitState.periodUnit !== unit,
+                  }"
+                  @click="periodUnitState.periodUnit = unit"
+                >
+                  {{ unit }}
+                </Button>
+                <ButtonGroupSeparator
+                  v-if="index < VALID_PERIOD_UNITS.size - 1"
+                />
+              </template>
+            </ButtonGroup>
 
             <!-- Time range selector -->
-            <div
+            <ButtonGroup
               class="flex items-center gap-1 rounded-lg border bg-background p-1"
             >
-              <Button
-                v-for="range in TIME_RANGES"
+              <template
+                v-for="(range, index) in TIME_RANGES"
                 :key="range.value"
-                variant="ghost"
-                size="sm"
-                class="h-7 px-3 text-sm"
-                :class="{
-                  'bg-muted text-foreground':
-                    timeRangeState.timeRange === range.value,
-                  'text-muted-foreground':
-                    timeRangeState.timeRange !== range.value,
-                }"
-                @click="timeRangeState.timeRange = range.value"
               >
-                {{ range.label }}
-              </Button>
-            </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="h-6 px-2 text-sm"
+                  :class="{
+                    'bg-muted text-foreground':
+                      timeRangeState.timeRange === range.value,
+                    'text-muted-foreground':
+                      timeRangeState.timeRange !== range.value,
+                  }"
+                  @click="timeRangeState.timeRange = range.value"
+                >
+                  {{ range.label }}
+                </Button>
+                <ButtonGroupSeparator v-if="index < TIME_RANGES.length - 1" />
+              </template>
+            </ButtonGroup>
           </div>
           <div v-else class="h-9" />
         </template>

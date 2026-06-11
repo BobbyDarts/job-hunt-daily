@@ -3,6 +3,7 @@
 export { useAddApplicationDialog } from "./use-add-application-dialog";
 export { useAddCategoryDialog } from "./use-add-category-dialog";
 export { useAddJobSiteDialog } from "./use-add-job-site-dialog";
+export { useAppMode } from "./use-app-mode";
 export { useCommandPalette } from "./use-command-palette";
 export { useShortcutReference } from "./use-shortcut-reference";
 export { useSiteFocus } from "./use-site-focus";

@@ -30,7 +30,7 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 }>();
 
-const { addApplication } = useApplications();
+const { createApplication } = useApplications();
 const { allSitesWithCategory, getSiteById } = useJobSites();
 
 export interface Props {
@@ -51,9 +51,11 @@ const selectedSiteId = ref<string>("all");
 const formData = ref(defaultFormData());
 
 // Compute the active site (either from prop or from selection)
-const activeSite = computed(() => {
+const activeSite = computed<JobSite | null>(() => {
   if (props.site) return props.site;
-  if (selectedSiteId.value !== "all") return getSiteById(selectedSiteId.value);
+  if (selectedSiteId.value !== "all") {
+    return getSiteById(selectedSiteId.value) ?? null;
+  }
   return null;
 });
 
@@ -91,7 +93,7 @@ watch(
 const handleSubmit = async () => {
   if (!activeSite.value || !isValid.value) return;
 
-  await addApplication(
+  await createApplication(
     buildApplicationPayload(formData.value, {
       jobSiteId: activeSite.value.id,
       jobSiteUrl: activeSite.value.url,

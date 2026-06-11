@@ -1,12 +1,12 @@
 import js from "@eslint/js";
 import vitestPlugin from "@vitest/eslint-plugin";
+import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
 import importPlugin from "eslint-plugin-import-x";
 import prettier from "eslint-plugin-prettier/recommended";
 import pluginVue from "eslint-plugin-vue";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import vueParser from "vue-eslint-parser";
-
 export default tseslint.config(
   // -------------------------
   // Base recommended configs
@@ -35,11 +35,12 @@ export default tseslint.config(
       },
     },
     settings: {
-      "import-x/resolver": {
-        typescript: {
+      "import-x/resolver-next": [
+        createTypeScriptImportResolver({
           project: "./tsconfig.eslint.json",
-        },
-      },
+          alwaysTryTypes: true,
+        }),
+      ],
     },
     rules: {
       /**
@@ -158,11 +159,12 @@ export default tseslint.config(
       "import-x": importPlugin,
     },
     settings: {
-      "import-x/resolver": {
-        typescript: {
+      "import-x/resolver-next": [
+        createTypeScriptImportResolver({
           project: "./tsconfig.eslint.json",
-        },
-      },
+          alwaysTryTypes: true,
+        }),
+      ],
     },
     rules: {
       /**

@@ -116,8 +116,8 @@ const { hasActiveFilters, clear } = useToolbarState(filters);
   <!-- Page Header -->
   <div class="border-b bg-card">
     <div class="mx-auto px-4 py-3 max-w-7xl">
-      <!-- Top Row -->
       <DataToolbar :has-active-filters="hasActiveFilters" @clear="clear">
+        <!-- Actions -->
         <template #actions>
           <Button size="sm" @click="openAddCategory()">
             <Plus class="size-4 mr-1" />
@@ -125,9 +125,10 @@ const { hasActiveFilters, clear } = useToolbarState(filters);
           </Button>
         </template>
 
+        <!-- Filters -->
         <template #filters>
           <!-- Search -->
-          <div class="relative w-64 shrink-0">
+          <div class="relative w-68 shrink-0 whitespace-nowrap">
             <Search
               class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
             />

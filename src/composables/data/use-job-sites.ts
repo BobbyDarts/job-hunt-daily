@@ -1,27 +1,47 @@
 // /src/composables/data/use-job-sites.ts
 
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
-import type { JobCategory, JobSite } from "@/types";
-
-import { useJobSitesRepository } from "./use-job-sites-repository";
-
-interface UseJobSitesRepositoryParams {
-  storageKey?: string;
-}
+import { getJobSitesRepository } from "@/services/repositories/job-sites";
+import type {
+  JobCategory,
+  JobCategoryCreateData,
+  JobCategoryUpdateData,
+  JobSite,
+  JobSiteCreateData,
+  JobSiteUpdateData,
+} from "@/types";
 
 export interface JobSiteWithCategory extends JobSite {
   category: string;
 }
 
-export function useJobSites(params: UseJobSitesRepositoryParams = {}) {
-  // composables
-  const repo = useJobSitesRepository(params);
+// singleton state
+const sites = ref<JobSite[]>([]);
+const categories = ref<JobCategory[]>([]);
+const initialized = ref(false);
 
-  // computeds
-  const categories = computed(() => repo.jobHuntData.value.categories);
+export function useJobSites() {
+  async function refresh(): Promise<void> {
+    const repo = getJobSitesRepository();
+    const [_sites, _categories] = await Promise.all([
+      repo.getSites(),
+      repo.getCategories(),
+    ]);
+    sites.value = _sites;
+    categories.value = _categories;
+  }
 
-  const sites = computed(() => repo.jobHuntData.value.sites);
+  async function init(): Promise<void> {
+    await refresh();
+    initialized.value = true;
+  }
+
+  function assertInitialized() {
+    if (!initialized.value) {
+      throw new Error("useJobSites not initialized. Call init() first.");
+    }
+  }
 
   const sitesByCategory = computed(() => {
     const map = new Map<string, JobSite[]>();
@@ -66,80 +86,112 @@ export function useJobSites(params: UseJobSitesRepositoryParams = {}) {
 
   const totalSites = computed(() => sites.value.length);
 
-  // getters
-  const getSiteById = (id: string): JobSite | undefined =>
-    siteById.value.get(id);
+  function getSiteById(id: string): JobSite | undefined {
+    assertInitialized();
+    return siteById.value.get(id);
+  }
 
-  const getSiteByUrl = (url: string): JobSite | undefined =>
-    siteByUrl.value.get(url);
+  function getSiteByUrl(url: string): JobSite | undefined {
+    assertInitialized();
+    return siteByUrl.value.get(url);
+  }
 
-  const getCategoryById = (id: string): JobCategory | undefined =>
-    categoryById.value.get(id);
+  function getCategoryById(id: string): JobCategory | undefined {
+    assertInitialized();
+    return categoryById.value.get(id);
+  }
 
-  const getCategoryByName = (name: string): JobCategory | undefined =>
-    categoryByName.value.get(name.toLowerCase());
+  function getCategoryByName(name: string): JobCategory | undefined {
+    assertInitialized();
+    return categoryByName.value.get(name.toLowerCase());
+  }
 
-  const getCategoryBySlug = (name: string): JobCategory | undefined => {
+  function getCategoryBySlug(name: string): JobCategory | undefined {
+    assertInitialized();
     const slug =
       name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "") || "unknown";
     return categoryById.value.get(slug);
-  };
+  }
 
-  const getSitesByCategory = (categoryId: string): JobSite[] =>
-    sitesByCategory.value.get(categoryId) ?? [];
+  function getSitesByCategory(categoryId: string): JobSite[] {
+    assertInitialized();
+    return sitesByCategory.value.get(categoryId) ?? [];
+  }
 
-  // CRUD — Sites
-  const addSite = (data: Omit<JobSite, "id">) => repo.createSite(data);
+  async function createSite(data: JobSiteCreateData): Promise<JobSite> {
+    const repo = getJobSitesRepository();
+    const created = await repo.createSite(data);
+    await refresh();
+    return getSiteById(created.id)!;
+  }
 
-  const updateSite = (id: string, updates: Partial<Omit<JobSite, "id">>) =>
-    repo.updateSite(id, updates);
-
-  const deleteSite = (id: string) => repo.removeSite(id);
-
-  // CRUD — Categories
-  const addCategory = (data: Omit<JobCategory, "id">) =>
-    repo.createCategory(data);
-
-  const updateCategory = (
+  async function updateSite(
     id: string,
-    updates: Partial<Omit<JobCategory, "id">>,
-  ) => repo.updateCategory(id, updates);
+    updates: JobSiteUpdateData,
+  ): Promise<JobSite | undefined> {
+    const repo = getJobSitesRepository();
+    const updated = await repo.updateSite(id, updates);
+    await refresh();
+    return getSiteById(updated.id);
+  }
 
-  const deleteCategory = (id: string) => repo.removeCategory(id);
+  async function removeSite(id: string): Promise<boolean> {
+    const repo = getJobSitesRepository();
+    await repo.removeSite(id);
+    await refresh();
+    return !sites.value.some(s => s.id === id);
+  }
 
-  // Bulk
-  const setAll = (data: Parameters<typeof repo.setAll>[0]) => repo.setAll(data);
+  async function createCategory(
+    data: JobCategoryCreateData,
+  ): Promise<JobCategory> {
+    const repo = getJobSitesRepository();
+    const created = await repo.createCategory(data);
+    await refresh();
+    return getCategoryById(created.id)!;
+  }
+
+  async function updateCategory(id: string, updates: JobCategoryUpdateData) {
+    const repo = getJobSitesRepository();
+    const updated = await repo.updateCategory(id, updates);
+    await refresh();
+    return getCategoryById(updated.id);
+  }
+
+  async function removeCategory(id: string): Promise<boolean> {
+    const repo = getJobSitesRepository();
+    await repo.removeCategory(id);
+    await refresh();
+    return !categories.value.some(c => c.id === id);
+  }
 
   return {
-    // Computeds
+    refresh,
     categories,
     sites,
+    initialized,
+    init,
     sitesByCategory,
     siteById,
     siteByUrl,
-    categoryById,
-    categoryByName,
     allSitesWithCategory,
     totalSites,
-    // Lookups
+    categoryById,
+    categoryByName,
     getSiteById,
     getSiteByUrl,
     getCategoryById,
     getCategoryByName,
     getCategoryBySlug,
     getSitesByCategory,
-    // CRUD — Sites
-    addSite,
+    createSite,
     updateSite,
-    deleteSite,
-    // CRUD — Categories
-    addCategory,
+    removeSite,
+    createCategory,
     updateCategory,
-    deleteCategory,
-    // Bulk
-    setAll,
+    removeCategory,
   };
 }

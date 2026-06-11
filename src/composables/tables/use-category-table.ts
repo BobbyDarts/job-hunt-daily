@@ -15,7 +15,7 @@ export function useCategoryTable() {
   };
 
   // composables
-  const { categories, getSitesByCategory, deleteCategory } = useJobSites();
+  const { categories, getSitesByCategory, removeCategory } = useJobSites();
   const { openDialog: openAddJobSite } = useAddJobSiteDialog();
 
   // reactive filters
@@ -52,7 +52,7 @@ export function useCategoryTable() {
   async function handleDelete() {
     if (!categoryToDelete.value) return;
 
-    const deleted = await deleteCategory(categoryToDelete.value.id);
+    const deleted = await removeCategory(categoryToDelete.value.id);
     if (deleted) {
       toast.success("Category deleted successfully");
     } else {

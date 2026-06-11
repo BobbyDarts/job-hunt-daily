@@ -22,20 +22,22 @@ defineEmits<{
 </script>
 
 <template>
-  <div class="flex flex-col gap-2 w-full">
+  <div class="flex flex-col w-full gap-2">
     <!-- Top row: back + title (left) / add button (right) -->
-    <div class="flex items-center justify-between w-full">
+    <div class="flex items-center justify-between w-full min-h-9">
       <div class="flex items-center gap-2">
         <slot name="back" />
         <slot name="title" />
       </div>
+
       <div class="flex items-center gap-2">
         <slot name="actions" />
       </div>
     </div>
 
     <!-- Bottom row: filters + clear (left) / count (right) -->
-    <div class="flex items-center justify-between w-full">
+    <div class="flex items-center justify-between w-full min-h-9">
+      <!-- Filters -->
       <div class="flex items-center gap-2">
         <slot name="filters" />
 

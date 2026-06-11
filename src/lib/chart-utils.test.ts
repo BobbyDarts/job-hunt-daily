@@ -2,7 +2,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
-import { getStatuses } from "@/types";
+import { getStatuses } from "@/config/applications-metadata";
 
 import {
   STATUS_CHART_COLORS,

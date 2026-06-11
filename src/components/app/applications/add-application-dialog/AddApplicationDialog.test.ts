@@ -7,7 +7,7 @@ import { computed } from "vue";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useApplications, useJobSites } from "@/composables/data";
-import { todayIso } from "@/lib/time";
+import { todayIso, toInstant } from "@/lib/time";
 import { mockSite } from "@/test-utils/mocks";
 import { getButtonByName, getInput } from "@/test-utils/queries";
 import { renderBaseWithProviders } from "@/test-utils/render-base";
@@ -94,7 +94,7 @@ describe("AddApplicationDialog", () => {
     vi.clearAllMocks();
     mockAddApplication = vi.fn().mockResolvedValue(undefined);
     vi.mocked(useApplications).mockReturnValue({
-      addApplication: mockAddApplication,
+      createApplication: mockAddApplication,
     } as unknown as ReturnType<typeof useApplications>);
     vi.mocked(useJobSites).mockReturnValue({
       allSitesWithCategory: computed(() => []),
@@ -232,7 +232,7 @@ describe("AddApplicationDialog", () => {
   });
 
   describe("submission data", () => {
-    it("calls addApplication with normalized form data", async () => {
+    it("calls createApplication with normalized form data", async () => {
       renderAddApplicationDialog();
 
       await fillValidForm(user, {
@@ -345,7 +345,7 @@ describe("AddApplicationDialog", () => {
       });
     });
 
-    it("does not call addApplication when site is null", async () => {
+    it("does not call createApplication when site is null", async () => {
       renderAddApplicationDialog({ site: null });
 
       await fillValidForm(user);
@@ -370,7 +370,7 @@ describe("AddApplicationDialog", () => {
       });
     });
 
-    it("does not call addApplication when cancel is clicked", async () => {
+    it("does not call createApplication when cancel is clicked", async () => {
       renderAddApplicationDialog();
 
       await fillValidForm(user);
@@ -391,6 +391,8 @@ describe("AddApplicationDialog", () => {
         name: "Indeed",
         url: "https://indeed.com",
         categoryId: "general-job-boards",
+        createdAt: toInstant("2024-01-15T12:00:00Z").toString(),
+        updatedAt: toInstant("2024-01-15T12:00:00Z").toString(),
       };
 
       await rerender({ site: newSite, open: true });
