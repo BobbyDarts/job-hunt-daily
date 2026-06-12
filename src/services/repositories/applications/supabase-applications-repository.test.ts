@@ -382,10 +382,18 @@ describe("createSupabaseApplicationsRepository", () => {
 
   describe("setState", () => {
     it("inserts applications and history", async () => {
+      const deleteChain = {
+        delete: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: null }),
+        }),
+      };
       const insertChain = {
         insert: vi.fn().mockResolvedValue({ error: null }),
       };
-      mockFrom.mockReturnValue(insertChain);
+      mockFrom
+        .mockReturnValueOnce(deleteChain) // delete history
+        .mockReturnValueOnce(deleteChain) // delete applications
+        .mockReturnValue(insertChain); // insert applications + history
 
       const apps: Application[] = [
         {
@@ -426,13 +434,55 @@ describe("createSupabaseApplicationsRepository", () => {
       expect(insertChain.insert).toHaveBeenCalledTimes(2);
     });
 
+    it("preserves UUID ids on round-trip", async () => {
+      const deleteChain = {
+        delete: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: null }),
+        }),
+      };
+      const insertChain = {
+        insert: vi.fn().mockResolvedValue({ error: null }),
+      };
+      mockFrom
+        .mockReturnValueOnce(deleteChain)
+        .mockReturnValueOnce(deleteChain)
+        .mockReturnValue(insertChain);
+
+      const uuidApp: Application = {
+        id: "550e8400-e29b-41d4-a716-446655440000",
+        company: "Tech Co",
+        position: "Dev",
+        jobSiteId: "techco",
+        jobSiteUrl: "https://techco.com",
+        status: "applied",
+        appliedDate: "2026-02-03",
+        createdAt: "2026-02-03T10:00:00Z",
+        updatedAt: "2026-02-03T10:00:00Z",
+      };
+
+      const repo = createSupabaseApplicationsRepository();
+      await repo.setState({ applications: [uuidApp], history: [] });
+
+      const payload = insertChain.insert.mock.calls[0][0];
+      expect(payload[0].id).toBe("550e8400-e29b-41d4-a716-446655440000");
+    });
+
     it("throws on applications insert error", async () => {
+      const deleteChain = {
+        delete: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: null }),
+        }),
+      };
+
       const insertChain = {
         insert: vi
           .fn()
           .mockResolvedValue({ error: { message: "insert failed" } }),
       };
-      mockFrom.mockReturnValue(insertChain);
+      mockFrom
+        .mockReturnValueOnce(deleteChain) // delete history
+        .mockReturnValueOnce(deleteChain) // delete applications
+        .mockReturnValue(insertChain);
 
       const repo = createSupabaseApplicationsRepository();
       await expect(

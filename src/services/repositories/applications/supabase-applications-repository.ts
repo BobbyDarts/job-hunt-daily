@@ -69,14 +69,32 @@ export function createSupabaseApplicationsRepository(): ApplicationsRepository {
   async function setState(state: RepositoryState): Promise<void> {
     const userId = await getCurrentUserId();
 
-    // Map old localStorage app IDs → new UUIDs
+    // Delete existing data first — setState is a full replacement
+    const { error: deleteHistoryError } = await supabase!
+      .from("application_history")
+      .delete()
+      .eq("user_id", userId);
+    if (deleteHistoryError) throw deleteHistoryError;
+
+    const { error: deleteAppsError } = await supabase!
+      .from("applications")
+      .delete()
+      .eq("user_id", userId);
+    if (deleteAppsError) throw deleteAppsError;
+
     const idMap = new Map<string, string>();
 
     // -------------------------
     // APPLICATIONS
     // -------------------------
     const appsPayload = state.applications.map(app => {
-      const newId = crypto.randomUUID();
+      // Preserve UUID IDs (Supabase→Supabase round-trip); generate new ones
+      // for slug-style IDs (local→Supabase migration)
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          app.id,
+        );
+      const newId = isUuid ? app.id : crypto.randomUUID();
       idMap.set(app.id, newId);
 
       const {
