@@ -97,12 +97,7 @@ export function createSupabaseApplicationsRepository(): ApplicationsRepository {
       const newId = isUuid ? app.id : crypto.randomUUID();
       idMap.set(app.id, newId);
 
-      const {
-        id: _id,
-        createdAt: _createdAt,
-        updatedAt: _updatedAt,
-        ...rest
-      } = app;
+      const { id: _id, ...rest } = app;
 
       return {
         ...objectToSnakeCase(rest),

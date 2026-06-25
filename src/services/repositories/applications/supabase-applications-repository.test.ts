@@ -465,6 +465,7 @@ describe("createSupabaseApplicationsRepository", () => {
 
       const payload = insertChain.insert.mock.calls[0][0];
       expect(payload[0].id).toBe("550e8400-e29b-41d4-a716-446655440000");
+      expect(payload[0].created_at).toBe("2026-02-03T10:00:00Z");
     });
 
     it("throws on applications insert error", async () => {

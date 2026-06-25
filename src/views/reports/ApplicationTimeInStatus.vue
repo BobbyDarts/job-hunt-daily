@@ -74,7 +74,12 @@ const chartOptions = computed(() => ({
           );
           const status = statuses[context.dataIndex];
           const entries = timeInStatus.value[status]?.perApplication ?? [];
-          return entries.map(e => ` ${e.company}: ${e.duration}d`);
+          return entries
+            .sort(
+              (a, b) =>
+                a.company.localeCompare(b.company) || b.duration - a.duration,
+            )
+            .map(e => ` ${e.company}: ${e.duration}d`);
         },
       },
     },
