@@ -5,6 +5,7 @@ import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import path from "node:path";
 import { defineConfig } from "vitest/config";
+import { version } from "./package.json";
 
 export default defineConfig({
   plugins: [vue(), vueJsx(), tailwindcss()],
@@ -12,6 +13,13 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  server: {
+    host: true,
+    port: 5173,
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
   },
   test: {
     globals: true,

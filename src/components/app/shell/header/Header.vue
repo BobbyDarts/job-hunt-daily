@@ -7,6 +7,7 @@ import { computed, watchEffect } from "vue";
 import { useRoute, RouterLink } from "vue-router";
 
 import logo from "@/assets/logo.svg";
+import { EnvironmentBadge } from "@/components/app/lib/environment-badge";
 import { Progress } from "@/components/ui/progress";
 
 export interface Props {
@@ -50,6 +51,9 @@ watchEffect(() => {
             alt="Job Hunt Daily"
             class="h-8 w-auto sm:h-9"
           />
+
+          <EnvironmentBadge />
+
           <WifiOff
             v-if="!props.isOnline"
             class="size-5 text-destructive"
